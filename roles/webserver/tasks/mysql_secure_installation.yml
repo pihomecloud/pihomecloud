@@ -1,0 +1,17 @@
+- name: install mysql-python as dependancy of mysql ansible module
+  pacmanneeded: name=mysql-python state=present
+- name: verify and set mysql root password
+  mysql_user: user="root" password="{{mysqlPassword}}" priv=*.*:ALL,GRANT host={{ item }} login_user=root login_password="{{mysqlPassword}}" check_implicit_admin=yes
+  with_items:
+    - localhost
+- name: ensure root connection are only localhost, not on interface {{ ansible_hostname }}
+  mysql_user: user="root" host="{{ansible_hostname}}" state="absent" login_user=root login_password={{mysqlPassword}}
+- name: delete anonymous MySQL server user
+  mysql_user.2.1: user="" host_all=yes state="absent" login_user=root login_password={{mysqlPassword}}
+- name: remove network root
+  mysql_user: user="root" host={{ item }} state="absent" login_user=root login_password={{mysqlPassword}}
+  with_items:
+    - 127.0.0.1
+    - ::1
+- name: remove the MySQL test database
+  action: mysql_db db=test state=absent login_user=root login_password={{mysqlPassword}}

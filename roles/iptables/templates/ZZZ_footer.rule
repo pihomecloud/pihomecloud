@@ -1,0 +1,11 @@
+
+#{{ansible_managed}}
+
+#Log if needed
+-A INPUT -m limit --limit 5/min -j LOG --log-prefix "IPTables-INPUT: DROP: "
+-A OUTPUT -m limit --limit 5/min -j LOG --log-prefix "IPTables-OUTPUT: DROP: "
+#REJECT ALL OTHERS
+-A INPUT -j REJECT --reject-with icmp-port-unreachable
+-A OUTPUT -j REJECT --reject-with icmp-port-unreachable
+COMMIT
+

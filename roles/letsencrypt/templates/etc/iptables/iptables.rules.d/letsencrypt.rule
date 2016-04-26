@@ -1,0 +1,6 @@
+#{{ansible_managed}}
+#LetsEncrypt Role
+
+#HTTP For certificate renewal
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+

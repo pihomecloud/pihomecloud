@@ -1,0 +1,4 @@
+---
+# handlers file for domoticz
+- name: restart domoticz
+  service: name=domoricz state=restarted

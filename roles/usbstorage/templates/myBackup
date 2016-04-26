@@ -1,0 +1,92 @@
+#!/bin/bash
+#{{ansible_managed}}
+set -o pipefail
+startBackup=$(date +%s)
+export LANG=fr_FR.UTF-8
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
+bckDir="/media/{{cryptName}}/backup/"
+listeDisks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "\sdisk$" | grep -v -P "crypto_LUKS\s+disk$" | awk '{print "/dev/"$1}')"
+mysqlUser='backup_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_user chars=ascii_letters,digits') }}'
+mysqlPwd='{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_password') }}'
+purgeDays=7
+dateBackup=$(date '+%Y%m%d.%H%M%S')
+
+
+#Pas de backup si l'emplacement n'est pas monté...
+if [ ! -d $bckDir/log ]
+then
+  echo $bckDir/log non trouvé, abandon
+  exit 1
+fi
+
+exec > $bckDir/log/bck.$dateBackup.log 2>&1
+
+#Disque
+for disk in $listeDisks
+do
+  parted -ms $disk print > $bckDir/disk/$(basename $disk).$dateBackup.parted
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Backup parted $disk"
+  dd if=$disk of=$bckDir/disk/$(basename $disk).$dateBackup.mbr bs=512 count=1
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Backup mbr $disk"
+done
+
+listLuks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "\sdisk$" | grep -P "crypto_LUKS\s+disk$" | awk '{print "/dev/"$1}')"
+for disk in $listLuks
+do
+  cryptsetup luksHeaderBackup $disk --header-backup-file $bckDir/disk/$(basename $disk).$dateBackup.luks.img
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Backup cryptsetup $disk"
+done
+
+vgcfgbackup --file $bckDir/disk/vgbackup.$dateBackup.cfg
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Backup LVM"
+
+#Mysql 
+mysqldump -u$mysqlUser -p$mysqlPwd --opt --all-databases | gzip -9 > $bckDir/mysql/mysqldump.$dateBackup.sql.gz
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Backup MySQL"
+[ "$((du -ks $bckDir/mysql/mysqldump.$dateBackup.sql.gz 2> /dev/null || echo 0) | awk '{ print $1}')" -ge 128 ]  && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Verification sauvegarde MySQL"
+gzip -t $bckDir/mysql/mysqldump.$dateBackup.sql.gz && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Validite sauvegarde MySQL"
+zgrep 'CREATE DATABASE /\*!32312 IF NOT EXISTS\*/ `mysql` /\*!40100 DEFAULT CHARACTER SET utf8 \*/;' $bckDir/mysql/mysqldump.$dateBackup.sql.gz | head -1 && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Contenu dump MySQL"
+rsync -avz /var/lib/mysql/mysql-bin.* $bckDir/mysql/
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Rsync mysql binlog"
+
+#Custom backups
+{% for fs in additionalBackup %}
+/usr/bin/rsync --bwlimit={{rsyncBwLimit}} -av
+{%- if fs.excludes is defined -%}
+{%- for exclude in  fs.excludes %}
+ --exclude="{{exclude}}"
+{%- endfor -%}
+{%- endif -%}
+{%- if fs.delete is defined %}
+ --delete
+{%- endif %}
+ {{fs.source}} {{fs.dest}}
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Backup {{fs.source}}"
+
+{% endfor %}
+
+#Systeme
+rsync -avz --delete --exclude=media/  --exclude=run/  --exclude=var/lib/mysql/ --exclude=dev/ --exclude=sys/ --exclude=proc/ --exclude=tmp/ / $bckDir/sys/
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Backup systeme"
+
+#Purge logs needs SUPER...
+#mysql -u$mysqlUser -p$mysqlPwd -e " PURGE BINARY LOGS BEFORE DATE(NOW() - INTERVAL $purgeDays DAY);"
+#[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+#echo -e "Purge Logs mysql"
+find $bckDir/mysql/ -type f -mtime +$purgeDays -exec rm -f {} \;
+find $bckDir/disk/ -type f -mtime +$purgeDays -exec rm -f {} \;
+find $bckDir/log/ -type f -mtime +$purgeDays -exec rm -f {} \;
+
+echo Backup done in $(($(date +%s)-$startBackup)) seconds
+echo "Backup finished"

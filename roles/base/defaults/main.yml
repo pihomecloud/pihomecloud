@@ -1,0 +1,15 @@
+---
+# defaults file for base
+ansible_python_interpreter: /usr/bin/python2
+locale: fr_FR.UTF-8
+localuser: localuser
+keymap: fr-latin9
+#Exemple for wifi
+#wifis : 
+#  - {ssid: 'home', psk='xniaonxoanizxoainxoanzodnoaizdhoaihzdoaihxznaozxnoanzxoanozhoahzoanoanxoanizodhao'}
+wifis: []
+#Exemple for Additional SSH connexion : 
+#sshAuthorized:
+#  - {name: 'VPN', src: '192.168.2.0/24'}
+sshAuthorized: []
+additionalMounts: []

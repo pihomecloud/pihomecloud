@@ -1,0 +1,39 @@
+---
+# tasks file for hardened
+- name: copy /etc/sysctl.d/hardened.conf
+  copy: src=etc/sysctl.d/hardened.conf dest=/etc/sysctl.d/hardened.conf owner=root group=root mode=0644
+  notify: apply sysctl
+# inutile de garde le suid/guid
+- name: remove suid and guid bits unneeded
+  file: dest={{item}} mode="u-s,g-s"
+  with_items:
+    - /usr/bin/chfn
+    - /usr/bin/chsh
+    - /usr/bin/chage
+    - /usr/bin/expiry
+    - /usr/bin/gpasswd
+    - /usr/bin/ksu
+    - /usr/bin/write
+    - /usr/bin/sg
+    - /usr/bin/wall
+    - /usr/bin/write
+    - /usr/lib/ssh/ssh-keysign
+#- service: name=org.cups.cupsd state=stopped enabled=no
+- name: disable LLMR
+  ini_file: dest=/etc/systemd/resolved.conf section=Resolve option=LLMNR value=no
+  notify: restart systemd-resolved
+- name: create tmp mount override directory
+  file: dest=/etc/systemd/system/tmp.mount.d state=directory owner=root group=systemd-network mode=0640
+- name: set tmp mount options
+  template: src=etc/systemd/system/tmp.mount.d/customdependency.conf dest=/etc/systemd/system/tmp.mount.d/customdependency.conf owner=root group=systemd-network mode=0640
+  register: systemctlReload
+- name: do systemctlreload
+  command: systemctl daemon-reload
+  when: systemctlReload|changed
+- name: restrict acces to some directories
+  file: state=directory path={{item}} owner=root group=root mode=0700
+  with_items:
+    #- /boot
+    - /etc/iptables
+- name: remove localhost ipv6 entry
+  lineinfile: dest=/etc/hosts regexp='::1' line='#::1		localhost.localdomain	localhost'

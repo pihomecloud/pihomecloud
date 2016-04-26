@@ -1,0 +1,6 @@
+ras*
+hosts
+group_vars/all
+*.swp
+*.retry
+*~

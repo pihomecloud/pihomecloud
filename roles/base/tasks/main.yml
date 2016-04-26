@@ -1,0 +1,151 @@
+---
+# tasks file for base
+#- shell: pacman -Syqu --noconfirm > /var/tmp/sys_upgrade.{{ansible_date_time.date}}
+#  args:
+#    creates: /var/tmp/sys_upgrade.{{ansible_date_time.date}}
+- name: set current hostname
+  hostname:
+    name: "{{inventory_hostname_short}}"
+- name: set hostname in /etc/hosts
+  lineinfile: 
+    dest: /etc/hosts
+    regexp: "^127.0.0.1"
+    line: "127.0.0.1 localhost {{inventory_hostname_short}} {{inventory_hostname}}"
+- name: update pacman DB
+  pacman: update_cache=yes
+- name: update archlinux-keyring
+  pacman: name=archlinux-keyring state=latest
+- name: upgrade system
+  pacmanneeded: upgrade=yes
+- name: get last installed Kernel
+  shell: pacman -Q linux-raspberrypi | cut -d " " -f 2
+  register: installedKernel
+  changed_when: false
+- name: get running Kernel
+  shell: uname -r | sed -e "s/-ARCH//"
+  register: runningKernel
+  changed_when: false
+- name: reboot after kernel upgrade
+  command: reboot
+  when: "installedKernel.stdout != runningKernel.stdout"
+  async: 0
+  poll: 0
+  ignore_errors: true
+  register: rebootOccured
+- name: Waiting for reboot...
+  local_action: wait_for host=localhost port=22 delay=300 state=started
+  become: no
+  when: rebootOccured | changed
+- name: restart systemctl units with deleted files when upgraded
+  shell: find /proc/*/fd/ -xtype f  ! -exec file {} \; 2>/dev/null | grep -P '^/proc/[0-9]+/fd/[0-9]+{{ ":" }} broken symbolic link to /.*(deleted)'  | sed -e 's/^\/proc\/\([0-9][0-9]*\)\/fd\/[0-9][0-9]*{{ ":" }} broken symbolic link to \(\/.*\) (deleted)/\1 \2/' | grep -v -e ' /tmp/' -e '(deleted)' |cut -d ' '  -f1 | sort -u | while read pid; do systemctl status $pid --no-pager -n0 --no-legend | grep '^ *Loaded\{{ ":" }} loaded (/usr/lib/systemd/' | sed -e 's/^ *Loaded\{{ ":" }} loaded (//' -e 's/;.*//' -e 's/.*\///'; done | sort -u
+  register: restartUnits
+  failed_when: restartUnits.stderr
+  changed_when: restartUnits.stdout
+- name: install base packages
+  pacmanneeded: name={{item}} state=present
+  with_items:
+    - sysstat
+    - vim
+    - wget
+    - sudo
+    - base-devel
+    - git
+    - bash-completion
+    - cronie
+    - python
+    - python2
+    - python2-passlib
+- name: remove user alarm
+  user: name=alarm state=absent remove=yes
+- name: set console configuration
+  template: src=etc/vconsole.conf dest=/etc/vconsole.conf owner=root group=root mode=0644
+- name: copy sudoers file for {{localuser}}
+  template: src=etc/sudoers.d/localuser dest=/etc/sudoers.d/{{localuser}} owner=root group=root mode=0644
+- name: copy {{localuser}} bashrc
+  copy: src=home/localuser/.bashrc dest=/home/{{localuser}}/.bashrc owner={{localuser}} group={{localuser}} mode=0644
+- name: copy root bashrc
+  copy: src=root/.bashrc dest=/root/.bashrc owner=root group=root mode=0644
+- name: set zone info
+  file: src=/usr/share/zoneinfo/Europe/Paris dest=/etc/localtime owner=root group=root state=link
+- name: activate ntp
+  timedatectl: set_ntp=yes
+- name: set ntp servers in /etc/systemd/timesyncd.conf
+  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=NTP value="0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org"
+- name: set ntp fallback servers in /etc/systemd/timesyncd.conf
+  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=FallbackNTP value="0.pool.ntp.org 1.pool.ntp.org 0.fr.pool.ntp.org"
+- name: set locale to {{locale}}
+  locale_gen: name={{locale}} state=present
+  register: locale_gen
+- name: update current locale to {{locale}}
+  command: localectl set-locale LANG={{locale}}
+  when: locale_gen|changed
+- name: configure systat to collect all possibleactivities
+  lineinfile: dest=/etc/conf.d/sysstat regexp="^SADC_OPTIONS" line="SADC_OPTIONS=\" -S XALL\""
+  notify: restart sysstat
+- name: sysstat started and enabled
+  service: name=sysstat enabled=yes state=started
+- name: copy /etc/ssh/sshd_config
+  template: src=etc/ssh/sshd_config  dest=/etc/ssh/sshd_config owner=root group=root mode=0644
+  notify: restart sshd
+# yaourt is a pacman front-end https://wiki.archlinux.org/index.php/Yaourt
+- name: "add archlinuxfr repository to pacman 1"
+  lineinfile: dest="/etc/pacman.conf" state="present" line="[archlinuxfr]"
+- name: "add archlinuxfr repository to pacman 2"
+  lineinfile: dest="/etc/pacman.conf" state="present" line="SigLevel = Never" insertafter="[archlinuxfr]"
+- name: "add archlinuxfr repository to pacman 3"
+  lineinfile: dest="/etc/pacman.conf" state="present" line="Server = http://repo.archlinux.fr/arm"
+  register: refreshbase
+- name: update pacman Database
+  pacmanneeded: update_cache=yes
+  when: refreshbase|changed
+- name: make package-query
+  makepkg: name=package-query state=latest
+- name: "install yaourt"
+  pacman: name="yaourt" state="present" update_cache=yes
+- name: set variable ethernet_interface
+  set_fact: ethernet_interface="{{ansible_interfaces| join(' ')| regex_replace('.*(e[^ ]+).*', '\\1')| regex_replace('.* .*', 'eth0')}}"
+- name: set variable wlan_interface
+  set_fact: wlan_interface="{{ansible_interfaces| join(' ')| regex_replace('.*(wl[^ ]+).*', '\\1')| regex_replace('(.* .*)', 'wlan0')}}"
+#Network bonding with failover
+- name: remove /etc/systemd/network/eth0.network
+  file: path=/etc/systemd/network/eth0.network state=absent
+- name: set bond0 dev
+  template: src=etc/systemd/network/bond0.netdev dest=/etc/systemd/network/bond0.netdev owner=root group=systemd-network mode=0640
+- name: set bond0 network configuration
+  template: src=etc/systemd/network/bond0.network dest=/etc/systemd/network/bond0.network owner=root group=systemd-network mode=0640
+- name: set ethernet slave
+  template: src=etc/systemd/network/ethernet.network dest=/etc/systemd/network/ethernet.network owner=root group=systemd-network mode=0640
+- name: set wireless slave
+  template: src=etc/systemd/network/wireless.network dest=/etc/systemd/network/wireless.network owner=root group=systemd-network mode=0640
+- name: configure bond module
+  template: src=etc/modprobe.d/bonding dest=/etc/modprobe.d/bonding owner=root group=systemd-network mode=0640
+- name: enable systemd-networkd
+  service: name=systemd-networkd enabled=yes 
+#wireless
+#- name: install Driver for Realtek RTL8188CUS (8188C, 8192C) chipset wireless cards
+#  pacman: name=dkms-8192cu state=present
+- name: install wpa_supplicant
+  pacman: name=wpa_supplicant state=present
+- name: set wpa configuration
+  template: src=etc/wpa_supplicant/wpa_supplicant-wlan.conf dest=/etc/wpa_supplicant/wpa_supplicant-{{wlan_interface}}.conf owner=root group=systemd-network mode=0640
+  notify: restart wpa_supplicant
+- name: create wpa_suplicant dependency directory
+  file: dest=/etc/systemd/system/wpa_supplicant-wext@{{wlan_interface}}.service.d state=directory owner=root group=systemd-network mode=0640
+- name: set wpa_suplicant dependency with network
+  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant-wext@{{wlan_interface}}.service.d/customdependency.conf owner=root group=systemd-network mode=0640
+- name: add wpa_supplicant-wext@.service
+  template: src=usr/lib/systemd/system/wpa_supplicant-wext@.service dest=/usr/lib/systemd/system/wpa_supplicant-wext@.service owner=root group=root mode=0644
+  register: systemctlReload
+- name: do systemctlreload
+  command: systemctl daemon-reload
+  when: systemctlReload|changed
+#- name: enable wpa_supplicant
+#  service: name=wpa_supplicant-wext@{{wlan_interface}} enabled=yes 
+- name: copy iptables rules associated with this role
+  include: iptables.yml
+- name: additional mounts
+  mount: name="{{item.dir}}" src="{{item.filesystem}}" fstype="{{item.type}}" opts="{{item.options}}" dump={{item.dump | default(0)}} passno={{item.pass | default(0)}} state=mounted
+  with_items: "{{additionalMounts}}"
+  when: "'slave' not in group_names"
+- name: activate cronie
+  service: name=cronie state=started enabled=yes

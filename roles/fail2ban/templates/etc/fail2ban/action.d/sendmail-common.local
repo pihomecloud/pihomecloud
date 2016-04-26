@@ -1,0 +1,7 @@
+# Override the Fail2Ban defaults in sendmail-common.conf with these entries
+
+[Definition]
+# Disable email notifications of jails stopping or starting
+actionstart =
+actionstop =
+

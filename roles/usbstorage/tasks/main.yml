@@ -1,0 +1,137 @@
+---
+# tasks file for usbstorage
+- name: gather list of disks
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e ^NAME -e "disk *usb"
+  changed_when: false
+  register: diskList
+- name: gather list of disks devices
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "disk *usb" | awk '{print "/dev/"$1}'
+  changed_when: false
+  register: diskDeviceList
+- name: verify if we have at least one valid disk
+  fail: msg="No valid disk found"
+  when: diskDeviceList.stdout_lines | length == 0
+- name: show disk List
+  debug: msg="{{diskList.stdout_lines}}"
+- name: prompt disk if not in defined variables
+  pause: prompt="usbstorageDisk is not defined, please enter the NAME (without /dev/) of the disk choosen set usbstorageDisk in your playbook to avoid this"
+  register: prompt_usbstorageDisk
+  when: usbstorageDisk is not defined
+- name: set usbstorageDisk from input
+  set_fact: usbstorageDisk="/dev/{{prompt_usbstorageDisk.user_input}}"
+  when: usbstorageDisk is not defined
+- name: fail if the disk choosen is not in the list
+  fail: msg="The disk {{usbstorageDisk}} is not a valid disk"
+  when: "usbstorageDisk not in diskDeviceList.stdout_lines"
+- name: gather list of luks volumes on the coosen usb disk
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS *disk *usb" | awk '{print "/dev/"$1}' | grep "^{{usbstorageDisk}}$"
+  changed_when: false
+  register: luksDevice
+- name: initialize cryptSetup disk if needed
+  shell: echo "{{cryptPass}}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat {{usbstorageDisk}}
+  when: luksDevice.stdout_lines | length == 0
+- name: verify if usbstorageDisk is opened
+  shell: dmsetup ls --target crypt | grep "^{{cryptName}}\s"
+  register: luksOpennedDevice
+  changed_when: false
+  failed_when: luksOpennedDevice.stderr
+- name: open luks usb volume if needed
+  shell: echo "{{cryptPass}}" | cryptsetup luksOpen {{usbstorageDisk}} {{cryptName}}
+  when: luksOpennedDevice.stdout_lines | length == 0
+- name: install btrfs tools
+  pacman: name=btrfs-progs state=present
+- name: test if {{dmDisk}} is already formated
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "^{{cryptName}}  *btrfs  *crypt"
+  changed_when: false
+  failed_when: typeOfDisk.stderr
+  register: typeOfDisk
+- name: create btrfs volume
+  command: mkfs.btrfs {{dmDisk}}
+  when: typeOfDisk.stdout_lines | length == 0
+- name: create /media/
+  file: path=/media/ state=directory owner=root group=root mode=0755
+- name: create /media/{{cryptName}}
+  file: path=/media/{{cryptName}} state=directory owner=root group=root mode=0755
+- name: mount btrfs volume {{cryptName}} and add it to fstab
+  mount: name=/media/{{cryptName}}/{{cryptName}}-top-lvl src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,noatime,nodiratime
+- name: scan btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
+  shell: btrfs subvolume list /media/usbstorageDisk/usbstorageDisk-top-lvl/ | sed -e 's/.* path //' | grep -v -e "^{{snapDir}}"
+  changed_when: false
+  register: btrfsVolumeList
+- name: create btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
+  command: btrfs subvolume create /media/{{cryptName}}/{{cryptName}}-top-lvl/{{item.name}}
+  with_items:
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+  when: item.name not in btrfsVolumeList.stdout_lines
+- name: mount btrfs volume under /media/{{cryptName}} and add it to fstab
+  mount: name=/media/{{cryptName}}/{{item.mount}} src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,subvol={{item.name}}
+  with_items:
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+- name: create backup structure
+  file: path=/media/{{cryptName}}/backup/{{item}} state=directory
+  with_items:
+    - sys
+    - mysql
+    - disk
+    - log
+- name: create snapshot directory
+  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/ owner=root group=log mode=0750 state=directory
+- name: create snapshot hourly structure
+  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/hourly/{{item.name}} owner=root group=log mode=0750 state=directory
+  with_items:
+    - { name: "."}
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+- name: create snapshot daily structure
+  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/daily/{{item.name}} owner=root group=log mode=0750 state=directory
+  with_items:
+    - { name: "."}
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+- name: create snapshot weekly structure
+  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/weekly/{{item.name}} owner=root group=log mode=0750 state=directory
+  with_items:
+    - { name: "."}
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+- name: create snapshot monthly structure
+  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/monthly/{{item.name}} owner=root group=log mode=0750 state=directory
+  with_items:
+    - { name: "."}
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+- name: adjust mount point permissions
+  file: path=/media/{{cryptName}}/data owner=http group=http state=directory mode=0755
+- name: create mysql user for backup
+  mysql_user:
+    user: "backup_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_user chars=ascii_letters,digits') }}"
+    password: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_password') }}"
+    priv: "*.*:SELECT,SHOW DATABASES,SHOW VIEW,RELOAD,REPLICATION CLIENT,EVENT,TRIGGER,LOCK TABLES"
+    host: "localhost"
+    login_user: root
+    login_password: "{{mysqlPassword}}"
+  when: mysqlPassword is defined
+- name: permit {{localuser}} to access to storage
+  user: name="{{localuser}}" groups=http append=yes
+- name: adkust permissions to http user and group if needed
+  file: path=/media/{{cryptName}}/{{item}} owner=http group=http state=directory mode=0755
+  with_items:
+    - "{{btrfsVolumesToHTTP}}"
+- name: install rsync as backup dependency
+  pacman: name=rsync state=present
+- name: install parted as backup dependency
+  pacman: name=parted state=present
+- name: create backup script
+  template: src=myBackup dest=/media/{{cryptName}}/backup/myBackup owner=root group=root mode=0750
+- name: create snapshot script
+  template: src=btrfsSnapShots dest=/media/{{cryptName}}/backup/btrfsSnapShots owner=root group=root mode=0750
+- name: activate backup in crontab
+  file: state=link src=/media/{{cryptName}}/backup/myBackup dest=/etc/cron.daily/myBackup
+- name: activate snapshots in crontabs
+  copy:
+    content: "#!/bin/bash\n/media/{{cryptName}}/backup/btrfsSnapShots {{item}}\n"
+    dest: /etc/cron.{{item}}/btrfsSnapShots
+    owner: root
+    group: root
+    mode: 0750
+  with_items:
+    - hourly
+    - daily
+    - weekly
+    - monthly

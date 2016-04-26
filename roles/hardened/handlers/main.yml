@@ -1,0 +1,6 @@
+---
+# handlers file for hardened
+- name: apply sysctl
+  command: sysctl --system
+- name: restart systemd-resolved
+  service: name=systemd-resolved state=restarted

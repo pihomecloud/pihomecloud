@@ -1,0 +1,5 @@
+---
+# defaults file for dlna
+mediaDirs:
+  - { type: 'PVA', directory: '/media' }
+max_user_watches: 16384

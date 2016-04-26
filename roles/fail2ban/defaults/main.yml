@@ -1,0 +1,8 @@
+---
+# defaults file for fail2ban
+myDomain: example.com
+rootMail: "root@{{myDomain}}"
+ssmtpRootMail: "{{rootMail}}"
+fail2banFindTime: 600
+fail2banBanTime: 600
+honeyPotBanTime: 864000

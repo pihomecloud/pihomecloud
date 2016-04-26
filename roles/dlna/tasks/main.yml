@@ -1,0 +1,27 @@
+---
+# tasks file for dlna
+- name: install minidlna via pacman
+  pacman: name=minidlna state=present
+- name: http group to minidlna
+  user: name=minidlna groups=http append=yes
+- name: copy /etc/minidlna.conf
+  template: src=etc/minidlna.conf dest=/etc/minidlna.conf owner=root group=root mode=0644
+  notify: restart minidlna
+- name: increase fs.inotify.max_user_watches
+  copy: 
+    content: "fs.inotify.max_user_watches = {{max_user_watches}}"
+    dest: /etc/sysctl.d/minidlna.conf
+    owner: root
+    group: root
+    mode: 0644
+  register: sysctl
+- name: apply sysctl if needed
+  command: sysctl --system
+  when: sysctl | changed
+- name: create directory /etc/iptables/iptables.rules.d/
+  file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
+- name: copy iptables rules for {{role_name}}
+  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: enable and start minidlna
+  service: name=minidlna state=started enabled=yes
+

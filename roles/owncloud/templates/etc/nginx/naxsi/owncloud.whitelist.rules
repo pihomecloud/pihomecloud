@@ -1,0 +1,106 @@
+#{{ansible_managed}}
+#Rule (11) unknown content-type
+#uri : /remote.php/caldav/calendars/*/personnel/4064df3b-8794-4a7e-a3f1-744c9c315532.ics
+BasicRule  wl:11 "mz:BODY|$URL_X:^/remote.php/.*ics$";
+
+#Rule (16) empty POST
+#uri : /index.php/heartbeat
+#uri : /index.php/apps/updater/admin/setChannel/stable
+#uri : /index.php/apps/updater/admin/setChannel/production
+BasicRule  wl:16 "mz:$URL:/index.php/heartbeat|BODY";
+BasicRule  wl:16 "mz:$URL_X:^/index.php/apps/updater/admin/setChannel/[A-z]+|BODY";
+
+#Rule (1000) sql keywords
+#uri : /apps/updater/js/3rdparty/angular.js
+#uri : /apps/updater/css/updater.css
+#uri : /core/js/multiselect.js
+#uri : /core/css/multiselect.css
+#uri : /core/img/actions/delete.svg
+#find  apps/ -type f | grep -P 'select|union|update|delete|insert|table|from|ascii|hex|unhex|drop' | sed -e 's/^/BasicRule  wl:1000 "mz:$URL:\//' -e 's/$/|URL";/';
+BasicRule  wl:1000 "mz:$URL_X:/core/ajax/.*/update\.php$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/ajax/.*/delete\.php$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/ajax/.*/update\.php$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/ajax/.*/delete\.php$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/js/.*\.js$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/js/.*\.js$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/css/.*\.css$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/css/.*\.css$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/img/.*.gif$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/img/.*.jpg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/img/.*.png$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/core/img/.*.svg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/img/.*.gif$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/img/.*.jpg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/img/.*.png$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/img/.*.svg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.gif$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.jpg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.png$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.svg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.js$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/vendor/*.css$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/files_svgedit/svg-edit/.*gif$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/files_svgedit/svg-edit/.*jpg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/files_svgedit/svg-edit/.*png$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/files_svgedit/svg-edit/.*svg$|URL";
+BasicRule  wl:1000 "mz:$URL_X:/apps/files_svgedit/svg-edit/.*xml$|URL";
+
+#Rule (1005) mysql keyword (|)
+#uri : /
+#uri : /index.php/apps/files/ajax/scan.php
+#var_name : requesttoken
+BasicRule  wl:1005 "mz:$BODY_VAR:requesttoken";
+
+#Rule (1008) ; in stuff
+#uri : /index.php/apps/galleryplus/files/list
+#var_name : mediatypes
+BasicRule  wl:1008 "mz:$ARGS_VAR:mediatypes|$URL:/index.php/apps/galleryplus/files/list";
+BasicRule  wl:1008 "mz:$ARGS_VAR:ids|$URL:/index.php/apps/galleryplus/thumbnails";
+
+#Rule (1008) ; in stuff
+#uri : /index.php/apps/galleryplus/thumbnails
+#var_name : requesttoken
+BasicRule  wl:1009 "mz:$BODY_VAR:requesttoken";
+
+#Rule (1010) parenthesis, probable sql/xss
+#uri : /index.php/displaynames
+#var_name : users
+BasicRule  wl:1010 "mz:$BODY_VAR:users|$URL:/index.php/displaynames";
+
+#Rule (1011) parenthesis, probable sql/xss
+#uri : /index.php/displaynames
+#var_name : users
+BasicRule  wl:1011 "mz:$BODY_VAR:users|$URL:/index.php/displaynames";
+
+#Rule (1016) mysql comment (#)
+#uri : /index.php/apps/calendar/ajax/calendar/update.php
+#var_name : color
+BasicRule  wl:1016 "mz:$BODY_VAR:color|$URL_X:^/index.php/apps/";
+
+#Rule (1310) [, possible js
+#uri: /index.php/settings/users/users
+#var_name : groups[]
+BasicRule  wl:1310 "mz:$BODY_VAR:groups[]|$URL:/index.php/settings/users/users";
+BasicRule  wl:1310 "mz:$BODY_VAR:inapps[]|$URL:/index.php/displaynames";
+BasicRule  wl:1310 "mz:$BODY_VAR:inapps[]|$URL:/index.php/core/search";
+
+#Rule (1311) ], possible js
+#uri: /index.php/settings/users/users
+#var_name : groups[]
+BasicRule  wl:1311 "mz:$BODY_VAR:groups[]|$URL:/index.php/settings/users/users";
+BasicRule  wl:1311 "mz:$BODY_VAR:inapps[]|$URL:/index.php/displaynames";
+BasicRule  wl:1311 "mz:$BODY_VAR:inapps[]|$URL:/index.php/core/search";
+
+#Rule (1302) html open tag
+#uri : /index.php/apps/files/api/v1/tags/_$!<Favorite>!$_/files
+BasicRule  wl:1302 "mz:$URL_X:^/index.php/apps/files/api/v1/tags/_$!<[A-z]>!$/[A-z]+|URL";
+
+#Rule (1303) html close tag
+#uri : /index.php/apps/files/api/v1/tags/_$!<Favorite>!$_/files
+BasicRule  wl:1303 "mz:$URL_X:^/index.php/apps/files/api/v1/tags/_$!<[A-z]>!$/[A-z]+|URL";
+
+#Rule (1315) double encoding !
+#var_name : cookie
+BasicRule  wl:1315 "mz:$HEADERS_VAR:cookie";
+BasicRule  wl:1315 "mz:$ARGS_VAR:location|$URL:/index.php/apps/galleryplus/files/list";
+

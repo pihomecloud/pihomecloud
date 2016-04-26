@@ -1,0 +1,24 @@
+#{{ansible_managed}}
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+#Default Input
+#Loopback
+-A INPUT -i lo -j ACCEPT
+-A OUTPUT -o lo -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+
+-A INPUT -d {{ansible_default_ipv4.broadcast}} -j DROP
+-A INPUT -d 255.255.255.255 -j DROP
+
+#Established connextions
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+#SSH local network : put it here, orelse, you may forgot it !
+-A INPUT -s {{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}} -p tcp -m tcp --dport 22 -j ACCEPT
+
+#PING OUTPUT allowed
+-A OUTPUT -p icmp -j ACCEPT

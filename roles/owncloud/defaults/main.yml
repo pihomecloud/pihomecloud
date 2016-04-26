@@ -1,0 +1,11 @@
+---
+# defaults file for owncloud
+myDomain: example.com
+owncloudUrl: owncloud.{{myDomain}}
+owncloudDBHost: localhost
+ownCloudDDataDir: "{{ownCloudDir}}/data"
+owncloudAdditional_open_basedir: ''
+ownCloudDir: /usr/share/webapps/owncloud
+owncloudDataBase: owncloud
+owncloudCert: /etc/nginx/ssl/{{owncloudUrl}}.crt
+owncloudKey: /etc/nginx/ssl/{{owncloudUrl}}.key

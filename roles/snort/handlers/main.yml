@@ -1,0 +1,4 @@
+---
+# handlers file for snort
+- name: restart snort
+  service: name="snort@bond0" state=restarted

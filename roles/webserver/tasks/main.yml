@@ -1,0 +1,110 @@
+---
+# tasks file for nginx-naxsi
+- name: add http group
+  group: name=http gid=33 state=present
+- name: add http user
+  user: name=http uid=33 group=http createhome=no home=/srv/http system=yes shell=/usr/bin/nologin
+- name: install php deps
+  pacmanneeded:  name={{item}} state=present
+  with_items:
+    - php-fpm
+    - php-intl
+    - php-apcu
+    - php-mcrypt
+- name: install nginx-naxsi from https://github.com/pihomecloud/archlinux-nginx-naxsi
+  makepkg: name=nginx-naxsi state=latest git_source="https://github.com/pihomecloud/archlinux-nginx-naxsi"
+- name: create /etc/nginx/conf.d
+  file: state=directory path=/etc/nginx/conf.d owner=root group=root mode=0755
+- name: create /etc/nginx/ssl
+  file: state=directory path=/etc/nginx/ssl owner=root group=root mode=0700
+- name: create /etc/nginx/naxsi
+  file: state=directory path=/etc/nginx/naxsi owner=root group=root mode=0755
+- name: copy /etc/nginx/naxsi_core.rules
+  copy: src=etc/nginx/naxsi_core.rules dest=/etc/nginx/naxsi_core.rules owner=root group=root mode=0640
+  notify: restart nginx
+- name: copy naxsi rules
+  template: src=etc/nginx/naxsi.rules dest=/etc/nginx/naxsi.rules owner=root group=root mode=0640
+- name: create /etc/nginx/ssl.dhparam.pem
+  shell: openssl dhparam -out /etc/nginx/ssl.dhparam.pem 2048 creates=/etc/nginx/ssl.dhparam.pem
+  notify: restart nginx
+- name: set permissions on /etc/nginx/ssl.dhparam.pem
+  file: state=file path=/etc/nginx/ssl.dhparam.pem owner=root group=root mode=0400
+- name: create base config
+  template: src=etc/nginx/nginx.conf dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
+  notify: restart nginx
+- name: set php options
+  ini_file: dest=/etc/php/php.ini section=PHP option={{item.name}} value={{item.value}} backup=yes owner=root group=root mode=0644
+  with_items:
+    - {name: open_basedir, value: "/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom"}
+    - {name: max_execution_time, value: "30000"}
+    - {name: post_max_size, value: "1G"}
+    - {name: include_path, value: ".:/usr/share/pear:/php/includes"}
+    - {name: upload_max_filesize, value: "1G"}
+  notify: restart php-fpm
+- name: activate php extensions
+  lineinfile: dest=/etc/php/php.ini regexp="extension={{item}}" line="extension={{item}}"
+  with_items:
+    - bz2.so
+    - gd.so
+    - gettext.so
+    - iconv.so
+    - intl.so
+    - mcrypt.so
+    - pdo_mysql.so
+    - xmlrpc.so
+- name: set php-fpm www options
+  ini_file: dest=/etc/php/php-fpm.d/www.conf section="{{item.section}}" option="{{item.option}}" value="{{item.value}}" backup=yes owner=root group=root mode=0644
+  with_items:
+    - { section: 'www', option: 'access.log', value: '/var/log/php-fpm.$pool.access.log'}
+    - { section: 'www', option: 'env[HOSTNAME]', value: '$HOSTNAME'}
+    - { section: 'www', option: 'env[PATH]', value: '/usr/bin:/bin'}
+    - { section: 'www', option: 'env[TMP]', value: '/tmp'}
+    - { section: 'www', option: 'env[TMPDIR]', value: '/tmp'}
+    - { section: 'www', option: 'env[TEMP]', value: '/tmp'}
+  notify: restart php-fpm
+- name: copy default conf
+  template: src=etc/nginx/conf.d/default.conf dest=/etc/nginx/conf.d/default.conf owner=root group=root mode=0640
+  notify: restart nginx
+- name: create self dummy signed cert because i don't care about default website
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/default.key -out /etc/nginx/ssl/default.crt -batch -subj '/CN=DaffyDuck/O=Acme/C=US' creates=/etc/nginx/ssl/default.crt
+- name: copy localmonitoring conf
+  template: src=etc/nginx/conf.d/localmonitoring.conf dest=/etc/nginx/conf.d/localmonitoring.conf owner=root group=root mode=0640
+  notify: restart nginx
+- name: install mariadb
+  pacmanneeded:  name=mariadb state=latest
+  notify: restart mysqld
+- name: install python2-mysql as dependency of ansible
+  pacmanneeded:  name=mysql-python state=latest
+- name: mysql_install_db
+  command: /usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql creates=/var/lib/mysql/mysql
+- name: prompt mysql Password
+  pause: prompt="mysqlPassword is not defined, please enter the password for root in mysql set mysqlPassword in your playbook to avoid this"
+  register: prompt_mysqlPassword
+  when: mysqlPassword is not defined
+- name: set mysql Password from input
+  set_fact: mysqlPassword="{{prompt_mysqlPassword.user_input}}"
+  when: mysqlPassword is not defined
+- name: ensure mariadb is enabled
+  service: name=mysqld enabled=yes state=started
+##MySQL Hardening
+- name: secure parameters in mariadb
+  ini_file: dest=/etc/mysql/my.cnf section=mysqld option={{item.name}} value={{item.value}} backup=yes owner=root group=root mode=0644
+  with_items:
+    - {name: skip-grant-tables, value: 0}
+    - {name: safe-user-create, value: 1}
+    - {name: secure_auth, value: 1}
+    - {name: secure_file_priv, value: '/tmp'}
+    - {name: local_infile, value: 0}
+    - {name: skip_name_resolve, value: 1}
+    - {name: skip_networking, value: 1}
+    - {name: skip_show_database, value: 1}
+    - {name: skip-symbolic-links, value: 1}
+    - {name: expire_logs_days, value: "{{mysqlExpireLogsDays}}"}
+  notify: restart mysqld
+- include: mysql_secure_installation.yml
+- name: ensure php-fpm is enabled
+  service: name=php-fpm enabled=yes state=started
+- name: ensure nginx is enabled
+  service: name=nginx enabled=yes state=started
+- name: copy iptables rules for {{role_name}}
+  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700

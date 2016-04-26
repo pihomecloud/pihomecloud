@@ -1,0 +1,4 @@
+#{{ansible_managed}}
+[NetDev]
+Name=bond0
+Kind=bond

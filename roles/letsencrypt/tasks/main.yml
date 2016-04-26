@@ -1,0 +1,18 @@
+---
+# tasks file for letsencrypt
+- name: install letsencrypt package
+  pacmanneeded: name=letsencrypt state=present
+- name: "generate certificate"
+  command: /usr/bin/letsencrypt certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01
+  args:
+    creates: "/etc/letsencrypt/live/{{item}}"
+  with_items: "{{letsencryptVirtualhosts}}"
+  when: "'slave' not in group_names"
+- name: we remove cron on the slave
+  set_fact: cronState="absent"
+  when: "'slave' not in group_names"
+- name: Install renewal cron
+  cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/letsencrypt renew && systemctl reload nginx" state="{{cronState}}"
+  when: "'slave' not in group_names"
+- name: copy iptables rules associated with this role
+  include: iptables.yml

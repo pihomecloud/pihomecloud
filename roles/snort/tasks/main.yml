@@ -1,0 +1,130 @@
+---
+# tasks file for snort
+- name: install snort
+  makepkg: name=snort state=latest
+  args:
+    force_arch: "{{ansible_architecture}}' 'armv7h' 'armv6h"
+    git_source: "https://github.com/pihomecloud/archlinux-snort.git"
+  notify: restart snort
+  register: systemctlReload
+- name: reload systemctl
+  command: systemctl daemon-reload
+  when: systemctlReload | changed
+- name: create snort group
+  group: name=snort state=present
+- name: create snort user
+  user: name=snort group=snort system=yes shell=/sbin/nologin comment="Snort IDS system user"
+- name: install pulledpork dependencies via makepkg
+  makepkg: name="{{item}}" state=latest
+  with_items:
+    - perl-crypt-random-tesha2 #dependency for perl-crypt-random-seed
+    - perl-crypt-random-seed #dependency for perl-bytes-random-secure
+    - perl-bytes-random-secure #dependency for perl-crypt-ssleay
+- name: install pulledpork
+  makepkg: name=pulledpork state=latest
+- name: install pulledpork dependencies via pacman
+  pacman: name=perl-crypt-ssleay
+- name: create directory for iplists
+  file: path="/etc/snort/rules/iplists" state=directory owner=root group=snort mode=0750
+- name: create directory for snort rules
+  file: path="/etc/snort/{{snortRulePath}}" state=directory owner=root group=snort mode=0750
+- name: configure snort
+  template: src=snort.conf dest="/etc/snort/snort.conf" owner=root group=snort mode=0640
+  notify: restart snort
+  register: snortConfiguration
+- name: copy the validated default configuration file
+  template: src=snort.conf.pacvalidated dest="/etc/snort/snort.conf.pacvalidated" owner=root group=snort mode=0640
+#- name: set HOME NET in snort configuration
+#  lineinfile: dest=/etc/snort/snort.conf
+#  args:
+#    regexp: "^ipvar HOME_NET"
+#    line: "ipvar HOME_NET [{{trustedNetworks|join(',')}}]"
+#  notify: restart snort
+#- name: comment default configuration
+#  replace: dest=/etc/snort/snort.conf regexp="^(include \$RULE_PATH/.*)$" replace="#\1"
+#- name: add my configuration
+#  lineinfile: dest=/etc/snort/snort.conf line="include {{snortRulePath}}/{{item}}"
+#  with_items:
+#    - snort.rules
+#    - local.rules
+#  notify: restart snort
+#- name: replace snort relatives path in configuration to absolute path
+#  replace: dest=/etc/snort/snort.conf  regexp='\.\.' replace="/etc/snort"
+#  notify: restart snort
+#- name: tweak params for less memory usage
+#  lineinfile: dest=/etc/snort/snort.conf
+#  args:
+#    regexp: "{{item.name}}"
+#    line: "{{item.line}}"
+#  with_items:
+#    - {name: "max_tcp", line: "   max_tcp {{snortMaxTcp}}, \\"}
+#    - {name: "max_udp", line: "   max_udp {{snortMaxUdp}}, \\"}
+#    - {name: "config detection: ", line: "config detection: search-method lowmem search-optimize max-pattern-len 20"}
+- name: create symlinks to standard configuration directory for our conf
+  file: src="/etc/snort/rules/{{item}}" dest="/etc/snort/{{snortRulePath}}/{{item}}" state=link force=yes
+  with_items:
+    - snort.rules
+    - local.rules
+  notify: restart snort
+- name: configure pulledpork
+  lineinfile: dest=/etc/pulledpork/pulledpork.conf regexp="{{item.regexp}}" line="{{item.line}}"
+  with_items:
+    - { regexp: "^rule_path=", line: "rule_path=/etc/snort/{{snortRulePath}}/snort.rules"}
+    - { regexp: "^local_rules=", line: "local_rules=/etc/snort/{{snortRulePath}}/local.rules"}
+    - { regexp: "^sid_msg=", line: "sid_msg=/etc/snort/sid-msg.map"}
+    - { regexp: "^config_path=", line: "config_path=/etc/snort/.conf"}
+    - { regexp: "black_list=", line: "black_list=/etc/snort/rules/iplists/default.blacklist"}
+    - { regexp: "IPRVersion=", line: "IPRVersion=/etc/snort/rules/iplists"}
+    - { regexp: "enablesid=", line: "enablesid=/etc/pulledpork/enablesid.conf"}
+    - { regexp: "dropsid=", line: "dropsid=/etc/pulledpork/dropsid.conf"}
+    - { regexp: "disablesid=", line: "disablesid=/etc/pulledpork/disablesid.conf"}
+    - { regexp: "modifysid=", line: "modifysid=/etc/pulledpork/modifysid.conf"}
+    #- { regexp: 'rule_url=https://www.snort.org/reg-rules/\|opensource.gz\|', line: "rule_url=https://www.snort.org/reg-rules/|opensource.gz|{{snortOinkCode}}"}
+    - { regexp: '^rule_url=https://www.snort.org/rules/\|snortrules-snapshot.tar.gz\|', line: "rule_url=https://www.snort.org/rules/|snortrules-snapshot.tar.gz|{{snortOinkCode}}"}
+    #- { regexp: 'rule_url=https://snort.org/downloads/community/\|community-rules.tar.gz\|Community', line: "rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community"}
+    - { regexp: 'rule_url=http://talosintel.com/feeds/ip-filter.blf\|IPBLACKLIST\|open', line: "rule_url=http://talosintel.com/feeds/ip-filter.blf|IPBLACKLIST|open"}
+  register: pulledpork
+- name: create dynamic module path
+  file: path=/usr/lib/snort_dynamicrules owner=snort group=snort state=0640 state=directory
+  notify: restart snort
+- name: "test if /etc/snort/rules/local.rules exists"
+  stat: path="/etc/snort/rules/local.rules"
+  register: snortLocalRules
+- name: create empty local rules if not exists
+  copy: content="" dest="/etc/snort/rules/local.rules" owner=snort group=snort mode=0640
+  when: not snortLocalRules.stat.exists
+- name: "test if /etc/snort/rules/white_list.rules exists"
+  stat: path="/etc/snort/rules/white_list.rules"
+  register: snortWLRules
+- name: create empty white_list rules if not exists
+  copy: content="" dest="/etc/snort/rules/white_list.rules" owner=snort group=snort mode=0640
+  when: not snortWLRules.stat.exists
+- name: "test if /etc/snort/rules/black_list.rules exists"
+  stat: path="/etc/snort/rules/black_list.rules"
+  register: snortBLRules
+- name: create link to default black_list rules if not exists
+  file: src="/etc/snort/rules/iplists/default.blacklist" dest="/etc/snort/rules/black_list.rules" state=link force=yes
+  when: not snortBLRules.stat.exists
+- name: "test if /etc/snort/rules/snort.rules exists"
+  stat: path="/etc/snort/rules/snort.rules"
+  register: snortRules
+- name: disable rules not needed saves RAM
+  template: src=disablesid.conf dest=/etc/pulledpork/disablesid.conf owner=snort group=snort mode=0640
+  register: disablesid
+- name: threshold configuration
+  template: src=threshold.conf dest=/etc/snort/threshold.conf owner=snort group=snort mode=0640
+  notify: restart snort
+- name: run pulledpork when /etc/snort/rules/snort.rules does not exists, snort configuration updated or pulledpork conf changed
+  command: /usr/bin/pulledpork.pl -c /etc/pulledpork/pulledpork.conf -l -P
+  when: (not snortRules.stat.exists) or (snortConfiguration|changed) or (pulledpork|changed) or (disablesid|changed)
+  notify: restart snort
+#If Here the command 'su - snort -s /bin/bash -c "snort -T -c /etc/snort/snort.conf -i bond0"' is not OK, we have a problem
+- name: create snort systemctl dependency
+  file: path=/etc/systemd/system/snort@.service.d/ state=directory owner=root group=root mode=0640
+- name: copy systemd hook for snort
+  template: src="customdeps.conf" dest="/etc/systemd/system/snort@.service.d/" owner=root group=root mode=0644
+  register: systemctlReload
+- name: reload systemctl
+  command: systemctl daemon-reload
+  when: systemctlReload | changed
+- service: name=snort@bond0 state=started enabled=yes

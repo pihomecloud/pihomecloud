@@ -1,0 +1,10 @@
+---
+# handlers file for base
+- name: restart sysstat
+  service: name=sysstat state=restarted
+- name: restart sshd
+  service: name=sshd state=restarted
+- name: restart network
+  service: name=systemd-networkd state=restarted
+- name: restart wpa_supplicant
+  service: name=wpa_supplicant@{{wlan_interface}} state=restarted

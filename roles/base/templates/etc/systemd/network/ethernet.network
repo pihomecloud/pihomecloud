@@ -1,0 +1,6 @@
+#{{ansible_managed}}
+[Match]
+Name=e*
+ 
+[Network]
+Bond=bond0

@@ -1,0 +1,8 @@
+---
+# tasks file for domoticz
+- name: install openzwave-git via makepkg
+  makepkg: name=openzwave-git state=latest pkgver_parse=1months
+  notify: restart domoticz
+- name: install domoticz-git
+  makepkg: name=domoticz-git state=latest pkgver_parse=1months
+  notify: restart domoticz

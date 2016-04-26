@@ -1,0 +1,25 @@
+---
+# tasks file for iptables
+- name: create directory /etc/iptables/iptables.rules.d/
+  file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
+- name: copy iptables header
+  template: src=000_header.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables footer
+  template: src=ZZZ_footer.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: find newer file in /etc/iptables/iptables.rules.d/
+  shell: ls -t1 /etc/iptables/iptables.rules.d/*.rule | head -1
+  register: lastFile
+  changed_when: False
+- name: test if iptables rules have changed
+  command: test {{lastFile.stdout}} -ot /etc/iptables/iptables.rules
+  changed_when: "testLastFileIptables.rc != 0"
+  failed_when: testLastFileIptables.stderr
+  register: testLastFileIptables
+- name: Populate iptables file /etc/iptables/iptables.rules
+  shell: cat /etc/iptables/iptables.rules.d/*.rule > /etc/iptables/iptables.rules
+  when: testLastFileIptables|changed
+- name: restart iptables
+  service: name=iptables state=restarted
+  when: testLastFileIptables|changed
+- name: enable iptables
+  service: name=iptables state=started enabled=yes

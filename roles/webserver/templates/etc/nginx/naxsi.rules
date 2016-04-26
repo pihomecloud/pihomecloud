@@ -1,0 +1,17 @@
+{%- if not naxsiLearningMode -%}
+#
+{%- endif -%}
+LearningMode; #Enables learning mode
+{% if naxsiSecRulesEnabled %}
+SecRulesEnabled;
+{% else %}
+#SecRulesDisabled;
+{% endif %}
+DeniedUrl "{{naxsiDeniedUrl}}";
+## check rules
+CheckRule "$SQL >= {{naxsiSQL}}" BLOCK;
+CheckRule "$RFI >= {{naxsiRfi}}" BLOCK;
+CheckRule "$TRAVERSAL >= {{naxsiTraversal}}" BLOCK;
+CheckRule "$EVADE >= {{naxsiEvade}}" BLOCK;
+CheckRule "$XSS >= {{naxsiXSS}}" BLOCK;
+

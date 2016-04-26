@@ -1,0 +1,25 @@
+
+#{{ansible_managed}}
+
+{% for net in sshAuthorized -%}
+#SSH {{net.name}}
+-A INPUT -s {{net.src}} -p tcp -m tcp --dport 22 -j ACCEPT
+{% endfor %}
+
+#DNS
+-A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+
+#NTP
+-A OUTPUT -p udp -m udp --dport 123 -j ACCEPT
+
+#HTTP/S OUT : Pacman, github, ...
+-A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
+
+{% for mount in additionalMounts if mount.type == 'cifs' or mount.type == 'smbfs'  %}
+  {%- if loop.first %}
+#SMB
+-A OUTPUT -p tcp -m tcp --dport 139 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 445 -j ACCEPT
+  {%- endif %}
+{% endfor %}

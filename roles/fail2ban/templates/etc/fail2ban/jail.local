@@ -1,0 +1,9 @@
+[DEFAULT]
+
+destemail = {{rootMail}}
+backend = systemd
+
+banaction = iptables
+
+ignoreip = {{ fail2BanIgnoreip | default("{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}") }}
+

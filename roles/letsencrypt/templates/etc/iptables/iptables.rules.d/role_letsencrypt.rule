@@ -1,0 +1,7 @@
+
+#{{ansible_managed}}
+#role {{role_name}}
+
+#HTTP
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+

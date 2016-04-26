@@ -1,0 +1,18 @@
+---
+# defaults file for usbstorage
+cryptPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/key') }}"
+cryptName: usbstorageDisk
+btrfsSubVolumes:
+  - { name: 'data', mount: 'data'}
+  - { name: 'backup', mount: 'backup'}
+btrfsSubVolumesAdditionnals: []
+dmDisk: "/dev/mapper/{{cryptName}}"
+btrfsVolumesToHTTP: []
+additionalBackup: []
+rsyncBwLimit: 5000
+snapDir: "snapshots"
+snapVolumesExclude: []
+hourlySnapToKeep: 24
+dailySnapToKeep: 7
+weeklySnapToKeep: 5
+monthlySnapToKeep: 12

@@ -1,0 +1,54 @@
+---
+# defaults file for snort
+snortRulePath: 'rules.auto'
+trustedNetworks:
+  - "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}"
+snortMaxTcp: 10240
+snortMaxUdp: 10240
+httpPorts: "80,8080"
+#Disabling unnecessary processor saves RAM
+#By default, I disabled service I don't use
+snortHttpProcessor: yes
+snortRpcProcessor: no
+snortBoProcessor: yes
+snortFtpTelnetProcessor: no
+snortSmtpProcessor: no
+snortSshProcessor: yes
+snortDceRpcProcessor: no
+snortDnsProcessor: yes
+snortSSLProcessor: yes
+snortSensitiveDataProcessor: yes
+snortSipProcessor: no
+snortImapProcessor: no
+snortPOPProcessor: no
+snortModbusProcessor: no
+snortDnp3Processor: no
+snortReputationProcessor: yes
+snortApache: no
+snortOracle: no
+snortWindows: no
+#Buggy and utility dicuted
+snortSshProcessorMismatch: no
+#Set by default by me, i'm not a sensor for the others, only for my PI
+snortDisabledCategories:
+  - ET-emerging-netbios
+  - ET-emerging-scada
+  - ET-emerging-telnet
+  - ET-emerging-tftp
+  - ET-emerging-tor
+  - ET-emerging-trojan
+  - ET-emerging-voip
+  - VRT-browser-chrome
+  - VRT-browser-firefox
+  - VRT-browser-ie
+  - VRT-browser-plugins
+  - VRT-browser-webkit
+  - VRT-file-flash
+  - VRT-file-identify
+  - VRT-file-image
+  - VRT-file-java
+  - VRT-file-multimedia
+  - VRT-file-office
+  - VRT-file-other
+  - VRT-file-pdf
+  - VRT-malware-cnc

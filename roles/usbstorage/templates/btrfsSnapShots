@@ -1,0 +1,80 @@
+#!/bin/bash
+#{{ansible_managed}}
+set -o pipefail
+startBackup=$(date +%s)
+snapRoot=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}
+
+[ -z "$1" ] && echo "usage: $0 <hourly, daily, weekly or monthly>" && exit 1
+
+type=$1
+
+case $1 in
+  hourly)
+    keep={{hourlySnapToKeep}}
+    ;;
+  daily)
+    keep={{dailySnapToKeep}}
+    ;;
+  weekly)
+    keep={{weeklySnapToKeep}}
+    ;;
+  monthly)
+    keep={{monthlySnapToKeep}}
+    ;;
+  *)
+    echo $1 not in hourly, daily, weekly or monthly
+    exit 1
+    ;;
+esac
+
+logDir="$snapRoot"
+if [ ! -d "$logDir/" ]
+then
+  echo "$logDir/ not found, abort"
+  exit 1
+fi
+
+log=$logDir/$type.log
+
+exec > $log 2>&1
+
+dateSnap="$(date '+%Y%m%d_%H:%M:%S')"
+echo "snap $dateSnap"
+
+#btrfs snapshots
+if [ $keep -gt 0 ]
+then
+{% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
+{% if subvolume.name not in snapVolumesExclude %}
+  btrfs subvolume snapshot "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}}" "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Snapshot {{subvolume.name}} under /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
+{% endif %}
+{% endfor %} 
+fi
+sync
+
+#Purge
+#btrfs snapshots
+{% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
+for snap in $(ls -rd /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/* | tail -n +$(( $keep + 1 )))
+do
+  btrfs subvolume delete "$snap"
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Snapshot delete $snap"
+done
+{% endfor %} 
+#btrfs excludes must be all purged
+{% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
+{% if subvolume.name in snapVolumesExclude %}
+for snap in $(ls -rd /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/*)
+do
+  btrfs subvolume delete "$snap"
+  [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+  echo -e "Snapshot delete $snap"
+done
+{% endif %}
+{% endfor %} 
+
+echo snaphosts done in $(($(date +%s)-$startBackup)) seconds
+echo "Backup finished"
