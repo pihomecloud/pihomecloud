@@ -1,8 +1,72 @@
 ---
 # tasks file for domoticz
 - name: install openzwave-git via makepkg
-  makepkg: name=openzwave-git state=latest pkgver_parse=1months
+  makepkg: name=openzwave-git state=latest pkgver_parse=1months force_https=yes
   notify: restart domoticz
 - name: install domoticz-git
   makepkg: name=domoticz-git state=latest pkgver_parse=1months
   notify: restart domoticz
+- name: verify if letsencrypt cert generated
+  stat: path=/etc/letsencrypt/live/{{domoticzUrl}}
+  register: domoticzLetsEncryptCert
+- name: set certificate and key of domoticz to letsencrypt
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/letsencrypt/live/{{domoticzUrl}}", dest: "{{domoticzUrl}}.active.crt"}
+    - { src: "/etc/letsencrypt/key/{{domoticzUrl}}", dest: "{{domoticzUrl}}.active.key"}
+  when: domoticzLetsEncryptCert.stat.exists
+- name: verify if localca cert exists
+  stat: path=/srv/ca/intermediate/certs/{{domoticzUrl}}.cert.pem
+  register: domoticzLocalcaCert
+- name: set certificate and key of domoticz to localca
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/srv/ca/intermediate/certs/{{domoticzUrl}}.cert.pem", dest: "{{domoticzUrl}}.active.crt"}
+    - { src: "/srv/ca/intermediate/private/{{domoticzUrl}}.key.nopass", dest: "{{domoticzUrl}}.active.key"}
+  when: not domoticzLetsEncryptCert.stat.exists and domoticzLocalcaCert.stat.exists
+- name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{domoticzUrl}}.key -out /etc/nginx/ssl/{{domoticzUrl}}.crt -batch -subj '/CN={{domoticzUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{domoticzUrl}}.crt
+  when: not domoticzLetsEncryptCert.stat.exists and not domoticzLocalcaCert.stat.exists
+- name: set certificate and key of domoticz to a non sense cert
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/nginx/ssl/{{domoticzUrl}}.crt", dest: "{{domoticzUrl}}.active.crt"}
+    - { src: "/etc/nginx/ssl/{{domoticzUrl}}.key", dest: "{{domoticzUrl}}.active.key"}
+  when: not domoticzLetsEncryptCert.stat.exists and not domoticzLocalcaCert.stat.exists
+- name: create nginx configuration
+  template: src=etc/nginx/conf.d/domoticz.conf dest=/etc/nginx/conf.d/domoticz.conf owner=root group=root mode=0640
+  notify: reload nginx
+- name: create naxsi configuration
+  template: src=etc/nginx/naxsi/domoticz.whitelist.rules dest=/etc/nginx/naxsi/domoticz.whitelist.rules owner=root group=root mode=0640
+  notify: reload nginx
+- name: authorize http to access /dev/ttyAMA0
+  user: name=http groups=tty append=yes
+- name: restrict domoticz to 127.0.0.1
+  lineinfile: dest=/usr/lib/systemd/system/domoticz.service owner=root group=root mode=0644 regexp="^ExecStart" line="ExecStart=/opt/domoticz/domoticz -www 8080 -daemon -wwwbind 127.0.0.1"
+  register: systemctlReload
+  notify: restart domoticz
+- name: do systemctlreload
+  command: systemctl daemon-reload
+  when: systemctlReload|changed
+- name: verifiy if console is enabled on serial port
+  command: grep AMA0 /boot/cmdline.txt
+  ignore_errors: true
+  register: consoleAMA0
+- name: disable console on serial port
+  command: sed -i 's/ [^ ]*ttyAMA0[^ ]*//g' /boot/cmdline.txt
+  register: rebootPI
+- name: disable Serial Getty on ttyAMA0
+  service: name=serial-getty@ttyAMA0 state=stopped enabled=no
+- name: reboot PI
+  shell: sleep 2 && reboot
+  when: "rebootPI|changed"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  register: rebootOccured
+- name: Waiting for reboot...
+  local_action: wait_for host=localhost port=22 delay=300 timeout=300 state=started
+  become: no
+  when: rebootOccured | changed
+- name: enable domoticz
+  service: name=domoticz state=started enabled=yes

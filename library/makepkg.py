@@ -195,6 +195,7 @@ def get_build_current_version(module, pkg, pkg_file):
     sudo_user = os.environ.get('SUDO_USER')
     build_dir = prepare_build_dir(module, pkg, sudo_user)
     pkgver_parse = module.params['pkgver_parse']
+    force_https = module.params['force_https']
     command_prefix = "sudo -u %s " % sudo_user
     current_version = "0-0"
     if git_source:
@@ -258,6 +259,11 @@ def get_build_current_version(module, pkg, pkg_file):
             #pkgver is in PKGBUILD, but optionnal, I need to download, extract files and run the prepare()
             #       in order to find version
             if last_update <= pkgver_parse or pkgver_parse == 0:
+              if force_https:
+                  cmd="sed -i \"s,git://,git+https://,g\" %s/PKGBUILD" % (build_dir)
+                  rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+                  if rc != 0:
+                      module.fail_json(msg="failed to force https in %s/PKGBUILD : %s " % (build_dir, cmd), stderr=stderr)
               cmd = '%smakepkg -od' % (command_prefix)
               rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
               if rc != 0:
@@ -314,6 +320,7 @@ def make_package(module, pkg, pkg_file_src):
     build_dir = prepare_build_dir(module, pkg, sudo_user)
     git_source = module.params['git_source']
     force_arch = module.params['force_arch']
+    force_https = module.params['force_https']
 
     cmd = ""
     pkg_file_basename = "%s.tar.gz" % pkg
@@ -339,6 +346,11 @@ def make_package(module, pkg, pkg_file_src):
         rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
         if rc != 0:
             module.fail_json(msg="failed to add arch '%s' in %s/PKGBUILD : %s " % (force_arch, build_dir, cmd), stderr=stderr)
+    if force_https:
+        cmd="sed -i \"s,git://,git+https://,g\" %s/PKGBUILD" % (build_dir)
+        rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+        if rc != 0:
+            module.fail_json(msg="failed to force https in %s/PKGBUILD : %s " % (build_dir, cmd), stderr=stderr)
     cmd = '%smakepkg -scf --noconfirm' % command_prefix
     rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
     if rc != 0:
@@ -493,6 +505,7 @@ def main():
         build_dir    = dict(default=PACKAGE_CACHE),
         force_arch   = dict(default='', required=False),
         git_source   = dict(default='', required=False),
+        force_https  = dict(default='no', choices=BOOLEANS, type='bool', required=False),
         pkgver_parse = dict(default='never', choices=['always','never','1days','1weeks','1months','3months','6months','1years'], required=False)
     )
 

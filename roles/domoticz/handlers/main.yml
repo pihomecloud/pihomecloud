@@ -1,4 +1,7 @@
 ---
 # handlers file for domoticz
 - name: restart domoticz
-  service: name=domoricz state=restarted
+  service: name=domoticz state=restarted
+- name: reload nginx
+  service: name=nginx state=reloaded
+

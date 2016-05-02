@@ -22,6 +22,8 @@
 - name: copy /etc/nginx/naxsi_core.rules
   copy: src=etc/nginx/naxsi_core.rules dest=/etc/nginx/naxsi_core.rules owner=root group=root mode=0640
   notify: restart nginx
+- name: copy default headers
+  template: src=etc/nginx/default_headers.conf dest=/etc/nginx/default_headers.conf owner=root group=root mode=0640
 - name: copy naxsi rules
   template: src=etc/nginx/naxsi.rules dest=/etc/nginx/naxsi.rules owner=root group=root mode=0640
 - name: create /etc/nginx/ssl.dhparam.pem
