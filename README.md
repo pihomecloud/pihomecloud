@@ -5,7 +5,7 @@
 - localca : local certification authority, usefull for client certificate auth
 - letsencrypt : free public certificate, with auto renewal
 - minidlna : private dlna server
-- hardening : lot of modifications, providing security (snort, fail2ban, iptables, kernel paramters)
+- hardening : lot of modifications, providing security (snort, fail2ban, iptables, kernel parameters)
 
 # Installation
 http://archlinuxarm.org/platforms/armv6/raspberry-pi
