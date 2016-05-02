@@ -5,6 +5,7 @@ trustedNetworks:
   - "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}"
 snortMaxTcp: 10240
 snortMaxUdp: 10240
+snortReputationMemCap: 500
 httpPorts: "80,8080"
 #Disabling unnecessary processor saves RAM
 #By default, I disabled service I don't use
