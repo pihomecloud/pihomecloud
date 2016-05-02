@@ -1,7 +1,8 @@
 #{{ansible_managed}}
 [DEFAULT]
 
-destemail = {{rootMail}}
+destemail = {{fail2BanDestEmail}}
+sender = {{fail2banSenderEmail}}
 backend = systemd
 
 banaction = iptables
