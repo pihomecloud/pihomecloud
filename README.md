@@ -1,3 +1,12 @@
+# Ansible playbook for a local raspberry PI webserver, private cloud
+- owncloud : no google account
+- domoticz : local domotic server with open zwave, working with rasberry daughter card or usb stick
+- shinken : open source monitoring
+- localca : local certification authority, usefull for client certificate auth
+- letsencrypt : free public certificate, with auto renewal
+- minidlna : private dlna server
+- hardening : lot of modifications, providing security (snort, fail2ban, iptables, kernel paramters)
+
 # Installation
 http://archlinuxarm.org/platforms/armv6/raspberry-pi
 
