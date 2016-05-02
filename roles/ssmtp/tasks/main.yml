@@ -3,6 +3,6 @@
 - name: install ssmtp
   pacman: name=ssmtp state=present
 - name: configure ssmtp
-  template: src=etc/ssmtp/ssmtp.conf dest=/etc/ssmtp/ssmtp.conf owner=root group=root mode=0640
+  template: src=etc/ssmtp/ssmtp.conf dest=/etc/ssmtp/ssmtp.conf owner=root group=root mode=0644
 - name: copy iptables rules for {{role_name}}
   template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
