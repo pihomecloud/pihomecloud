@@ -1,3 +1,4 @@
+#{{ansible_managed}}
 #minidlna IN
 {% for net in trustedNetworks %}
 -A INPUT -s {{net}} -p tcp -m tcp --dport 8200 -j ACCEPT

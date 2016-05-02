@@ -1,3 +1,4 @@
+#{{ansible_managed}}
 #Rule (1001) msg:double quote
 #cookie: user=".*"
 #zone0=HEADERS&id0=1001&var_name0=cookie
