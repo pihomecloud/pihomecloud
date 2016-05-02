@@ -26,14 +26,14 @@
   register: runningKernel
   changed_when: false
 - name: reboot after kernel upgrade
-  command: reboot
+  shell: sleep 2 && reboot
   when: "installedKernel.stdout != runningKernel.stdout"
-  async: 0
+  async: 1
   poll: 0
   ignore_errors: true
   register: rebootOccured
 - name: Waiting for reboot...
-  local_action: wait_for host=localhost port=22 delay=300 state=started
+  local_action: wait_for host=localhost port=22 delay=300 timeout=300 state=started
   become: no
   when: rebootOccured | changed
 - name: restart systemctl units with deleted files when upgraded
