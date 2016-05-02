@@ -87,6 +87,9 @@
 - name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
   shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{shinkenUrl}}.key -out /etc/nginx/ssl/{{shinkenUrl}}.crt -batch -subj '/CN={{shinkenUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{shinkenUrl}}.crt
   when: not shinkenLetsEncryptCert.stat.exists and not shinkenLocalcaCert.stat.exists
+- name: set certificate and key of shinken to localca
+  set_fact: shinkenCert=/etc/nginx/ssl/{{shinkenUrl}}.crt shinkenKey=/etc/nginx/ssl/{{shinkenUrl}}.key
+  when: not shinkenLetsEncryptCert.stat.exists and not shinkenLocalcaCert.stat.exists
 - name: copy nginx configuration
   template: src=etc/nginx/conf.d/shinken.conf dest=/etc/nginx/conf.d/shinken.conf owner=root group=root mode=0640
   notify: reload nginx
