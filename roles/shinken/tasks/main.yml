@@ -69,6 +69,7 @@
   with_items:
     - { dest: /etc/shinken/contacts/admin.cfg, regexp: "contact_name", line: "    contact_name    {{localuser}}" }
     - { dest: /etc/shinken/contacts/admin.cfg, regexp: "password", line: "    #password       admin" }
+    - { dest: /etc/shinken/contacts/admin.cfg, regexp: "^ *email", line: "    email           shinken@{{myDomain}}" }
     - { dest: /etc/shinken/contactgroups/users.cfg, regexp: "members", line: "    members             {{localuser}}" }
     - { dest: /etc/shinken/contactgroups/admins.cfg, regexp: "members", line: "    members             {{localuser}}" }
   notify: restart shinken
