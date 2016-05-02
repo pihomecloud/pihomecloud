@@ -37,8 +37,8 @@
     - {name: nginx-forbiden, logpath: '/var/log/nginx/*.access.log', findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
     - {name: nginx-naxsi, logpath: '/var/log/nginx/*.error.log', findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
     - {name: nginx-matchall, logpath: '/var/log/nginx/default.access.log', findtime: "{{fail2banFindTime}}", bantime: "{{honeyPotBanTime}}", port: 443}
-    - {name: owncloud, logpath: "{{ownCloudDir | default('/usr/share/webapps/owncloud')}}/data/owncloud.log", findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
-    - {name: owncloud-bf, filter: 'owncloud', logpath: "{{ownCloudDir | default('/usr/share/webapps/owncloud')}}/data/owncloud.log", findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
+    - {name: owncloud, logpath: "{{ownCloudDDataDir}}/owncloud.log", findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
+    - {name: owncloud-bf, filter: 'owncloud', logpath: "{{ownCloudDDataDir}}/owncloud.log", findtime: "{{fail2banFindTime}}", bantime: "{{fail2banBanTime}}", port: 443}
     - {name: sshd, findtime: "{{fail2banFindTime}}", backend: systemd, bantime: "{{fail2banBanTime}}", port: 22}
     - {name: sshd-ddos, findtime: "{{fail2banFindTime}}", backend: systemd, bantime: "{{fail2banBanTime}}", port: 22}
   notify: reload fail2ban
@@ -54,11 +54,11 @@
 - name: create default error.log for nginx if not exists
   copy: content="" dest=/var/log/nginx/default.error.log owner=root group=root mode=0640
   when: not nginxDefaultErrorLog.stat.exists
-- name: test if "{{ownCloudDir | default('/usr/share/webapps/owncloud')}}/data/owncloud.log" exists
-  stat: path="{{ownCloudDir | default('/usr/share/webapps/owncloud/')}}/data/owncloud.log"
+- name: test if "{{ownCloudDDataDir}}/owncloud.log" exists
+  stat: path="{{ownCloudDDataDir}}/owncloud.log"
   register: ownCloudLog
-- name: create "{{ownCloudDir | default('/usr/share/webapps/owncloud')}}/data/owncloud.log" if not exists
-  copy: content="" dest="{{ownCloudDir | default('/usr/share/webapps/owncloud/')}}/data/owncloud.log" owner=http group=http mode=0640
+- name: create "{{ownCloudDDataDir}}/owncloud.log" if not exists
+  copy: content="" dest="{{ownCloudDDataDir}}/owncloud.log" owner=http group=http mode=0640
   when: not ownCloudLog.stat.exists
 - name: Disable email notifications of jails stopping or starting
   template: src=etc/fail2ban/action.d/sendmail-common.local dest=/etc/fail2ban/action.d/sendmail-common.local owner=root group=root mode=0644
