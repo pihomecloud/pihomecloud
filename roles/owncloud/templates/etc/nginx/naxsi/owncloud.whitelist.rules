@@ -104,3 +104,15 @@ BasicRule  wl:1303 "mz:$URL_X:^/index.php/apps/files/api/v1/tags/_$!<[A-z]>!$/[A
 BasicRule  wl:1315 "mz:$HEADERS_VAR:cookie";
 BasicRule  wl:1315 "mz:$ARGS_VAR:location|$URL:/index.php/apps/galleryplus/files/list";
 
+
+############
+# WEBDAV
+############
+BasicRule  wl:1000 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1001 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1009 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1010 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1011 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1013 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1015 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:1312 "mz:$URL_X:^/remote.php/webdav/|URL";

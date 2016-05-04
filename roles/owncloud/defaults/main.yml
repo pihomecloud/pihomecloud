@@ -9,3 +9,5 @@ ownCloudDir: /usr/share/webapps/owncloud
 owncloudDataBase: owncloud
 owncloudCert: /etc/nginx/ssl/{{owncloudUrl}}.crt
 owncloudKey: /etc/nginx/ssl/{{owncloudUrl}}.key
+owncloudAdminPassword: "{{ lookup('password', 'credentials/common/' + role_name + '/admin-password') }}"
+owncloudApps: []

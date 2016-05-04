@@ -108,3 +108,27 @@
   mysql_db: name={{owncloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create owncloud mysql user with password
   mysql_user.2.1: user="{{owncloudMySQLUser}}" password="{{owncloudMySQLPassword}}" priv="{{owncloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
+- name: install owncloud DB
+  command: php  -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ maintenance:install --database "mysql" --database-name "{{owncloudDataBase}}"  --database-user "{{owncloudMySQLUser}}" --database-pass "{{owncloudMySQLPassword}}" --admin-user "{{localuser}}" --admin-pass "{{owncloudAdminPassword}}" chdir={{ownCloudDir}} creates=/var/lib/mysql/owncloud/oc_properties.frm
+  become: yes
+  become_user: http
+- name: update owncloud DB
+  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ upgrade chdir={{ownCloudDir}}
+  become: yes
+  become_user: http
+  register: owncloudUpdate
+  changed_when: "'Update successful' in owncloudUpdate.stdout"
+  failed_when: (owncloudUpdate.rc != 3) or owncloudUpdate.stderr
+- name: list enabled apps
+  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ app:list --output=json  chdir={{ownCloudDir}}
+  register: owncloudAppListResult
+  changed_when: false
+  become: yes
+  become_user: http
+- set_fact: owncloudAppList="{{owncloudAppListResult.stdout | from_json}}"
+- name: enable apps
+  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ app:enable {{item}}  chdir={{ownCloudDir}}
+  become: yes
+  become_user: http
+  with_items: "{{owncloudApps}}"
+  when: "owncloudAppList['disabled'][item] is defined"
