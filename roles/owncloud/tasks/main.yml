@@ -6,20 +6,35 @@
     - owncloud
     - libreoffice-still
 - name: verify if letsencrypt cert generated
-  stat: path=/etc/letsencrypt/live/{{owncloudUrl}}
+  stat: path=/etc/letsencrypt/live/{{owncloudUrl}}/fullchain.pem
   register: owncloudLetsEncryptCert
+- name: set certificate and key to letsencrypt
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/letsencrypt/live/{{owncloudUrl}}/fullchain.pem", dest: "{{owncloudUrl}}.active.crt"}
+    - { src: "/etc/letsencrypt/live/{{owncloudUrl}}/privkey.pem", dest: "{{owncloudUrl}}.active.key"}
+  when: owncloudLetsEncryptCert.stat.exists
+  notify: reload nginx
 - name: verify if localca cert exists
   stat: path=/srv/ca/intermediate/certs/{{owncloudUrl}}.cert.pem
   register: owncloudLocalcaCert
-- name: set certificate and key of owncloud to letsencrypt
-  set_fact: owncloudCert=/etc/letsencrypt/live/{{owncloudUrl}} owncloudKey=/etc/letsencrypt/key/{{owncloudUrl}}
-  when: owncloudLetsEncryptCert.stat.exists
-- name: set certificate and key of owncloud to localca
-  set_fact: owncloudCert=/srv/ca/intermediate/certs/{{owncloudUrl}}.cert.pem owncloudKey=/srv/ca/intermediate/private/{{owncloudUrl}}.key.nopass
+- name: set certificate and key to localca
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/srv/ca/intermediate/certs/{{owncloudUrl}}.cert.pem", dest: "{{owncloudUrl}}.active.crt"}
+    - { src: "/srv/ca/intermediate/private/{{owncloudUrl}}.key.nopass", dest: "{{owncloudUrl}}.active.key"}
   when: not owncloudLetsEncryptCert.stat.exists and owncloudLocalcaCert.stat.exists
+  notify: reload nginx
 - name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
   shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{owncloudUrl}}.key -out /etc/nginx/ssl/{{owncloudUrl}}.crt -batch -subj '/CN={{owncloudUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{owncloudUrl}}.crt
   when: not owncloudLetsEncryptCert.stat.exists and not owncloudLocalcaCert.stat.exists
+- name: set certificate and key to a non sense cert
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/nginx/ssl/{{owncloudUrl}}.crt", dest: "{{owncloudUrl}}.active.crt"}
+    - { src: "/etc/nginx/ssl/{{owncloudUrl}}.key", dest: "{{owncloudUrl}}.active.key"}
+  when: not owncloudLetsEncryptCert.stat.exists and not owncloudLocalcaCert.stat.exists
+  notify: reload nginx
 - name: create nginx configuration
   template: src=etc/nginx/conf.d/owncloud.conf dest=/etc/nginx/conf.d/owncloud.conf owner=root group=root mode=0640
   notify: reload nginx
