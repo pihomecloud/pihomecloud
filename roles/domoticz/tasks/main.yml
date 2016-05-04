@@ -58,6 +58,7 @@
 - name: disable console on serial port
   command: sed -i 's/ [^ ]*ttyAMA0[^ ]*//g' /boot/cmdline.txt
   register: rebootPI
+  when: not consoleAMA0|failed
 - name: disable Serial Getty on ttyAMA0
   service: name=serial-getty@ttyAMA0 state=stopped enabled=no
 - name: reboot PI
