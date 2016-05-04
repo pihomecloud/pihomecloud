@@ -2,3 +2,5 @@
 # defaults file for letsencrypt
 cronState: present
 letsencryptVirtualhosts: []
+myDomain: "example.org"
+letsEncryptEmail: "admin@{{myDomain}}"

@@ -3,7 +3,7 @@
 - name: install letsencrypt package
   pacmanneeded: name=letsencrypt state=present
 - name: "generate certificate"
-  command: /usr/bin/letsencrypt certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01
+  command: /usr/bin/letsencrypt certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01 --email {{letsEncryptEmail}} --agree-tos
   args:
     creates: "/etc/letsencrypt/live/{{item}}"
   with_items: "{{letsencryptVirtualhosts}}"
