@@ -53,3 +53,4 @@ snortDisabledCategories:
   - VRT-file-other
   - VRT-file-pdf
   - VRT-malware-cnc
+snortDropSid: []
