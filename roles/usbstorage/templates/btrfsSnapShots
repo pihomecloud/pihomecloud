@@ -46,7 +46,7 @@ if [ $keep -gt 0 ]
 then
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name not in snapVolumesExclude %}
-  btrfs subvolume snapshot "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}}" "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
+  btrfs subvolume snapshot -r "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}}" "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
   echo -e "Snapshot {{subvolume.name}} under /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
 {% endif %}
