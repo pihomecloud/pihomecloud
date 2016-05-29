@@ -98,10 +98,20 @@
     - {name: secure_file_priv, value: '/tmp'}
     - {name: local_infile, value: 0}
     - {name: skip_name_resolve, value: 1}
-    - {name: skip_networking, value: 1}
     - {name: skip_show_database, value: 1}
     - {name: skip-symbolic-links, value: 1}
     - {name: expire_logs_days, value: "{{mysqlExpireLogsDays}}"}
+  notify: restart mysqld
+- name: set server id
+  lineinfile: dest=/etc/mysql/my.cnf regexp=^server-id value="server-id = {{ansible_default_ipv4.address | regex_replace('\\.','')}}" owner=root group=root mode=0644
+  notify: restart mysqld
+- name: enable network for mysql on master
+  ini_file: dest=/etc/mysql/my.cnf section=mysqld option=skip_networking value=0 owner=root group=root mode=0644
+  when: "'master' in group_names"
+  notify: restart mysqld
+- name: disable network for mysql on slave
+  ini_file: dest=/etc/mysql/my.cnf section=mysqld option=skip_networking value=1 owner=root group=root mode=0644
+  when: "'slave' in group_names"
   notify: restart mysqld
 - include: mysql_secure_installation.yml
 - name: ensure php-fpm is enabled
