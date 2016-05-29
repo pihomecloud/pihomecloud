@@ -131,3 +131,6 @@
   command: systemctl daemon-reload
   when: systemctlReload | changed
 - service: name=snort@bond0 state=started enabled=yes
+- name: logrotate for snort
+  template: src=etc/logrotate/snort dest=/etc/logrotate.d/snort owner=root group=root mode=0644
+
