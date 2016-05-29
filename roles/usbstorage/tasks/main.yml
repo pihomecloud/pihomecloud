@@ -23,9 +23,10 @@
 - name: fail if the disk choosen is not in the list
   fail: msg="The disk {{usbstorageDisk}} is not a valid disk"
   when: "usbstorageDisk not in diskDeviceList.stdout_lines"
-- name: gather list of luks volumes on the coosen usb disk
+- name: gather list of luks volumes on the choosen usb disk
   shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS *disk *usb" | awk '{print "/dev/"$1}' | grep "^{{usbstorageDisk}}$"
   changed_when: false
+  failed_when: luksDevice.stderr
   register: luksDevice
 - name: initialize cryptSetup disk if needed
   shell: echo "{{cryptPass}}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat {{usbstorageDisk}}
@@ -57,6 +58,7 @@
 - name: scan btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
   shell: btrfs subvolume list /media/usbstorageDisk/usbstorageDisk-top-lvl/ | sed -e 's/.* path //' | grep -v -e "^{{snapDir}}"
   changed_when: false
+  failed_when: btrfsVolumeList.stderr
   register: btrfsVolumeList
 - name: create btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
   command: btrfs subvolume create /media/{{cryptName}}/{{cryptName}}-top-lvl/{{item.name}}
@@ -135,3 +137,29 @@
     - daily
     - weekly
     - monthly
+- name: create backup user
+  user: 
+  args:
+    name: backup
+    group: users
+    createhome: yes
+    shell: /bin/bash
+    generate_ssh_key: yes
+- name: gather slave backup public key
+  command: cat /home/backup/.ssh/id_rsa.pub
+  when: "'master' in group_names"
+  delegate_to: "{{item}}"
+  with_items: "{{groups['slave']}}"
+  changed_when: false
+  register: backup_keys
+- name: append slave backup public key to master
+  authorized_key: user=backup key="{{item}}"
+  with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
+  when: "'master' in group_names"
+- name: authorize backup to use rsync in sudo
+  template: src=etc/sudoers.d/backup dest=/etc/sudoers.d/backup owner=root group=root mode=0600 validate='visudo -cf %s'
+- name: create directory /etc/iptables/iptables.rules.d/
+  file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
+- name: copy iptables rules for {{role_name}}
+  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+

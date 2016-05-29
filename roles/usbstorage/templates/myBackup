@@ -60,6 +60,7 @@ echo -e "Rsync mysql binlog"
 
 #Custom backups
 {% for fs in additionalBackup %}
+{%- if fs.onlyMaster is not defined or fs.onlyMaster != True or 'master' in group_names -%}
 /usr/bin/rsync --bwlimit={{rsyncBwLimit}} -av
 {%- if fs.excludes is defined -%}
 {%- for exclude in  fs.excludes %}
@@ -73,6 +74,7 @@ echo -e "Rsync mysql binlog"
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Backup {{fs.source}}"
 
+{%- endif -%}
 {% endfor %}
 
 #Systeme

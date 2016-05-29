@@ -1,10 +1,11 @@
 ---
 # defaults file for usbstorage
-cryptPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/key') }}"
+cryptPass: "{{ lookup('password', 'credentials/common/' + role_name + '/key') }}"
 cryptName: usbstorageDisk
 btrfsSubVolumes:
   - { name: 'data', mount: 'data'}
   - { name: 'backup', mount: 'backup'}
+  - { name: 'masterbackup', mount: 'masterbackup'}
 btrfsSubVolumesAdditionnals: []
 dmDisk: "/dev/mapper/{{cryptName}}"
 btrfsVolumesToHTTP: []
