@@ -118,5 +118,7 @@
   service: name=php-fpm enabled=yes state=started
 - name: ensure nginx is enabled
   service: name=nginx enabled=yes state=started
+- name: setup mysql replication
+  include: mysql_replication.yml
 - name: copy iptables rules for {{role_name}}
   template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
