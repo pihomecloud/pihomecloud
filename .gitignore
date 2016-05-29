@@ -1,4 +1,5 @@
 ras*
+test.yml
 hosts
 group_vars/all
 *.swp
