@@ -7,7 +7,7 @@
 #minidlna OUT
 -A OUTPUT -d 239.255.255.250 -p udp -m udp --dport 1900 -j ACCEPT
 {% for net in trustedNetworks %}
--A OUTPUT -d {{net}} -p udp -m udp --dport 1900 -j ACCEPT
+-A OUTPUT -d {{net}} -p udp -m udp --sport 1900 -j ACCEPT
 {% endfor %}
 
 #IGMP discovery
