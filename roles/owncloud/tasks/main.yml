@@ -51,19 +51,26 @@
   copy: content="extension=exif.so" dest=/etc/php/conf.d/exif.ini owner=root group=root mode=0644
   notify: restart php-fpm
 - name: add php header to config
-  lineinfile: dest="{{ownCloudDir}}/config/config.php" line="<?php" create=yes owner=http group=http mode=0640
+  lineinfile: dest="{{owncloudDir}}/config/config.php" line="<?php" create=yes owner=http group=http mode=0640
 - name: add $CONFIG to config
-  lineinfile: dest="{{ownCloudDir}}/config/config.php" line="$CONFIG = array (" insertafter="<?php"
+  lineinfile: dest="{{owncloudDir}}/config/config.php" line="$CONFIG = array (" insertafter="<?php"
 - name: close owncloud config
-  lineinfile: dest="{{ownCloudDir}}/config/config.php" line=");"
+  lineinfile: dest="{{owncloudDir}}/config/config.php" line=");"
+- name: create owncloud log directory
+  file: dest="{{owncloudLogDir}}" state=directory owner=http group=http mode=0750
+- name: adjust owncloud log permissions
+  copy: content="" dest="{{owncloudLogDir}}/owncloud.log" owner=http group=http mode=0640 force=no
+- name: enable log rotation for owncloud
+  template: src=etc/logrotate.d/owncloud dest=/etc/logrotate.d/owncloud owner=root group=root mode=0640
 - name: configure owncloud
   lineinfile:
-     dest: "{{ownCloudDir}}/config/config.php"
+     dest: "{{owncloudDir}}/config/config.php"
      regexp: "{{item.name}}"
      line: "  '{{item.name}}' => {{item.value}},"
      insertbefore: "\\);"
   with_items:
-    - { name: datadirectory, value: "'{{ownCloudDDataDir}}'" }
+    - { name: datadirectory, value: "'{{owncloudDDataDir}}'" }
+    - { name: logfile, value: "'{{owncloudLogDir}}/owncloud.log'" }
     - { name: dbtype, value: "'mysql'" }
     - { name: dbhost, value: "'{{owncloudDBHost}}'" }
     - { name: dbuser, value: "'{{owncloudMySQLUser}}'" }
@@ -77,27 +84,27 @@
     - { name: 'memcache.local', value: "'\\\\OC\\\\Memcache\\\\APCu'" }
 #data is checked by stat because it can be a link to another directory (beware of open_basedir...)
 - name: check if data exists
-  stat: path="{{ownCloudDir}}/data"
+  stat: path="{{owncloudDir}}/data"
   register: owncloudData
-- name: create "{{ownCloudDir}}/data" if needed
-  file: path="{{ownCloudDir}}/data" state=directory owner=http group=http mode=0750
+- name: create "{{owncloudDir}}/data" if needed
+  file: path="{{owncloudDir}}/data" state=directory owner=http group=http mode=0750
   when: not owncloudData.stat.exists
-- name: create "{{ownCloudDir}}/assets"
-  file: path="{{ownCloudDir}}/assets" state=directory owner=http group=http mode=0750
+- name: create "{{owncloudDir}}/assets"
+  file: path="{{owncloudDir}}/assets" state=directory owner=http group=http mode=0750
 - name: restrict directory permssions
-  command: find {{ownCloudDir}} -type d ! -perm 0750 -exec chmod -c 0750 {} \;
+  command: find {{owncloudDir}} -type d ! -perm 0750 -exec chmod -c 0750 {} \;
   register: restrictOwncloudDirs
   changed_when: restrictOwncloudDirs.stdout
 - name: restrict file permissions
-  command: find {{ownCloudDir}}  -type f ! -perm 0640 -exec chmod -c 0640 {} \;
+  command: find {{owncloudDir}}  -type f ! -perm 0640 -exec chmod -c 0640 {} \;
   register: restrictOwncloudFiles
   changed_when: restrictOwncloudFiles.stdout
 - name: restrict files to root:http
-  command: find {{ownCloudDir}} ! -path "{{ownCloudDir}}/apps*" ! -path "{{ownCloudDir}}/config*" ! -path "{{ownCloudDir}}/assets*" ! -path "{{ownCloudDir}}/data*" ! -path "{{ownCloudDir}}/themes*" \( ! -user root -o ! -group http \) -exec chown -c root:http {} \;
+  command: find {{owncloudDir}} ! -path "{{owncloudDir}}/apps*" ! -path "{{owncloudDir}}/config*" ! -path "{{owncloudDir}}/assets*" ! -path "{{owncloudDir}}/data*" ! -path "{{owncloudDir}}/themes*" \( ! -user root -o ! -group http \) -exec chown -c root:http {} \;
   register: restrictOwncloudRootHttp
   changed_when: restrictOwncloudRootHttp.stdout
 - name: restrict files to http:http
-  command: find "{{ownCloudDir}}/apps" "{{ownCloudDir}}/assets" "{{ownCloudDir}}/data" "{{ownCloudDir}}/config/" "{{ownCloudDir}}/themes" \( ! -user http -o ! -group http \) -exec chown -c http:http {} \;
+  command: find "{{owncloudDir}}/apps" "{{owncloudDir}}/assets" "{{owncloudDir}}/data" "{{owncloudDir}}/config/" "{{owncloudDir}}/themes" \( ! -user http -o ! -group http \) -exec chown -c http:http {} \;
   register: restrictOwncloudHttpHttp
   changed_when: restrictOwncloudHttpHttp.stdout
 - name: allow write of config by owncloud
@@ -108,26 +115,32 @@
   mysql_db: name={{owncloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create owncloud mysql user with password
   mysql_user.2.1: user="{{owncloudMySQLUser}}" password="{{owncloudMySQLPassword}}" priv="{{owncloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
+- name: verifiy if owncloud is installed
+  stat: path=/var/lib/mysql/owncloud/oc_properties.frm
+  register: owncloudDbInstalled
 - name: install owncloud DB
-  command: php  -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ maintenance:install --database "mysql" --database-name "{{owncloudDataBase}}"  --database-user "{{owncloudMySQLUser}}" --database-pass "{{owncloudMySQLPassword}}" --admin-user "{{localuser}}" --admin-pass "{{owncloudAdminPassword}}" chdir={{ownCloudDir}} creates=/var/lib/mysql/owncloud/oc_properties.frm
+  command: php  -d"open_basedir={{owncloud_open_basedir}}" occ maintenance:install --database "mysql" --database-name "{{owncloudDataBase}}"  --database-user "{{owncloudMySQLUser}}" --database-pass "{{owncloudMySQLPassword}}" --admin-user "{{localuser}}" --admin-pass "{{owncloudAdminPassword}}"
+  args:
+    chdir: "{{owncloudDir}}"
   become: yes
   become_user: http
+  when: not owncloudDbInstalled.stat.exists
 - name: update owncloud DB
-  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ upgrade chdir={{ownCloudDir}}
+  command: php -d"open_basedir={{owncloud_open_basedir}}" occ upgrade chdir={{owncloudDir}}
   become: yes
   become_user: http
   register: owncloudUpdate
   changed_when: "'Update successful' in owncloudUpdate.stdout"
   failed_when: (owncloudUpdate.rc != 3) or owncloudUpdate.stderr
 - name: list enabled apps
-  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ app:list --output=json  chdir={{ownCloudDir}}
+  command: php -d"open_basedir={{owncloud_open_basedir}}" occ app:list --output=json  chdir={{owncloudDir}}
   register: owncloudAppListResult
   changed_when: false
   become: yes
   become_user: http
 - set_fact: owncloudAppList="{{owncloudAppListResult.stdout | from_json}}"
 - name: enable apps
-  command: php -d"open_basedir=/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}" occ app:enable {{item}}  chdir={{ownCloudDir}}
+  command: php -d"open_basedir={{owncloud_open_basedir}}" occ app:enable {{item}}  chdir={{owncloudDir}}
   become: yes
   become_user: http
   with_items: "{{owncloudApps}}"

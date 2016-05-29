@@ -3,11 +3,13 @@
 myDomain: example.com
 owncloudUrl: owncloud.{{myDomain}}
 owncloudDBHost: localhost
-ownCloudDDataDir: "{{ownCloudDir}}/data"
 owncloudAdditional_open_basedir: ''
-ownCloudDir: /usr/share/webapps/owncloud
+owncloudDir: /usr/share/webapps/owncloud
+owncloudDDataDir: "{{owncloudDir}}/data"
+owncloudLogDir: /var/log/owncloud
 owncloudDataBase: owncloud
 owncloudCert: /etc/nginx/ssl/{{owncloudUrl}}.crt
 owncloudKey: /etc/nginx/ssl/{{owncloudUrl}}.key
 owncloudAdminPassword: "{{ lookup('password', 'credentials/common/' + role_name + '/admin-password') }}"
 owncloudApps: []
+owncloud_open_basedir: "{{owncloudLogDir}}:/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/owncloud/config{{owncloudAdditional_open_basedir}}"
