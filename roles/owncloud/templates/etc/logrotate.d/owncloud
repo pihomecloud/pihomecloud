@@ -1,0 +1,7 @@
+/var/log/owncloud/owncloud.log {
+        rotate 52
+	missingok
+	create 640 http log
+	compress
+}
+

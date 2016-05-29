@@ -1,0 +1,8 @@
+/var/log/snort/alert /var/log/snort/*log  {
+        rotate 52
+	missingok
+	create 640 snort log
+        copytruncate
+	compress
+}
+

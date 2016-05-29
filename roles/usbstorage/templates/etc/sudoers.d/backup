@@ -1,0 +1,2 @@
+#{{ansible_managed}}
+backup ALL= NOPASSWD:/usr/bin/rsync

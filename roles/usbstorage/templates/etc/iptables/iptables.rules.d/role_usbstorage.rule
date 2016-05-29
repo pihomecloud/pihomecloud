@@ -1,0 +1,9 @@
+#{{ansible_managed}}
+#backup by ssh
+{% if 'slave' in group_names %}
+{% for item in groups['master'] %}
+#SSH out to {{item}}
+-A OUTPUT -d {{hostvars[item].ansible_default_ipv4.address}} -p tcp -m tcp --dport 22 -j ACCEPT
+{% endfor %}
+{% endif %}
+
