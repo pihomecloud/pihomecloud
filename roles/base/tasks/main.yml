@@ -11,6 +11,15 @@
     dest: /etc/hosts
     regexp: "^127.0.0.1"
     line: "127.0.0.1 localhost {{inventory_hostname_short}} {{inventory_hostname}}"
+- name: set inventory ip adresses
+  lineinfile:
+    dest: /etc/hosts
+    line: '{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].inventory_hostname_short }} {{item}}'
+    state: present
+    backup: yes
+    regexp: " {{item}}$"
+  with_items: "{{groups['all']}}"
+  when: "item != inventory_hostname and hostvars[item].ansible_default_ipv4.address is defined"
 - name: update pacman DB
   pacman: update_cache=yes
 - name: update archlinux-keyring
