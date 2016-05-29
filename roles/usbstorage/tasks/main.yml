@@ -64,6 +64,7 @@
   command: btrfs subvolume create /media/{{cryptName}}/{{cryptName}}-top-lvl/{{item.name}}
   with_items:
     - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+  register: mount
   when: item.name not in btrfsVolumeList.stdout_lines
 - name: mount btrfs volume under /media/{{cryptName}} and add it to fstab
   mount: name=/media/{{cryptName}}/{{item.mount}} src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,subvol={{item.name}}
@@ -162,4 +163,9 @@
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{role_name}}
   template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
-
+- name: Check if mnidlna exists
+  stat: path=/usr/lib/systemd/system/minidlna.service
+  register: minidlna
+- name: restart minidlna when mount changed
+  service: name=minidlna stat=restarted
+  when: minidlna.stat.exists and (mount|changed)
