@@ -8,7 +8,9 @@
 #Default Input
 #Loopback
 -A INPUT -i lo -j ACCEPT
--A OUTPUT -o lo -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+-A OUTPUT -o lo -s 127.0.0.0/8 -d 127.0.0.0/8 -j ACCEPT
+-A INPUT -s 127.0.0.0/8 -m limit --limit 5/min -j LOG --log-prefix "IPTables-INPUT: DROP: "
+-A INPUT -s 127.0.0.0/8 -j DROP
 
 -A INPUT -d {{ansible_default_ipv4.broadcast}} -j DROP
 -A INPUT -d 255.255.255.255 -j DROP
