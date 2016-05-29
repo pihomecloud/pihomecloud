@@ -85,7 +85,7 @@
 - name: sysstat started and enabled
   service: name=sysstat enabled=yes state=started
 - name: copy /etc/ssh/sshd_config
-  template: src=etc/ssh/sshd_config  dest=/etc/ssh/sshd_config owner=root group=root mode=0644
+  template: src=etc/ssh/sshd_config  dest=/etc/ssh/sshd_config owner=root group=root mode=0600
   notify: restart sshd
 # yaourt is a pacman front-end https://wiki.archlinux.org/index.php/Yaourt
 - name: "add archlinuxfr repository to pacman 1"
