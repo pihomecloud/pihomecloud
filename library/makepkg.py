@@ -506,7 +506,7 @@ def main():
         force_arch   = dict(default='', required=False),
         git_source   = dict(default='', required=False),
         force_https  = dict(default='no', choices=BOOLEANS, type='bool', required=False),
-        pkgver_parse = dict(default='never', choices=['always','never','1days','1weeks','1months','3months','6months','1years'], required=False)
+        pkgver_parse = dict(default='always', choices=['always','never','1days','1weeks','1months','3months','6months','1years'], required=False)
     )
 
     module = AnsibleModule(
