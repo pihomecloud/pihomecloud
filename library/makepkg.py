@@ -234,46 +234,48 @@ def get_build_current_version(module, pkg, pkg_file):
             #Get last update
             cmd = "/usr/bin/pacman -Qi '"+pkg+"'"
             rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True, check_rc=False, cwd=build_dir, environ_update={'LANG':'C', 'LC_ALL':'C','LC_MESSAGES':'C'})
-            if rc != 0 or 'Install Date' not in stdout:
-                #Not installed
-                last_update = 0
-                module.fail_json(msg="cmd=%s, rc=%s, stdout=%s stderr=%s" %(cmd,rc, stdout, stderr), stderr=stderr)
-            else:
-                timestamp_installed ="0"
-                for line in stdout.split('\n'):
-                  if ':' in line and 'Install Date' in line :
-                    match = line.split(':',1)
-                    #perhaps the Packager is "Install Date', I neede to check if it's before the ':'
-                    if 'Install Date' in match[0]:
-                      timestamp_installed = match[1]
-                if timestamp_installed =="0":
-                    module.fail_json(msg="failed to find Install Date for %s (%s : %s)" %(pkg,cmd,stdout), stderr=stderr)
-                else:
-                  cmd = 'date --date="'+timestamp_installed+'" "+%s"'
-                  rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
-                  if rc != 0 or not stdout or stderr or timestamp_installed =="0":
-                      module.fail_json(msg="failed to convert %s in seconds for %s (%s : %s)" %(timestamp_installed,pkg,cmd,stdout), stderr=stderr)
-                  else:
-                      last_update = int(stdout)
-            #pkgver gives the version, see https://wiki.archlinux.org/index.php/VCS_package_guidelines
-            #pkgver is in PKGBUILD, but optionnal, I need to download, extract files and run the prepare()
-            #       in order to find version
-            if last_update <= pkgver_parse or pkgver_parse == 0:
-              if force_https:
-                  cmd="sed -i \"s,git://,git+https://,g\" %s/PKGBUILD" % (build_dir)
-                  rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
-                  if rc != 0:
-                      module.fail_json(msg="failed to force https in %s/PKGBUILD : %s " % (build_dir, cmd), stderr=stderr)
-              cmd = '%smakepkg -od' % (command_prefix)
-              rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
-              if rc != 0:
-                  module.fail_json(msg="failed to download, extract files and run the prepare() for %s" %(pkg), stderr=stderr)
+            #If not installed, no need for parse
+            if "package '"+pkg+"'' was not found" not in stderr:
+              if rc != 0 or 'Install Date' not in stdout:
+                  #Not installed
+                  last_update = 0
+                  module.fail_json(msg="cmd=%s, rc=%s, stdout=%s stderr=%s" %(cmd,rc, stdout, stderr), stderr=stderr)
               else:
-                  cmd='%s bash -c "source PKGBUILD && pkgver"' % (command_prefix)
-                  rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
-                  if rc != 0:
-                      module.fail_json(msg="failed to execute pkgver function for %s" %(pkg), stderr=stderr)
-                  pkgver = stdout.strip()
+                  timestamp_installed ="0"
+                  for line in stdout.split('\n'):
+                    if ':' in line and 'Install Date' in line :
+                      match = line.split(':',1)
+                      #perhaps the Packager is "Install Date', I neede to check if it's before the ':'
+                      if 'Install Date' in match[0]:
+                        timestamp_installed = match[1]
+                  if timestamp_installed =="0":
+                      module.fail_json(msg="failed to find Install Date for %s (%s : %s)" %(pkg,cmd,stdout), stderr=stderr)
+                  else:
+                    cmd = 'date --date="'+timestamp_installed+'" "+%s"'
+                    rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+                    if rc != 0 or not stdout or stderr or timestamp_installed =="0":
+                        module.fail_json(msg="failed to convert %s in seconds for %s (%s : %s)" %(timestamp_installed,pkg,cmd,stdout), stderr=stderr)
+                    else:
+                        last_update = int(stdout)
+              #pkgver gives the version, see https://wiki.archlinux.org/index.php/VCS_package_guidelines
+              #pkgver is in PKGBUILD, but optionnal, I need to download, extract files and run the prepare()
+              #       in order to find version
+              if last_update <= pkgver_parse or pkgver_parse == 0:
+                if force_https:
+                    cmd="sed -i \"s,git://,git+https://,g\" %s/PKGBUILD" % (build_dir)
+                    rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+                    if rc != 0:
+                        module.fail_json(msg="failed to force https in %s/PKGBUILD : %s " % (build_dir, cmd), stderr=stderr)
+                cmd = '%smakepkg -od' % (command_prefix)
+                rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+                if rc != 0:
+                    module.fail_json(msg="failed to download, extract files and run the prepare() for %s" %(pkg), stderr=stderr)
+                else:
+                    cmd='%s bash -c "source PKGBUILD && pkgver"' % (command_prefix)
+                    rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+                    if rc != 0:
+                        module.fail_json(msg="failed to execute pkgver function for %s" %(pkg), stderr=stderr)
+                    pkgver = stdout.strip()
         current_version = pkgver + '-' + pkgrel 
     if os.path.exists(build_dir):
       try:
