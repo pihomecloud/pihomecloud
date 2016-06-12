@@ -1,0 +1,7 @@
+#{{ansible_managed}}
+0 3 * * *{{ " " }}
+{%- for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals -%}
+{%- if subvolume.name not in snapVolumesExclude -%}
+backup /media/{{cryptName}}/backup/btrfsRemoteBackup.sh --source {{groups['master'][0]}} --port 22 --verbose {{subvolume.name}} /media/usbstorageDisk/usbstorageDisk-top-lvl /media/usbstorageDisk/masterbackup > /media/usbstorageDisk/backup/btrfsRemoteBackup.{{subvolume.name}}.log;
+{%- endif -%}
+{%- endfor -%}

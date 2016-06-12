@@ -120,6 +120,14 @@
   pacman: name=rsync state=present
 - name: install parted as backup dependency
   pacman: name=parted state=present
+- name: copy btrfs backup script
+  template: src=btrfsRemoteBackup.sh dest=/media/{{cryptName}}/backup/myBackup owner=root group=root mode=0750
+- name: activate btrfs backup cron
+  template: src=etc/cron.d/btrfsRemoteBackup dest=/etc/cron.d/btrfsRemoteBackup owner=root group=root mode=0750
+  when: "'slave' in group_names"
+- name: deactivate btrfs backup cron
+  file: dest=/etc/cron.d/btrfsRemoteBackup state=absent
+  when: "'slave' not in group_names"
 - name: create backup script
   template: src=myBackup dest=/media/{{cryptName}}/backup/myBackup owner=root group=root mode=0750
 - name: create snapshot script
@@ -157,7 +165,7 @@
   authorized_key: user=backup key="{{item}}"
   with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
   when: "'master' in group_names"
-- name: authorize backup to use rsync in sudo
+- name: authorize backup to use commands in sudo
   template: src=etc/sudoers.d/backup dest=/etc/sudoers.d/backup owner=root group=root mode=0600 validate='visudo -cf %s'
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
@@ -167,5 +175,5 @@
   stat: path=/usr/lib/systemd/system/minidlna.service
   register: minidlna
 - name: restart minidlna when mount changed
-  service: name=minidlna stat=restarted
+  service: name=minidlna state=restarted
   when: minidlna.stat.exists and (mount|changed)
