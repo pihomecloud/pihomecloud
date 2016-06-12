@@ -35,6 +35,9 @@ backup ALL= NOPASSWD:/usr/bin/btrfs receive -v /media/{{cryptName}}/masterbackup
 backup ALL= NOPASSWD:/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
 backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
 backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
+backup ALL= NOPASSWD:/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
 {% endif %}
 {% endfor %}
 {% endif %}

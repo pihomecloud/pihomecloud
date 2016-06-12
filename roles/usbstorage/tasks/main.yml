@@ -121,7 +121,18 @@
 - name: install parted as backup dependency
   pacman: name=parted state=present
 - name: copy btrfs backup script
-  template: src=btrfsRemoteBackup.sh dest=/media/{{cryptName}}/backup/myBackup owner=root group=root mode=0750
+  template: src=btrfsRemoteBackup.sh dest=/media/{{cryptName}}/backup/ owner=backup group=root mode=0750
+- name: authorize backup to use commands in sudo
+  template: src=etc/sudoers.d/backup dest=/etc/sudoers.d/backup owner=root group=root mode=0600 validate='visudo -cf %s'
+- name: initialize btrfs backup
+  command: "/media/{{cryptName}}/backup/btrfsRemoteBackup.sh --init --source {{groups['master'][0]}} --port 22 --verbose {{item.name}} /media/{{cryptName}}/{{cryptName}}-top-lvl /media/{{cryptName}}/masterbackup"
+  args:
+    creates: /media/{{cryptName}}/masterbackup/{{item.name}}_last
+  become: yes
+  become_user: backup
+  with_items:
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+  when: "'slave' in group_names and item.name not in snapVolumesExclude"
 - name: activate btrfs backup cron
   template: src=etc/cron.d/btrfsRemoteBackup dest=/etc/cron.d/btrfsRemoteBackup owner=root group=root mode=0750
   when: "'slave' in group_names"
@@ -165,8 +176,6 @@
   authorized_key: user=backup key="{{item}}"
   with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
   when: "'master' in group_names"
-- name: authorize backup to use commands in sudo
-  template: src=etc/sudoers.d/backup dest=/etc/sudoers.d/backup owner=root group=root mode=0600 validate='visudo -cf %s'
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{role_name}}

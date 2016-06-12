@@ -275,6 +275,9 @@ fi
 # Keep track of the last snapshot to send a diff against.
 [ ! -z "$verbose" ] && echo $ssh ln -snf "$dest_pool/$src_newsnap" "$dest_pool/${vol}${pf}_last"
 $ssh ln -snf "$dest_pool/$src_newsnap" "$dest_pool/${vol}${pf}_last"
+# Keep Track of th e last valid backup
+[ ! -z "$verbose" ] && echo $sudo ln -snf "$dest_pool/$src_newsnap" "$dest_pool/${vol}${pf}_last"
+$sudo ln -snf "$dest_pool/$src_newsnap" "$dest_pool/${vol}${pf}_last"
 # The rw version can be used for mounting with subvol=vol_last_rw
 #$ssh ln -snf "$src_newsnaprw" "${vol}${pf}_last_rw"
 #ln -snf "$src_newsnaprw" "$dest_pool/${vol}${pf}_last_rw"
