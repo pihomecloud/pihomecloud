@@ -6,7 +6,7 @@
     login_password: "{{mysqlPassword}}"
     name: "repl_{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_user chars=ascii_letters,digits') }}"
     password: "{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_pass chars=ascii_letters,digits') }}"
-    priv: "*.*:REPLICATION CLIENT"
+    priv: "*.*:REPLICATION SLAVE"
     host: "{{ansible_default_ipv4.address}}"
     state: present
   delegate_to: "{{mysqlMasterName}}"

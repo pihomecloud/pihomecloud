@@ -114,7 +114,7 @@
 - name: create database for owncloud
   mysql_db: name={{owncloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create owncloud mysql user with password
-  mysql_user.2.1: user="{{owncloudMySQLUser}}" password="{{owncloudMySQLPassword}}" priv="{{owncloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
+  mysql_user21: user="{{owncloudMySQLUser}}" password="{{owncloudMySQLPassword}}" priv="{{owncloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
 - name: verifiy if owncloud is installed
   stat: path=/var/lib/mysql/owncloud/oc_properties.frm
   register: owncloudDbInstalled

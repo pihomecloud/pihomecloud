@@ -113,7 +113,7 @@
   template: src={{ item }} dest={{ item|replace(role_path+'/templates/', '/') }} owner=shinken group=shinken mode=0750
   with_items: "{{ lookup('pipe', 'find {{role_path}}/templates/srv/monitoring/ -type f').split('\n') }}"
 - name: set mysql password when mysqlPassword defined
-  mysql_user.2.1: 
+  mysql_user21:
     user: "shinken_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/shinken_mysql_user chars=ascii_letters,digits') }}"
     password: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/shinken_mysql_password') }}"
     priv: "*.*:USAGE"
