@@ -91,6 +91,9 @@
 - name: set certificate and key of shinken to localca
   set_fact: shinkenCert=/etc/nginx/ssl/{{shinkenUrl}}.crt shinkenKey=/etc/nginx/ssl/{{shinkenUrl}}.key
   when: not shinkenLetsEncryptCert.stat.exists and not shinkenLocalcaCert.stat.exists
+- name: on slave, use the backup of the master, his certificate is the best choice
+  set_fact: shinkenCert=/media/{{cryptName}}/{{cryptName}}-top-lvl/backup/sys/{{shinkenCert}} shinkenKey=/media/{{cryptName}}/{{cryptName}}-top-lvl/backup/sys/{{shinkenKey}}
+  when: "'slave' in group_names"
 - name: copy nginx configuration
   template: src=etc/nginx/conf.d/shinken.conf dest=/etc/nginx/conf.d/shinken.conf owner=root group=root mode=0640
   notify: reload nginx
