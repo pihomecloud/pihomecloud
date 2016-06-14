@@ -120,6 +120,11 @@
   pacman: name=rsync state=present
 - name: install parted as backup dependency
   pacman: name=parted state=present
+- name: create btrfsRemoteBackup logs
+  copy: content="" dest=/media/{{cryptName}}/backup/btrfsRemoteBackup.{{item.name}}.log owner=backup group=root mode=0640 force=no
+  with_items:
+    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+  when: "'slave' in group_names and item.name not in snapVolumesExclude"
 - name: copy btrfs backup script
   template: src=btrfsRemoteBackup.sh dest=/media/{{cryptName}}/backup/ owner=backup group=root mode=0750
 - name: authorize backup to use commands in sudo
@@ -134,7 +139,7 @@
     - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
   when: "'slave' in group_names and item.name not in snapVolumesExclude"
 - name: activate btrfs backup cron
-  template: src=etc/cron.d/btrfsRemoteBackup dest=/etc/cron.d/btrfsRemoteBackup owner=root group=root mode=0750
+  template: src=etc/cron.d/btrfsRemoteBackup dest=/etc/cron.d/btrfsRemoteBackup owner=root group=root mode=0644
   when: "'slave' in group_names"
 - name: deactivate btrfs backup cron
   file: dest=/etc/cron.d/btrfsRemoteBackup state=absent

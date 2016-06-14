@@ -10,7 +10,7 @@
 #
 # Documentation and details at
 # http://marc.merlins.org/perso/btrfs/2014-03.html#Btrfs-Tips_-Doing-Fast-Incremental-Backups-With-Btrfs-Send-and-Receive
-
+start_backup=$(date +%s)
 # cron jobs might not have /sbin in their path.
 export PATH="$PATH:/sbin"
 
@@ -320,5 +320,6 @@ done
 #done
 
 rm $lock
-echo "[OK] $vol received on $src_newsnap"
+duration=$(($(date +%s)-$start_backup))
+echo "[OK] $vol received on $src_newsnap in $duration seconds"
 echo "[OK] Backup complete"
