@@ -17,3 +17,7 @@ hourlySnapToKeep: 24
 dailySnapToKeep: 7
 weeklySnapToKeep: 5
 monthlySnapToKeep: 12
+
+#bandwith limits
+btrfsSshMaxUpload: -1
+btrfsSshMaxDownload: -1

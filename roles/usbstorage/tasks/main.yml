@@ -120,6 +120,9 @@
   pacman: name=rsync state=present
 - name: install parted as backup dependency
   pacman: name=parted state=present
+- name: install trickle if needed
+  pacman: name=trickle state=present
+  when: "'slave' in group_names and (btrfsSshMaxUpload > 0 or btrfsSshMaxDownload > 0)"
 - name: create btrfsRemoteBackup logs
   copy: content="" dest=/media/{{cryptName}}/backup/btrfsRemoteBackup.{{item.name}}.log owner=backup group=root mode=0640 force=no
   with_items:

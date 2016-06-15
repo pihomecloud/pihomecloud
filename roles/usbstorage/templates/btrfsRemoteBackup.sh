@@ -169,6 +169,16 @@ sudo=""
 [[ "$sshSource" != localhost ]] && ssh="ssh -n -p$port $sshSource "
 sshNoSudo="$ssh "
 ssh="$ssh $sudo "
+{% if btrfsSshMaxUpload > 0 or btrfsSshMaxDownload > 0 %}
+ssh="trickle -s 
+{%- if btrfsSshMaxUpload > 0-%}
+{{ ' ' }} -u {{btrfsSshMaxUpload}}
+{%- endif -%}
+{%- if btrfsSshMaxDownload > 0-%}
+{{ ' ' }} -d {{btrfsSshMaxDownload}}
+{%- endif -%}
+{{ ' ' }} $ssh"
+{% endif %}
 
 
 DATE="$(date '+%Y%m%d_%H:%M:%S')"
