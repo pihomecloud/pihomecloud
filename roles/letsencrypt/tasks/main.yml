@@ -1,9 +1,11 @@
 ---
 # tasks file for letsencrypt
-- name: install letsencrypt package
-  pacmanneeded: name=letsencrypt state=present
+- name: remove old letsencrypt package
+  pacman: name=letsencrypt state=absent
+- name: install certbot package
+  pacmanneeded: name=certbot state=present
 - name: "generate certificate"
-  command: /usr/bin/letsencrypt certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01 --email {{letsEncryptEmail}} --agree-tos
+  command: /usr/bin/certbot certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01 --email {{letsEncryptEmail}} --agree-tos
   args:
     creates: "/etc/letsencrypt/live/{{item}}"
   with_items: "{{letsencryptVirtualhosts}}"
@@ -12,6 +14,6 @@
   set_fact: cronState="absent"
   when: "'slave' not in group_names"
 - name: Install renewal cron
-  cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/letsencrypt renew && systemctl reload nginx" state="{{cronState}}"
+  cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/certbot renew && systemctl reload nginx" state="{{cronState}}"
 - name: copy iptables rules associated with this role
   include: iptables.yml
