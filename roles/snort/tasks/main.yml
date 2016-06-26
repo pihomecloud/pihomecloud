@@ -34,32 +34,6 @@
   register: snortConfiguration
 - name: copy the validated default configuration file
   template: src=snort.conf.pacvalidated dest="/etc/snort/snort.conf.pacvalidated" owner=root group=snort mode=0640
-#- name: set HOME NET in snort configuration
-#  lineinfile: dest=/etc/snort/snort.conf
-#  args:
-#    regexp: "^ipvar HOME_NET"
-#    line: "ipvar HOME_NET [{{trustedNetworks|join(',')}}]"
-#  notify: restart snort
-#- name: comment default configuration
-#  replace: dest=/etc/snort/snort.conf regexp="^(include \$RULE_PATH/.*)$" replace="#\1"
-#- name: add my configuration
-#  lineinfile: dest=/etc/snort/snort.conf line="include {{snortRulePath}}/{{item}}"
-#  with_items:
-#    - snort.rules
-#    - local.rules
-#  notify: restart snort
-#- name: replace snort relatives path in configuration to absolute path
-#  replace: dest=/etc/snort/snort.conf  regexp='\.\.' replace="/etc/snort"
-#  notify: restart snort
-#- name: tweak params for less memory usage
-#  lineinfile: dest=/etc/snort/snort.conf
-#  args:
-#    regexp: "{{item.name}}"
-#    line: "{{item.line}}"
-#  with_items:
-#    - {name: "max_tcp", line: "   max_tcp {{snortMaxTcp}}, \\"}
-#    - {name: "max_udp", line: "   max_udp {{snortMaxUdp}}, \\"}
-#    - {name: "config detection: ", line: "config detection: search-method lowmem search-optimize max-pattern-len 20"}
 - name: create symlinks to standard configuration directory for our conf
   file: src="/etc/snort/rules/{{item}}" dest="/etc/snort/{{snortRulePath}}/{{item}}" state=link force=yes
   with_items:
