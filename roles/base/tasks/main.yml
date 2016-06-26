@@ -20,6 +20,8 @@
     regexp: " {{item}}$"
   with_items: "{{groups['all']}}"
   when: "item != inventory_hostname and hostvars[item].ansible_default_ipv4.address is defined"
+- name: clean pacman cache
+  command: pacman -Sc --noconfirm
 - name: update pacman DB
   pacman: update_cache=yes
 - name: update archlinux-keyring
