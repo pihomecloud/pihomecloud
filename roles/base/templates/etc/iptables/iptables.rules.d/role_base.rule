@@ -2,9 +2,9 @@
 #{{ansible_managed}}
 
 # rate limit
-iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set --name SSH
-iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --rcheck --seconds 60 --hitcount 4 --name SSH -j LOG --log-prefix 'IPTABLES RATE LIMIT: '
-iptables -A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 4 --name SSH -j DROP
+-A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set --name SSH
+-A INPUT -p tcp --dport 22 -m state --state NEW -m recent --rcheck --seconds 60 --hitcount 4 --name SSH -j LOG --log-prefix "IPTABLES RATE LIMIT: "
+-A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 60 --hitcount 4 --name SSH -j DROP
 
 {% for net in sshAuthorized -%}
 #SSH {{net.name}}
