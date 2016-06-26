@@ -1,6 +1,6 @@
 ---
 # defaults file for letsencrypt
-cronState: present
+cronState: "present"
 letsencryptVirtualhosts: []
 myDomain: "example.org"
 letsEncryptEmail: "admin@{{myDomain}}"

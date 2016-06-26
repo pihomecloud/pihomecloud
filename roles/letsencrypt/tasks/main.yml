@@ -13,6 +13,5 @@
   when: "'slave' not in group_names"
 - name: Install renewal cron
   cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/letsencrypt renew && systemctl reload nginx" state="{{cronState}}"
-  when: "'slave' not in group_names"
 - name: copy iptables rules associated with this role
   include: iptables.yml
