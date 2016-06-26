@@ -6,3 +6,4 @@ country: FR
 state: France
 organisation: LocalCA
 sslHosts: []
+cryptName: usbstorageDisk

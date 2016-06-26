@@ -8,6 +8,17 @@
     - crl
     - intermediate
     - newcerts
+- name: check if backup is aviable for slave
+  command: find /media/usbstorageDisk/masterbackup/backup_last/sys/srv/ca/ -name ca.key -o -name intermediate.key
+  failed_when: false
+  changed_when: false
+  register: ca_backup
+  when: "'slave' in group_names"
+- name: synchronize last backup on slave
+  command: rsync --info=name -a /media/{{cryptName}}/masterbackup/backup_last/sys/srv/ca/ /srv/ca/
+  register: sync_ca
+  changed_when: sync_ca.stdout
+  when: "'slave' in group_names and ca_backup is defined and ca_backup.stdout_lines|length  >=2"
 - name: create /srv/ca/private
   file: state=directory path=/srv/ca/private owner=root group=root mode=0700
 - name: create /srv/ca/index.txt
