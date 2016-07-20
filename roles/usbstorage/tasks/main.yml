@@ -175,15 +175,15 @@
     generate_ssh_key: yes
 - name: gather slave backup public key
   command: cat /home/backup/.ssh/id_rsa.pub
-  when: "'master' in group_names"
   delegate_to: "{{item}}"
   with_items: "{{groups['slave']}}"
   changed_when: false
   register: backup_keys
+  when: "'master' in group_names  and 'ansible_distribution' in hostvars[item]"
 - name: append slave backup public key to master
   authorized_key: user=backup key="{{item}}"
   with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
-  when: "'master' in group_names"
+  when: "'master' in group_names and 'results' in backup_keys and 'stdout_lines' in backup_keys.results"
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{role_name}}
