@@ -5,6 +5,19 @@
 - name: copy iptables rules for {{role_name}}
   template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
   register: iptables
+#on the first run, we need minimal iptables rules
+- name: test if /etc/iptables/iptables.rules.d/000_header.rule exists
+  stat: path=/etc/iptables/iptables.rules.d/000_header.rule
+  register: iptables_header
+- name: create minimal header
+  copy: content="*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n-A INPUT -i lo -j ACCEPT" dest=/etc/iptables/iptables.rules.d/000_header.rule owner=root group=root mode=0700
+  when: "not iptables_header.stat.exists"
+- name: test if /etc/iptables/iptables.rules.d/ZZZ_footer.rule exists
+  stat: path=/etc/iptables/iptables.rules.d/ZZZ_footer.rule
+  register: iptables_footer
+- name: create minimal footer
+  copy: content="\nCOMMIT\n" dest=/etc/iptables/iptables.rules.d/ZZZ_footer.rule owner=root group=root mode=0700
+  when: "not iptables_footer.stat.exists"
 #If we have an output mount like smb or cifs, we need to reload iptables
 - name: Populate iptables file /etc/iptables/iptables.rules
   shell: cat /etc/iptables/iptables.rules.d/*.rule > /etc/iptables/iptables.rules
