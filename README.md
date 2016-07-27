@@ -18,7 +18,7 @@ ssh alarm@raspberrypi 'su -c "pacman -Sy --noconfirm sudo python python2"'
 ```
 - prepare run env
 ```
-ansible-playbook -i raspberrypi init_once.yml --ask-pass --ask-becom-pass
+ansible-playbook -i raspberrypi init_once.yml --ask-pass --ask-become-pass
 ```
 
 - form my PC
