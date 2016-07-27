@@ -8,7 +8,7 @@
   command: /usr/bin/certbot certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01 --email {{letsEncryptEmail}} --agree-tos
   args:
     creates: "/etc/letsencrypt/live/{{item}}"
-  with_items: "{{letsencryptVirtualhosts}}"
+  with_items: "{{letsencryptVirtualhosts|uniq}}"
   when: "'slave' not in group_names"
 - name: we remove cron on the slave
   set_fact: cronState="absent"
