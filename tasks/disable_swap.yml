@@ -1,0 +1,8 @@
+- name: list swap active
+  command: swapon --show=NAME,SIZE --noheadings --raw
+  register: swapInfo
+  changed_when: false
+#Changing mounted swap size needs swapoff
+- name: umount swapfile
+  command: swapoff /var/swapFile
+  when: "'{{additionalSwapFileDest}} ' in swapInfo.stdout"
