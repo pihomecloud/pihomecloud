@@ -151,6 +151,11 @@
   when: systemctlReload|changed
 #- name: enable wpa_supplicant
 #  service: name=wpa_supplicant-wext@{{wlan_interface}} enabled=yes 
+#Raspberry PI 3 has embeded wifi and normal driver works fine
+#Une der 32 bit, cpu is reported as "ARMv7 Processor rev 4 (v7l)"
+- name: enable wpa_supplicant
+  service: name=wpa_supplicant@{{wlan_interface}} enabled=yes 
+  when: "'ARMv7 Processor rev 4 (v7l)' in ansible_processor"
 - name: copy iptables rules associated with this role
   include: iptables.yml
 - name: additional mounts

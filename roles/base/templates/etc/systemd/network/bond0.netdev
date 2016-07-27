@@ -2,3 +2,10 @@
 [NetDev]
 Name=bond0
 Kind=bond
+
+[Bond]
+Mode=active-backup
+PrimaryReselectPolicy=always
+FailOverMACPolicy=active
+MIIMonitorSec=100
+
