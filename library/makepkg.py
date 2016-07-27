@@ -170,10 +170,15 @@ def prepare_git_dir(module, build_dir, pkg):
     if os.path.exists(build_dir+'/.git'):
       if 'url = '+git_source in open(build_dir+'/.git/config').read():
         clone = False
-        cmd = '%sgit pull' % (command_prefix)
+        cmd = '%sgit reset --hard HEAD' % (command_prefix)
         rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
         if rc != 0:
           module.fail_json(msg="failed to pull %s for pkg %s, is git present and in the PATH ? Command: %s" % (git_source, pkg, cmd), stderr=stderr)
+        else:
+          cmd = '%sgit pull' % (command_prefix)
+          rc, stdout, stderr = module.run_command(cmd, check_rc=False, cwd=build_dir)
+          if rc != 0:
+            module.fail_json(msg="failed to pull %s for pkg %s, is git present and in the PATH ? Command: %s" % (git_source, pkg, cmd), stderr=stderr)
 
     if clone:
       #ckeaning in case of change of source
@@ -235,7 +240,7 @@ def get_build_current_version(module, pkg, pkg_file):
             cmd = "/usr/bin/pacman -Qi '"+pkg+"'"
             rc, stdout, stderr = module.run_command(cmd, use_unsafe_shell=True, check_rc=False, cwd=build_dir, environ_update={'LANG':'C', 'LC_ALL':'C','LC_MESSAGES':'C'})
             #If not installed, no need for parse
-            if "package '"+pkg+"'' was not found" not in stderr:
+            if "package '"+pkg+"' was not found" not in stderr:
               if rc != 0 or 'Install Date' not in stdout:
                   #Not installed
                   last_update = 0
