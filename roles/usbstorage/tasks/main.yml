@@ -123,6 +123,14 @@
 - name: install trickle if needed
   pacman: name=trickle state=present
   when: "'slave' in group_names and (btrfsSshMaxUpload > 0 or btrfsSshMaxDownload > 0)"
+- name: create backup user
+  user: 
+  args:
+    name: backup
+    group: users
+    createhome: yes
+    shell: /bin/bash
+    generate_ssh_key: yes
 - name: create btrfsRemoteBackup logs
   copy: content="" dest=/media/{{cryptName}}/backup/btrfsRemoteBackup.{{item.name}}.log owner=backup group=root mode=0640 force=no
   with_items:
@@ -165,14 +173,6 @@
     - daily
     - weekly
     - monthly
-- name: create backup user
-  user: 
-  args:
-    name: backup
-    group: users
-    createhome: yes
-    shell: /bin/bash
-    generate_ssh_key: yes
 - name: gather slave backup public key
   command: cat /home/backup/.ssh/id_rsa.pub
   delegate_to: "{{item}}"
