@@ -53,7 +53,8 @@
   when: systemctlReload|changed
 - name: verifiy if console is enabled on serial port
   command: grep AMA0 /boot/cmdline.txt
-  ignore_errors: true
+  failed_when: "consoleAMA0.stderr"
+  changed_when: false
   register: consoleAMA0
 - name: disable console on serial port
   command: sed -i 's/ [^ ]*ttyAMA0[^ ]*//g' /boot/cmdline.txt
