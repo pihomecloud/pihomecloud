@@ -10,7 +10,7 @@
 #     Snort bugs:                bugs@snort.org
 #
 #     Compatible with Snort Versions:
-#     VERSIONS : 2.9.8
+#     VERSIONS : 2.9.8.3
 #
 #     Snort build options:
 #     OPTIONS : --enable-gre --enable-mpls --enable-targetbased --enable-ppm --enable-perfprofiling --enable-zlib --enable-active-response --enable-normalizer --enable-reload --enable-react --enable-flexresp3
@@ -419,7 +419,7 @@ preprocessor smtp: ports { 25 465 587 691 } \
 
 # ARP spoof detection.  For more information, see the Snort Manual - Configuring Snort - Preprocessors - ARP Spoof Preprocessor
 # preprocessor arpspoof
-# preprocessor arpspoof_detect_host: 19X.168.40.1 f0:0f:00:f0:0f:00
+# preprocessor arpspoof_detect_host: 192.168.40.1 f0:0f:00:f0:0f:00
 
 # SSH anomaly detection.  For more information, see README.ssh
 preprocessor ssh: server_ports { 22 } \
