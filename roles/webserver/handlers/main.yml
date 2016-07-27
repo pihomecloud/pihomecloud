@@ -1,7 +1,5 @@
 ---
 # handlers file for nginx-naxsi
-- name: restart mysqld
-  service: name=mysqld state=restarted
 - name: restart php-fpm
   service: name=php-fpm state=restarted
 - name: restart nginx

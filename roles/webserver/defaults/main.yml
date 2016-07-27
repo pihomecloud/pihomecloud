@@ -1,6 +1,5 @@
 ---
 # defaults file for nginx-naxsi
-mysqlExpireLogsDays: 7
 naxsiLearningMode: true
 naxsiSecRulesEnabled: true
 naxsiDeniedUrl: "/RequestDenied"
@@ -9,4 +8,3 @@ naxsiRfi: 8
 naxsiTraversal: 4
 naxsiEvade: 4
 naxsiXSS: 8
-mysqlSlaveDumpPath: "/tmp/mysqlDump.{{ansible_hostname}}.sql"
