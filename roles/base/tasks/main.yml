@@ -139,10 +139,14 @@
 - name: set wpa configuration
   template: src=etc/wpa_supplicant/wpa_supplicant-wlan.conf dest=/etc/wpa_supplicant/wpa_supplicant-{{wlan_interface}}.conf owner=root group=systemd-network mode=0640
   notify: restart wpa_supplicant
-- name: create wpa_suplicant dependency directory
+- name: create wpa_suplicant dependency directory for wext driver
   file: dest=/etc/systemd/system/wpa_supplicant-wext@{{wlan_interface}}.service.d state=directory owner=root group=systemd-network mode=0640
+- name: create wpa_suplicant dependency directory
+  file: dest=/etc/systemd/system/wpa_supplicant@{{wlan_interface}}.service.d state=directory owner=root group=systemd-network mode=0640
+- name: set wpa_suplicant dependency with network for wext driver
+  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant-wext@{{wlan_interface}}.service.d/customdependency.conf owner=root group=systemd-network mode=0640 
 - name: set wpa_suplicant dependency with network
-  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant-wext@{{wlan_interface}}.service.d/customdependency.conf owner=root group=systemd-network mode=0640
+  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant@{{wlan_interface}}.service.d/customdependency.conf owner=root group=systemd-network mode=0640
 - name: add wpa_supplicant-wext@.service
   template: src=usr/lib/systemd/system/wpa_supplicant-wext@.service dest=/usr/lib/systemd/system/wpa_supplicant-wext@.service owner=root group=root mode=0644
   register: systemctlReload
