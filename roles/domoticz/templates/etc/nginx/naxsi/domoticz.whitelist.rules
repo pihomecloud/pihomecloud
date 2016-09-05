@@ -2,3 +2,20 @@
 #Rule (1000) sql keywords
 #uri : /js/dataTables.tableTools.min.js
 BasicRule  wl:1000 "mz:$URL_X:/js/.*.js|URL";
+
+#url : /json.htm updating settings
+BasicRule wl:0 "mz:$ARGS_VAR:xml|$URL:/json.htm";
+BasicRule wl:0 "mz:$ARGS_VAR:logicarray|$URL:/json.htm";
+## Plan updates
+BasicRule wl:1000 "mz:$ARGS_VAR:param|$URL:/json.htm";
+BasicRule wl:1015 "mz:$ARGS_VAR:area|$URL:/json.htm";
+
+#url : /storesettings.webem
+BasicRule wl:1000 "mz:$BODY_VAR:checkforupdates|NAME|$URL:/storesettings.webem";
+BasicRule wl:1000 "mz:$BODY_VAR:clickatellfrom|NAME|$URL:/storesettings.webem";
+BasicRule wl:0 "mz:$BODY_VAR:httpurl|$URL:/storesettings.webem";
+BasicRule wl:0 "mz:$BODY_VAR:httppostcontenttype|$URL:/storesettings.webem";
+
+#url : /json.htm update sensor
+BasicRule wl:0 "mz:$ARGS_VAR:valuelist|$URL:/json.htm";
+
