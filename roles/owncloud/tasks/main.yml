@@ -76,7 +76,7 @@
     - { name: dbuser, value: "'{{owncloudMySQLUser}}'" }
     - { name: dbname, value: "'{{owncloudDataBase}}'" }
     - { name: dbpassword, value: "'{{owncloudMySQLPassword}}'" }
-    - { name: dbtableprefix, value: "'oc_'" }
+    - { name: dbtableprefix, value: "'{{owncloudDbtableprefix}}'" }
     - { name: default_language, value: "'{{owncloudLocale}}'" }
     - { name: mail_domain, value: "'{{myDomain}}'" }
     - { name: mail_smtpmode, value: "'sendmail'" }

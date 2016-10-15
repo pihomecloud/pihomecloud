@@ -6,6 +6,7 @@ owncloudDBHost: localhost
 owncloudAdditional_open_basedir: ''
 owncloudDir: /usr/share/webapps/owncloud
 owncloudDDataDir: "{{owncloudDir}}/data"
+owncloudDbtableprefix: "oc_"
 owncloudLogDir: /var/log/owncloud
 owncloudDataBase: owncloud
 owncloudCert: /etc/nginx/ssl/{{owncloudUrl}}.crt
