@@ -411,11 +411,15 @@ def check_build_environment(module):
 def install_package(module, pkg, pkg_file, upgrade):
     check_build_environment(module)
     git_source = module.params['git_source']
+    gpg_key = module.params['gpg_key']
 
     if not upgrade and query_package(module, pkg):
         module.exit_json(changed=False, msg="package already installed", package=pkg)
 
-    
+    if gpg_key:
+         if should_add_gpg_key(module, gpg_key):
+             add_gpg_key(module, gpg_key)
+
     if git_source:
       pkg_path = make_package(module, pkg, None)
     elif not pkg_file:
@@ -479,6 +483,9 @@ def check_package(module, pkg, state, pkg_file):
         else:
            state = "at latest version : %s >= %s" % (current_version, next_version)
 
+    if module.params['gpg_key'] and not changed:
+         if should_add_gpg_key(module, module.params['gpg_key']):
+             changed=True
     if changed:
         module.exit_json(changed=True, msg="package would be %s" % state, package=pkg)
     else:
@@ -486,6 +493,31 @@ def check_package(module, pkg, state, pkg_file):
 
 def str_to_int_tuple(s):
     return tuple(int(x) for x in re.split('[^0-9]+', s) if x)
+
+def should_add_gpg_key(module, key):
+    sudo_user = os.environ.get('SUDO_USER')
+    command_prefix = "sudo -u %s " % sudo_user
+    cmd="%sgpg --list-keys %s" % (command_prefix, key)
+    rc, stdout, stderr = module.run_command(cmd, check_rc=False)
+    if rc == 0:
+        return False
+    if rc == 2:
+        return True
+    if rc != 0 and rc != 2:
+       module.fail_json(msg="failed to list gpg_keys : %s " % (cmd), stderr=stderr)
+
+def add_gpg_key(module, key):
+    sudo_user = os.environ.get('SUDO_USER')
+    command_prefix = "sudo -u %s " % sudo_user
+    gpg_server=module.params['gpg_server']
+    cmd="%sgpg " % command_prefix
+    if gpg_server:
+       cmd+=" --keyserver " + str(gpg_server)
+    cmd+=" --recv-keys %s" % key
+    rc, stdout, stderr = module.run_command(cmd, check_rc=False)
+    if rc != 0:
+       module.fail_json(msg="failed to gpg key : %s " % (cmd), stderr=stderr)
+
 
 def should_be_upgraded(module, pkg, pkg_file):
     check_build_environment(module)
@@ -513,6 +545,8 @@ def main():
         force_arch   = dict(default='', required=False),
         git_source   = dict(default='', required=False),
         force_https  = dict(default='no', choices=BOOLEANS, type='bool', required=False),
+        gpg_key      = dict(default='', required=False),
+        gpg_server   = dict(default='', required=False),
         pkgver_parse = dict(default='always', choices=['always','never','1days','1weeks','1months','3months','6months','1years'], required=False)
     )
 
