@@ -73,8 +73,8 @@ echo -e "Rsync mysql binlog"
  {{fs.source}} {{fs.dest}}
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Backup {{fs.source}}"
+{%- endif %}
 
-{%- endif -%}
 {% endfor %}
 
 #Systeme
