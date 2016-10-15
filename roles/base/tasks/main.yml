@@ -37,7 +37,7 @@
   register: runningKernel
   changed_when: false
 - name: reboot after kernel upgrade
-  shell: sleep 2 && reboot &
+  shell: sleep 2 ; reboot &
   when: "installedKernel.stdout != runningKernel.stdout"
   async: 2
   poll: 0
