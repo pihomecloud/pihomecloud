@@ -122,6 +122,7 @@
     chdir: "{{owncloudDir}}"
   become: yes
   become_user: http
+  no_log: yes
   when: not owncloudDbInstalled.stat.exists
 - name: update owncloud DB
   command: php -d"open_basedir={{owncloud_open_basedir}}" occ upgrade chdir={{owncloudDir}}
