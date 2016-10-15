@@ -165,6 +165,6 @@
 - name: additional mounts
   mount: name="{{item.dir}}" src="{{item.filesystem}}" fstype="{{item.type}}" opts="{{item.options}}" dump={{item.dump | default(0)}} passno={{item.pass | default(0)}} state=mounted
   with_items: "{{additionalMounts}}"
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - name: activate cronie
   service: name=cronie state=started enabled=yes
