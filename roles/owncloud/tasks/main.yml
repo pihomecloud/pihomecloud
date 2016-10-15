@@ -130,7 +130,7 @@
   become_user: http
   register: owncloudUpdate
   changed_when: "'Update successful' in owncloudUpdate.stdout"
-  failed_when: (owncloudUpdate.rc != 3 and owncloudUpdate.rc != 0) or owncloudUpdate.stderr
+  failed_when: (owncloudUpdate.rc != 3 and owncloudUpdate.rc != 0)
   when: "'master' in group_names"
 - name: list enabled apps
   command: php -d"open_basedir={{owncloud_open_basedir}}" occ app:list --output=json  chdir={{owncloudDir}}
