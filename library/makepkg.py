@@ -579,14 +579,14 @@ def main():
     
     if module.check_mode:
         check_package(module, pkg, p['state'], pkg_file)
-
-    if p['state'] == 'present':
-        install_package(module, pkg, pkg_file, False)
-    elif p['state'] == 'absent':
-        remove_package(module, pkg)
-    elif p['state'] == 'latest':
-        upgrade, current_version, next_version = should_be_upgraded(module, pkg, pkg_file)
-        install_package(module, pkg, pkg_file, upgrade)
+    else:
+      if p['state'] == 'present':
+          install_package(module, pkg, pkg_file, False)
+      elif p['state'] == 'absent':
+          remove_package(module, pkg)
+      elif p['state'] == 'latest':
+          upgrade, current_version, next_version = should_be_upgraded(module, pkg, pkg_file)
+          install_package(module, pkg, pkg_file, upgrade)
 
 # Used for downloading packages from the AUR
 from ansible.module_utils.urls import *
