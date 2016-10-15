@@ -111,8 +111,6 @@
   file: path=/etc/webapps/owncloud/config owner=http group=http mode=770
 - name: create database for owncloud
   mysql_db: name={{owncloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
-- name: create database for owncloud
-  mysql_db: name={{owncloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create owncloud mysql user with password
   mysql_user21: user="{{owncloudMySQLUser}}" password="{{owncloudMySQLPassword}}" priv="{{owncloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
 - name: verifiy if owncloud is installed
