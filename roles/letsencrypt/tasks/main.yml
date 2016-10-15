@@ -9,7 +9,7 @@
   args:
     creates: "/etc/letsencrypt/live/{{item}}"
   with_items: "{{letsencryptVirtualhosts|uniq}}"
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - name: we remove cron on the slave
   set_fact: cronState="absent"
   when: "'slave' in group_names"

@@ -132,22 +132,22 @@
   register: owncloudUpdate
   changed_when: "'Update successful' in owncloudUpdate.stdout"
   failed_when: (owncloudUpdate.rc != 3 and owncloudUpdate.rc != 0) or owncloudUpdate.stderr
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - name: list enabled apps
   command: php -d"open_basedir={{owncloud_open_basedir}}" occ app:list --output=json  chdir={{owncloudDir}}
   register: owncloudAppListResult
   changed_when: false
   become: yes
   become_user: http
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - set_fact: owncloudAppList="{{owncloudAppListResult.stdout | from_json}}"
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - name: enable apps
   command: php -d"open_basedir={{owncloud_open_basedir}}" occ app:enable {{item}}  chdir={{owncloudDir}}
   become: yes
   become_user: http
   with_items: "{{owncloudApps}}"
-  when: "owncloudAppList['disabled'][item] is defined and 'slave' not in group_names"
+  when: "owncloudAppList['disabled'][item] is defined and 'master' in group_names"
 - name: get Background Jobs property
   command: grep cron "{{owncloudDir}}/config/config.php"
   changed_when: false
@@ -157,4 +157,4 @@
   command: php -d"open_basedir={{owncloud_open_basedir}}" occ background:cron  chdir={{owncloudDir}}
   become: yes
   become_user: http
-  when: "not 'cron' in check_background_jobs.stdout and 'slave' not in group_names"
+  when: "not 'cron' in check_background_jobs.stdout and 'master' in group_names"

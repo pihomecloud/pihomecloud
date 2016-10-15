@@ -1,11 +1,10 @@
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
-  when: "'slave' not in group_names"
 - name: set role_name fact
   set_fact: role_name= "{{ lookup('pipe','pwd')|dirname|basename }}"
 - name: copy iptables rules for {{role_name}}
   template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
-  when: "'slave' not in group_names"
+  when: "'master' in group_names"
 - name: delete iptables rules for slave
   copy: content="#iptables for {{role_name}} is disabled for slave\\n" dest=/etc/iptables/iptables.rules.d/role_{{role_name}}.rule owner=root group=root mode=0700
   when: "'slave' in group_names"
