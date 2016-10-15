@@ -1,0 +1,49 @@
+- hosts: all
+  remote_user: "{{localuser}}"
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install nextcloud package
+      makepkg: name=nextcloud state=present gpg_key="D75899B9A724937A" gpg_server=hkps://hkps.pool.sks-keyservers.net:443
+    - name: create home cloud database
+      mysql_db: name="{{homecloudDataBase}}" state=present login_user=root login_password={{mysqlPassword}}
+      when: "homecloudDataBase != owncloudDataBase and 'master' in group_names"
+    - name: dump owcloud database to homecloud database (productless named)
+      shell: "mysqldump -u root --password={{mysqlPassword}} --opt -n {{owncloudDataBase}} | sed -e 's/TABLE `{{owncloudDbtableprefix}}/TABLE `{{homecloudDbtableprefix}}/' -e 's/TABLES `{{owncloudDbtableprefix}}/TABLES `{{homecloudDbtableprefix}}/' -e 's/TABLE IF EXISTS `{{owncloudDbtableprefix}}/TABLE IF EXISTS `{{homecloudDbtableprefix}}/' -e 's/for table `{{owncloudDbtableprefix}}/for table `{{homecloudDbtableprefix}}/' -e 's/INSERT INTO `{{owncloudDbtableprefix}}/INSERT INTO `{{homecloudDbtableprefix}}/' -e 's/KEY `{{owncloudDbtableprefix}}/KEY `{{homecloudDbtableprefix}}/'| mysql -u root --password={{mysqlPassword}} {{homecloudDataBase}}"
+      when: "homecloudDbtableprefix != owncloudDbtableprefix and 'master' in group_names"
+    - name: delete owncloud nginx conf, because they have the same url
+      file: path=/etc/nginx/conf.d/owncloud.conf state=absent
+    - name: stop nginx
+      service: name=nginx state=stopped
+    - name: umount owncloud on {{cryptName}} and remove it from fstab
+      mount: name="{{owncloudDDataDir}}" state=unmounted src=/dev/mapper/{{cryptName}} fstype=btrfs
+    - name: verifiy if "/media/{{cryptName}}/{{cryptName}}-top-lvl/owncloud" exists
+      stat: path="/media/{{cryptName}}/{{cryptName}}-top-lvl/owncloud"
+      register: owncloudUsb
+    - name: rename owncloud dirs on {{cryptName}}
+      command: "mv /media/{{cryptName}}/{{cryptName}}-top-lvl/owncloud /media/{{cryptName}}/{{cryptName}}-top-lvl/homecloud"
+      when: "owncloudUsb.stat.exists"
+    - name: mount homecloud on {{cryptName}} and add it in fstab
+      mount: name="{{homecloudDataDir}}" state=mounted src=/dev/mapper/{{cryptName}} fstype=btrfs state=mounted opts=noauto,nofail,subvol=homecloud
+    - name: listing snapshots to move
+      command: 'bash -c "ls -d /media/{{cryptName}}/{{cryptName}}-top-lvl/snapshots/*/owncloud"'
+      register: owncloudSnaps
+      failed_when: false
+    - name: renaming snapshots
+      command: "mv {{item}} {{item|regex_replace('(.*)/owncloud','\\1/homecloud')}}"
+      with_items: "{{owncloudSnaps.stdout_lines}}"
+    - name: listing backups
+      command: 'bash -c "ls -d /media/{{cryptName}}/{{cryptName}}-top-lvl/masterbackup/owncloud*"'
+      register: owncloudBackups
+      failed_when: false
+    - name: renaming backups
+      command: "mv {{item}} {{item|regex_replace('(.*)/owncloud','\\1/homecloud')}}"
+      with_items: "{{owncloudBackups.stdout_lines}}"
+    - name: copy owncloud config to nextcloud
+      shell: cp /usr/share/webapps/owncloud/config/config.php /usr/share/webapps/nextcloud/config/
+      when: "'master' in group_names"
+    - name: link for btrfssnapshot must be replaced
+      shell: "newlink=$(readlink -f /media/{{cryptName}}/masterbackup/homecloud_last | sed -e 's/owncloud/homecloud/');rm /media/{{cryptName}}/masterbackup/homecloud_last;ln -s $newlink /media/{{cryptName}}/masterbackup/homecloud_last"
+      when: "'master' in group_names"
+    - name: You can now apply nextcloud role, don't forget to remove owncloud role and vars as adding homcloud vars, it could have some conflicts, you will have to cleanup owncloud via another playbook
+      debug: msg="gogogogogo !"

@@ -8,6 +8,6 @@ fail2banFindTime: 600
 fail2banBanTime: 600
 honeyPotBanTime: 864000
 fail2BanIgnoreip: "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}"
-owncloudDir: /usr/share/webapps/owncloud
-owncloudDDataDir: "{{owncloudDir}}/data"
-owncloudLogDir: /var/log/owncloud
+homecloudDir: /usr/share/webapps/nextcloud
+homecloudDataDir: "{{homecloudDir}}/data"
+homecloudLogDir: /var/log/homecloud

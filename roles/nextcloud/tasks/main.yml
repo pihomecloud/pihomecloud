@@ -1,0 +1,176 @@
+---
+# tasks file for nextcloud
+- name: Install nextcloud packages
+  pacmanneeded: name={{item}} state=present
+  with_items:
+    - nextcloud
+    - libreoffice-still
+- name: verify if letsencrypt cert generated
+  stat: path=/etc/letsencrypt/live/{{homecloudUrl}}/fullchain.pem
+  register: homecloudLetsEncryptCert
+- name: set certificate and key to letsencrypt
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/letsencrypt/live/{{homecloudUrl}}/fullchain.pem", dest: "{{homecloudUrl}}.active.crt"}
+    - { src: "/etc/letsencrypt/live/{{homecloudUrl}}/privkey.pem", dest: "{{homecloudUrl}}.active.key"}
+  when: homecloudLetsEncryptCert.stat.exists
+  notify: reload nginx
+- name: verify if localca cert exists
+  stat: path=/srv/ca/intermediate/certs/{{homecloudUrl}}.cert.pem
+  register: homecloudLocalcaCert
+- name: set certificate and key to localca
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/srv/ca/intermediate/certs/{{homecloudUrl}}.cert.pem", dest: "{{homecloudUrl}}.active.crt"}
+    - { src: "/srv/ca/intermediate/private/{{homecloudUrl}}.key.nopass", dest: "{{homecloudUrl}}.active.key"}
+  when: not homecloudLetsEncryptCert.stat.exists and homecloudLocalcaCert.stat.exists
+  notify: reload nginx
+- name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{homecloudUrl}}.key -out /etc/nginx/ssl/{{homecloudUrl}}.crt -batch -subj '/CN={{homecloudUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{homecloudUrl}}.crt
+  when: not homecloudLetsEncryptCert.stat.exists and not homecloudLocalcaCert.stat.exists
+- name: set certificate and key to a non sense cert
+  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  with_items:
+    - { src: "/etc/nginx/ssl/{{homecloudUrl}}.crt", dest: "{{homecloudUrl}}.active.crt"}
+    - { src: "/etc/nginx/ssl/{{homecloudUrl}}.key", dest: "{{homecloudUrl}}.active.key"}
+  when: not homecloudLetsEncryptCert.stat.exists and not homecloudLocalcaCert.stat.exists
+  notify: reload nginx
+- name: create nginx configuration
+  template: src=etc/nginx/conf.d/homecloud.conf dest=/etc/nginx/conf.d/homecloud.conf owner=root group=root mode=0640
+  notify: reload nginx
+- name: create naxsi configuration
+  template: src=etc/nginx/naxsi/homecloud.whitelist.rules dest=/etc/nginx/naxsi/homecloud.whitelist.rules owner=root group=root mode=0640
+  notify: reload nginx
+- name: activate apcu
+  lineinfile: dest=/etc/php/conf.d/apcu.ini regexp="extension=apcu.so" line="extension=apcu.so"
+  notify: restart php-fpm
+- name: activate apcu.enable_cli
+  lineinfile: dest=/etc/php/conf.d/apcu.ini regexp="apc.enable_cli" line="apc.enable_cli=1"
+  notify: restart php-fpm
+- name: activate php exif
+  copy: content="extension=exif.so" dest=/etc/php/conf.d/exif.ini owner=root group=root mode=0644
+  notify: restart php-fpm
+- name: add php header to config
+  lineinfile: dest="{{homecloudDir}}/config/config.php" line="<?php" create=yes owner=http group=http mode=0640
+- name: add $CONFIG to config
+  lineinfile: dest="{{homecloudDir}}/config/config.php" line="$CONFIG = array (" insertafter="<?php"
+- name: close nextcloud config
+  lineinfile: dest="{{homecloudDir}}/config/config.php" line=");"
+- name: create nextcloud log directory
+  file: dest="{{homecloudLogDir}}" state=directory owner=http group=http mode=0750
+- name: adjust nextcloud log permissions
+  copy: content="" dest="{{homecloudLogDir}}/homecloud.log" owner=http group=http mode=0640 force=no
+- name: enable log rotation for homecloud
+  template: src=etc/logrotate.d/homecloud dest=/etc/logrotate.d/homecloud owner=root group=root mode=0640
+- name: configure homecloud
+  lineinfile:
+     dest: "{{homecloudDir}}/config/config.php"
+     regexp: "{{item.name}}"
+     line: "  '{{item.name}}' => {{item.value}},"
+     insertbefore: "\\);"
+  with_items:
+    - { name: datadirectory, value: "'{{homecloudDataDir}}'" }
+    - { name: logfile, value: "'{{homecloudLogDir}}/homecloud.log'" }
+    - { name: dbtype, value: "'mysql'" }
+    - { name: dbhost, value: "'{{homecloudDBHost}}'" }
+    - { name: dbuser, value: "'{{homecloudMySQLUser}}'" }
+    - { name: dbname, value: "'{{homecloudDataBase}}'" }
+    - { name: dbpassword, value: "'{{homecloudMySQLPassword}}'" }
+    - { name: dbtableprefix, value: "'{{homecloudDbtableprefix}}'" }
+    - { name: default_language, value: "'{{homecloudLocale}}'" }
+    - { name: mail_domain, value: "'{{myDomain}}'" }
+    - { name: mail_smtpmode, value: "'sendmail'" }
+    - { name: check_for_working_htaccess, value: "true" }
+    - { name: 'memcache.local', value: "'\\\\OC\\\\Memcache\\\\APCu'" }
+    - { name: 'trusted_domains', value: "array ( 0 => '{{homecloudUrl}}',)" }
+#data is checked by stat because it can be a link to another directory (beware of open_basedir...)
+- name: check if data exists
+  stat: path="{{homecloudDir}}/data"
+  register: homecloudData
+- name: create "{{homecloudDir}}/data" if needed
+  file: path="{{homecloudDir}}/data" state=directory owner=http group=http mode=0750
+  when: not homecloudData.stat.exists
+- name: create "{{homecloudDir}}/assets"
+  file: path="{{homecloudDir}}/assets" state=directory owner=http group=http mode=0750
+- name: restrict directory permssions
+  command: find {{homecloudDir}} -type d ! -perm 0750 -exec chmod -c 0750 {} \;
+  register: restrictHomecloudDirs
+  changed_when: restrictHomecloudDirs.stdout
+- name: restrict file permissions
+  command: find {{homecloudDir}}  -type f ! -perm 0640 -exec chmod -c 0640 {} \;
+  register: restrictHomecloudFiles
+  changed_when: restrictHomecloudFiles.stdout
+- name: restrict files to root:http
+  command: find {{homecloudDir}} ! -path "{{homecloudDir}}/apps*" ! -path "{{homecloudDir}}/config*" ! -path "{{homecloudDir}}/assets*" ! -path "{{homecloudDir}}/data*" ! -path "{{homecloudDir}}/themes*" \( ! -user root -o ! -group http \) -exec chown -c root:http {} \;
+  register: restrictHomecloudRootHttp
+  changed_when: restrictHomecloudRootHttp.stdout
+- name: restrict files to http:http
+  command: find "{{homecloudDir}}/apps" "{{homecloudDir}}/assets" "{{homecloudDir}}/data" "{{homecloudDir}}/config/" "{{homecloudDir}}/themes" \( ! -user http -o ! -group http \) -exec chown -c http:http {} \;
+  register: restrictHomecloudHttpHttp
+  changed_when: restrictHomecloudHttpHttp.stdout
+- name: allow write of config by nextcloud
+  file: path=/usr/share/webapps/nextcloud/config owner=http group=http mode=770
+- name: create database for homecloud
+  mysql_db: name={{homecloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
+- name: create homecloud mysql user with password
+  mysql_user21: user="{{homecloudMySQLUser}}" password="{{homecloudMySQLPassword}}" priv="{{homecloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
+- name: verifiy if homecloud is installed
+  stat: "path=/var/lib/mysql/homecloud/{{homecloudDbtableprefix}}properties.frm"
+  register: homecloudDbInstalled
+##- name: verifiy if homecloud is installed
+##  command: php  -d"open_basedir={{homecloud_open_basedir}}" occ check
+##  register: homecloudDbInstalled
+##  args:
+##    chdir: "{{homecloudDir}}"
+##  become: yes
+##  become_user: http
+#open_basedir removed, becaus it generates a dummy error : I don't care of 4Go files...
+- name: install homecloud DB
+  command: php  -dopen_basedir="" occ maintenance:install --database "mysql" --database-name "{{homecloudDataBase}}"  --database-user "{{homecloudMySQLUser}}" --database-pass "{{homecloudMySQLPassword}}" --admin-user "{{localuser}}" --admin-pass "{{homecloudAdminPassword}}" --database-table-prefix "{{homecloudDbtableprefix}}"
+  args:
+    chdir: "{{homecloudDir}}"
+  become: yes
+  become_user: http
+  no_log: yes
+  when: "not homecloudDbInstalled.stat.exists and 'master' in group_names"
+  #when: "'is not installed' in homecloudDbInstalled.stdout and 'master' in group_names"
+- name: update homecloud DB
+  command: php -d"open_basedir={{homecloud_open_basedir}}" occ upgrade chdir={{homecloudDir}}
+  become: yes
+  become_user: http
+  register: homecloudUpdate
+  changed_when: "'Update successful' in homecloudUpdate.stdout"
+  failed_when: (homecloudUpdate.rc != 3 and homecloudUpdate.rc != 0)
+  when: "'master' in group_names"
+- name: list enabled apps
+  command: php -d"open_basedir={{homecloud_open_basedir}}" occ app:list --output=json  chdir={{homecloudDir}}
+  register: homecloudAppListResult
+  changed_when: false
+  become: yes
+  become_user: http
+  when: "'master' in group_names"
+- set_fact: homecloudAppList="{{homecloudAppListResult.stdout | from_json}}"
+  when: "'master' in group_names"
+- name: enable apps
+  command: php -d"open_basedir={{homecloud_open_basedir}}" occ app:enable {{item}}  chdir={{homecloudDir}}
+  become: yes
+  become_user: http
+  with_items: "{{homecloudApps}}"
+  when: "homecloudAppList['disabled'][item] is defined and 'master' in group_names"
+- name: get Background Jobs property
+  command: grep cron "{{homecloudDir}}/config/config.php"
+  changed_when: false
+  failed_when: check_background_jobs.stderr
+  register: check_background_jobs
+- name: Defining Background Jobs to cron
+  command: php -d"open_basedir={{homecloud_open_basedir}}" occ background:cron  chdir={{homecloudDir}}
+  become: yes
+  become_user: http
+  when: "not 'cron' in check_background_jobs.stdout and 'master' in group_names"
+- name: test if slave have a backup of config
+  stat: path="/media/{{cryptName}}/masterbackup/backup_last/sys/usr/share/webapp/nextcloud/config/config.php"
+  register: backupConfig
+  when: "'slave' in group_names"
+- name: copy homecloud config on slave
+  copy: src="/media/{{cryptName}}/masterbackup/backup_last/sys/usr/share/webapp/nextcloud/config/config.php" dest=/usr/share/webapp/nextcloud/config/config.php remote_src=yes
+  when: "'slave' in group_names and backupConfig.stat.exists"

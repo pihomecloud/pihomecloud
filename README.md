@@ -1,5 +1,5 @@
 # Ansible playbook for a local raspberry PI webserver, private cloud
-- owncloud : no google account
+- nextcloud : no google account
 - domoticz : local domotic server with open zwave, working with razberry daughter card or usb stick
 - shinken : open source monitoring
 - localca : local certification authority, usefull for client certificate auth
