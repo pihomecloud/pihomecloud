@@ -112,7 +112,7 @@
   when: mysqlPassword is defined
 - name: permit {{localuser}} to access to storage
   user: name="{{localuser}}" groups=http append=yes
-- name: adkust permissions to http user and group if needed
+- name: adjust permissions to http user and group if needed
   file: path=/media/{{cryptName}}/{{item}} owner=http group=http state=directory mode=0755
   with_items:
     - "{{btrfsVolumesToHTTP}}"
