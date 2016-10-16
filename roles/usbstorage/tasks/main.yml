@@ -183,7 +183,17 @@
 - name: append slave backup public key to master
   authorized_key: user=backup key="{{item}}"
   with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
-  when: "'master' in group_names and 'results' in backup_keys and 'stdout_lines' in backup_keys.results"
+  when: "'master' in group_names and 'results' in backup_keys"
+- name: gather master host public key
+  command: "ssh-keyscan -T 10 {{item}}"
+  with_items: "{{groups['master']}}"
+  changed_when: false
+  register: master_backup_keys
+  when: "'slave' in group_names  and 'ansible_distribution' in hostvars[item]"
+- name: append master keys to slave's backup known_host
+  lineinfile: dest=/home/backup/.ssh/known_hosts regexp="{{item}}" line="{{item}}" owner=backup group=users mode=0600 create=yes
+  with_items: "{{master_backup_keys.results|map(attribute='stdout_lines')|list}}"
+  when: "'slave' in group_names and 'results' in master_backup_keys"
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{role_name}}
