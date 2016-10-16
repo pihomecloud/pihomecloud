@@ -2,6 +2,6 @@
 0 3 * * * backup {{ " " }}
 {%- for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals -%}
 {%- if subvolume.name not in snapVolumesExclude -%}
-/media/{{cryptName}}/backup/btrfsRemoteBackup.sh --source {{groups['master'][0]}} --port 22 --verbose {{subvolume.name}} /media/usbstorageDisk/usbstorageDisk-top-lvl /media/usbstorageDisk/masterbackup > /media/usbstorageDisk/backup/btrfsRemoteBackup.{{subvolume.name}}.log 2>&1; {{ " " }}
+/media/{{cryptName}}/backup/btrfsRemoteBackup.sh --source {{groups['master'][0]}} --port 22 --verbose {{subvolume.name}} /media/{{cryptName}}/{{cryptName}}-top-lvl /media/{{cryptName}}/masterbackup > /media/{{cryptName}}/backup/btrfsRemoteBackup.{{subvolume.name}}.log 2>&1; {{ " " }}
 {%- endif -%}
 {%- endfor -%}

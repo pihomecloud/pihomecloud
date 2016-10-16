@@ -56,7 +56,7 @@
 - name: mount btrfs volume {{cryptName}} and add it to fstab
   mount: name=/media/{{cryptName}}/{{cryptName}}-top-lvl src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,noatime,nodiratime
 - name: scan btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
-  shell: btrfs subvolume list /media/usbstorageDisk/usbstorageDisk-top-lvl/ | sed -e 's/.* path //' | grep -v -e "^{{snapDir}}"
+  shell: btrfs subvolume list "/media/{{cryptName}}/{{cryptName}}-top-lvl/" | sed -e 's/.* path //' | grep -v -e "^{{snapDir}}"
   changed_when: false
   failed_when: btrfsVolumeList.stderr
   register: btrfsVolumeList

@@ -9,7 +9,7 @@
     - intermediate
     - newcerts
 - name: check if backup is aviable for slave
-  command: find /media/usbstorageDisk/masterbackup/backup_last/sys/srv/ca/ -name ca.key -o -name intermediate.key
+  command: find "/media/{{cryptName}}/masterbackup/backup_last/sys/srv/ca/" -name ca.key -o -name intermediate.key
   failed_when: false
   changed_when: false
   register: ca_backup
