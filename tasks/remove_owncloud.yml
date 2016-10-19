@@ -1,0 +1,17 @@
+- name: remove owncloud package
+  pacman: name=owncloud state=absent
+- name: remove owncloud db
+  mysql_db: name="{{owncloudDataBase}}" state=present login_user=root login_password={{mysqlPassword}}
+  when: "homecloudDataBase != owncloudDataBase and 'master' in group_names and 'master' in group_names"
+- name: remove owncloud file
+  file: path="{{item}}" state=absent
+  with_items:
+    - /usr/share/webapps/owncloud
+    - /etc/nginx/naxsi/owncloud.whitelist.rules
+    - /etc/webapps/owncloud
+    - /etc/fail2ban/jail.d/owncloud-bf.conf
+    - /etc/fail2ban/jail.d/owncloud.conf
+    - /etc/fail2ban/filter.d/owncloud.conf
+    - /etc/logrotate.d/owncloud
+    - /var/log/owncloud
+    - "/media/{{cryptName}}/owncloud"
