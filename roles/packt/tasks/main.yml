@@ -1,0 +1,16 @@
+---
+# tasks file for packt
+- name: create directories
+  file: path="{{item}}" state=directory
+  with_items:
+    - "{{pactRootDir}}"
+    - "{{pactRootDir}}/log/"
+    - "{{pactRootDir}}/ebooks/"
+    - "{{packtDir}}"
+- name: install pack files
+  template: src=srv/packt/{{item}} dest=/srv/packt/ owner=root group=root mode=700
+  with_items:
+    - packt.cfg
+    - packt.sh
+- name: install packt cron
+  cron: name="packt downloader" hour=6 job="/srv/packt/packt.sh > /dev/null"
