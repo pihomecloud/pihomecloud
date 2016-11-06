@@ -1,5 +1,7 @@
 ---
 # tasks file for usbstorage
+- name: install btrfs tools
+  pacman: name=btrfs-progs state=present
 - name: gather list of disks
   shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e ^NAME -e "disk *usb"
   changed_when: false
@@ -23,13 +25,21 @@
 - name: fail if the disk choosen is not in the list
   fail: msg="The disk {{usbstorageDisk}} is not a valid disk"
   when: "usbstorageDisk not in diskDeviceList.stdout_lines"
+- name: create pv on usbstorageDisk
+  lvg:  vg="vg{{cryptName}}" pvs=/dev/sda
+- name: create lv unencrypted on usbstorageDisk
+  lvol: vg="vg{{cryptName}}" lv=lvunencrypted size=10%VG
+- name: create lv crypted on usbstorageDisk
+  lvol: vg="vg{{cryptName}}" lv=lvcrypted size=80%VG
+- name: format disk on lvunencrypted
+  filesystem: dev="/dev/mapper/vg{{cryptName}}-lvunencrypted" fstype=ext4
 - name: gather list of luks volumes on the choosen usb disk
-  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS *disk *usb" | awk '{print "/dev/"$1}' | grep "^{{usbstorageDisk}}$"
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS" | awk '{print $1}' | grep "^vg{{cryptName}}-lvcrypted$"
   changed_when: false
   failed_when: luksDevice.stderr
   register: luksDevice
 - name: initialize cryptSetup disk if needed
-  shell: echo "{{cryptPass}}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat {{usbstorageDisk}}
+  shell: echo "{{cryptPass}}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat "/dev/mapper/vg{{cryptName}}-lvcrypted"
   when: luksDevice.stdout_lines | length == 0
 - name: verify if usbstorageDisk is opened
   shell: dmsetup ls --target crypt | grep "^{{cryptName}}\s"
@@ -37,20 +47,16 @@
   changed_when: false
   failed_when: luksOpennedDevice.stderr
 - name: open luks usb volume if needed
-  shell: echo "{{cryptPass}}" | cryptsetup luksOpen {{usbstorageDisk}} {{cryptName}}
+  shell: echo "{{cryptPass}}" | cryptsetup luksOpen "/dev/mapper/vg{{cryptName}}-lvcrypted" {{cryptName}}
   when: luksOpennedDevice.stdout_lines | length == 0
-- name: install btrfs tools
-  pacman: name=btrfs-progs state=present
-- name: test if {{dmDisk}} is already formated
-  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "^{{cryptName}}  *btrfs  *crypt"
-  changed_when: false
-  failed_when: typeOfDisk.stderr
-  register: typeOfDisk
 - name: create btrfs volume
-  command: mkfs.btrfs {{dmDisk}}
-  when: typeOfDisk.stdout_lines | length == 0
+  filesystem: dev="{{dmDisk}}" fstype=btrfs
 - name: create /media/
   file: path=/media/ state=directory owner=root group=root mode=0755
+- name: create /media/{{cryptName}}-unencrypted
+  file: path=/media/{{cryptName}}-unencrypted state=directory owner=root group=root mode=0755
+- name: add lvunencrypted to fstab and mount it
+  mount: src="/dev/mapper/vg{{cryptName}}-lvunencrypted" name="/media/{{cryptName}}-unencrypted" fstype=ext4 state=mounted opts=noatime,nodiratime
 - name: create /media/{{cryptName}}
   file: path=/media/{{cryptName}} state=directory owner=root group=root mode=0755
 - name: mount btrfs volume {{cryptName}} and add it to fstab
@@ -77,6 +83,7 @@
     - mysql
     - disk
     - log
+    - "{{cryptName}}-unencrypted"
 - name: create snapshot directory
   file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/ owner=root group=log mode=0750 state=directory
 - name: create snapshot hourly structure
@@ -176,24 +183,24 @@
 - name: gather slave backup public key
   command: cat /home/backup/.ssh/id_rsa.pub
   delegate_to: "{{item}}"
-  with_items: "{{groups['slave']}}"
+  with_items: "{{groups['slave']|default([])}}"
   changed_when: false
   register: backup_keys
-  when: "'master' in group_names  and 'ansible_distribution' in hostvars[item]"
+  when: "'master' in group_names and 'slave' in group_names and 'ansible_distribution' in hostvars[item]"
 - name: append slave backup public key to master
   authorized_key: user=backup key="{{item}}"
-  with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
-  when: "'master' in group_names and 'results' in backup_keys"
+  with_items: "{{backup_keys.results|default([])|map(attribute='stdout_lines')|list}}"
+  when: "'master' in group_names and 'slave' in group_names and 'results' in backup_keys"
 - name: gather master host public key
   command: "ssh-keyscan -T 10 {{item}}"
   with_items: "{{groups['master']}}"
   changed_when: false
   register: master_backup_keys
-  when: "'slave' in group_names  and 'ansible_distribution' in hostvars[item]"
+  when: "'slave' in group_names  and 'master' in group_names and 'ansible_distribution' in hostvars[item]"
 - name: append master keys to slave's backup known_host
   lineinfile: dest=/home/backup/.ssh/known_hosts regexp="{{item}}" line="{{item}}" owner=backup group=users mode=0600 create=yes
   with_items: "{{master_backup_keys.results|map(attribute='stdout_lines')|list}}"
-  when: "'slave' in group_names and 'results' in master_backup_keys"
+  when: "'slave' in group_names and 'master' in group_names and 'results' in master_backup_keys"
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{role_name}}
