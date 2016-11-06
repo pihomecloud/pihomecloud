@@ -21,6 +21,7 @@ my $status = $ok;
 my $exitMessage = "";
 my $messageSeparator = ",<br/>";
 my $errorOnly;
+my $summary = "";
 
 
 sub usage {
@@ -39,9 +40,10 @@ sub status {
 sub finalExit {
   my $tStatus = shift;
   my $message = shift;
+  $summary = "All" unless $summary;
   status $tStatus if $tStatus;
   $exitMessage = "[".$statusName[$status]."] Check is ".$statusName[$status]." " unless $exitMessage;
-  $exitMessage = "All is [".$statusName[$status]."].<br/>\n$exitMessage";
+  $exitMessage = "[".$statusName[$status]."] $summary.<br/>\n$exitMessage";
   $exitMessage.=$message if $message;
   print $exitMessage."\n";
   exit $status;
@@ -52,6 +54,7 @@ sub addMessage {
   my $message = join(' ', @_);
   status $tStatus;
   if ($tStatus > $ok or !$errorOnly){
+    $summary .= $statusName[$tStatus].":".$message." ";
     $exitMessage .= $messageSeparator if $exitMessage;
     $exitMessage .= "[".$statusName[$tStatus]."] ".$message;
   }
