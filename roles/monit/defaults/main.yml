@@ -1,0 +1,25 @@
+---
+# defaults file for monit
+myDomain: example.com
+monitUrl: "monitoring.{{myDomain}}"
+cryptName: usbstorageDisk
+additionalMounts: []
+btrfsSubVolumes:
+  - { name: 'data', mount: 'data'}
+  - { name: 'backup', mount: 'backup'}
+btrfsSubVolumesAdditionnals: []
+monitCheckMounts: []
+snapDir: snapshots
+monitPort: 2812
+monitUser: monit
+monitPassword: "{{ lookup('password', 'credentials/common/' + role_name + '/pass') }}"
+rootMail: "root@{{myDomain}}"
+mailHubPort: 465
+mailHost: "smtp.{{myDomain}}"
+ssmtpHostname: "{{inventory_hostname_short}}.{{myDomain}}"
+useTLS: "Yes"
+ssmtpAuthUser: "{{rootMail}}"
+ssmtpAuthPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/ssmtp/ssmtpAuthPass') }}"
+mailHostIps: "{{ lookup('dig', mailHost, wantlist=True) }}"
+monitMySQLUser: "monit_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/monit_mysql_user chars=ascii_letters,digits length=10') }}"
+monitMySQLPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/monit_mysql_password') }}"

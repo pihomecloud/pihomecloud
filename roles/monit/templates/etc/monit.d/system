@@ -1,0 +1,8 @@
+check system $HOST
+  if loadavg (1min) > 20 then alert
+  if loadavg (5min) > 10 then alert
+  if loadavg (15min) > 10 then alert
+  if cpu usage > 95% for 10 cycles then alert
+  if memory usage > 90% then alert
+  if swap usage > 25% then alert
+

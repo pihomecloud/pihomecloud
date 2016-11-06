@@ -1,0 +1,7 @@
+---
+# handlers file for monit
+- name: reload monit
+  service: name=monit state=reloaded
+- name: reload nginx
+  service: name=nginx state=reloaded
+

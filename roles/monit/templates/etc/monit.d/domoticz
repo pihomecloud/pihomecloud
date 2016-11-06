@@ -1,0 +1,9 @@
+#{{ansible_managed}}
+check process domoticz matching /opt/domoticz/domoticz
+  start program = "/usr/sbin/systemctl start domoticz"
+  stop  program = "/usr/sbin/systemctl stop domoticz"
+  if failed
+     url http://127.0.0.1:8080/json.htm?type=command&param=getversion
+         and content = '"status" : "OK"'
+     for 2 cycles
+     then restart
