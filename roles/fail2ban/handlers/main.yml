@@ -1,4 +1,4 @@
 ---
 # handlers file for fail2ban
-- name: reload fail2ban
-  service: name=fail2ban state=reloaded
+- name: restart fail2ban
+  service: name=fail2ban state=restarted
