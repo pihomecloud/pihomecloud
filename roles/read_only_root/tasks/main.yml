@@ -1,0 +1,65 @@
+---
+# tasks file for read_only_root
+- name: create lv for /var on external storage
+  lvol: vg="vg{{cryptName}}" lv=lvvar size=10G
+- name: format lvvar
+  filesystem: dev="/dev/mapper/vg{{cryptName}}-lvvar" fstype=ext4
+- name: add lvvar to fstab
+  mount: src="/dev/mapper/vg{{cryptName}}-lvvar" name="/var/" fstype=ext4 state=present opts=noatime,nodiratime,nodev,nosuid
+- name: test if lvvar is mounted
+  shell: grep "/dev/mapper/vg{{cryptName}}-lvvar " /etc/mtab
+  failed_when: varMounted.stderr
+  changed_when: false
+  register: varMounted
+- name: lvvar to /mnt if needed
+  shell: mount "/dev/mapper/vg{{cryptName}}-lvvar" /mnt/
+  when: "varMounted.stdout == ''"
+- name: list services on /var/
+  shell: find /proc/*/fd/ -xtype f -exec file {} \; 2>/dev/null| grep -P '^/proc/[0-9]+/fd/[0-9]+{{":"}} symbolic link to /var/' | sed -e 's/\/fd.*//' -e 's/\/proc\///' | sort -u| while read pid; do systemctl status $pid --no-pager -n0 --no-legend | grep -B1 'Loaded{{":"}} loaded (/usr/lib/systemd/' | grep -v 'Loaded{{":"}} loaded (/usr/lib/systemd/'; done | awk '{print $2}'| sort -u | grep -v sshd
+  when: "varMounted.stdout == '' or varMounted.stdout == '/dev/mapper/vgusbstorageDisk-lvvar /mnt ext4 rw,relatime,data=ordered 0 0'"
+  failed_when: varServices.stderr
+  changed_when: varServices.stdout
+  register: varServices
+- name: stoping services on /var
+  service: name="{{item}}" state=stopped
+  with_items: "{{varServices.stdout_lines|default([])}}"
+  when: "varMounted.stdout == '' or varMounted.stdout == '/dev/mapper/vgusbstorageDisk-lvvar /mnt ext4 rw,relatime,data=ordered 0 0'"
+- name: copy old /var to /mnt
+  shell: rsync -avu /var/ /mnt/
+  when: "varMounted.stdout == '' or varMounted.stdout == '/dev/mapper/vgusbstorageDisk-lvvar /mnt ext4 rw,relatime,data=ordered 0 0'"
+- name: stat source directories
+  stat: path="{{item}}"
+  register: statDirs
+  with_items: "{{rwDirectories}}"
+- name: list services on directory to move
+  shell: find /proc/*/fd/ -xtype f -exec file {} \; 2>/dev/null | grep -P '^/proc/[0-9]+/fd/[0-9]+{{":"}} symbolic link to {{item.item}}' | sed -e 's/\/fd.*//' -e 's/\/proc\///' | sort -u| while read pid; do systemctl status $pid --no-pager -n0 --no-legend | grep -B1 'Loaded{{":"}} loaded (/usr/lib/systemd/' | grep -v 'Loaded{{":"}} loaded (/usr/lib/systemd/'; done | awk '{print $2}'| sort -u | grep -v sshd
+  with_items: "{{statDirs.results}}"
+  failed_when: restartUnits.stderr
+  changed_when: restartUnits.stdout
+  register: restartUnits
+- name: stoping services on directory to move
+  service: name="{{item}}" state=stopped
+  with_items: "{{restartUnits.results|map(attribute='stdout_lines')|list}}"
+  when: "'results' in restartUnits"
+- name: moving dir to "/media/{{cryptName}}-unencrypted"
+  command: "mv {{item.item}} /media/{{cryptName}}-unencrypted/{{item.item|replace('/','_')}}"
+  when: "item.stat.exists and item.stat.islnk|default(true) == false"
+  with_items: "{{statDirs.results}}"
+- name: create destination directories if needed
+  file: dest="/media/{{cryptName}}-unencrypted/{{item.item|replace('/','_')}}" state=directory
+  with_items: "{{statDirs.results}}"
+  when: "item.stat.exists and item.stat.islnk|default(true) == false"
+- name: link to new directory
+  file: src="/media/{{cryptName}}-unencrypted/{{item.item|replace('/','_')}}" dest="{{item.item}}" state=link
+  with_items: "{{statDirs.results}}"
+  when: "item.stat.exists and item.stat.islnk|default(true) == false"
+- name: rebooting
+  shell: sleep 2 ; reboot &
+  when: "(varMounted.stdout == '' or varMounted.stdout == '/dev/mapper/vgusbstorageDisk-lvvar /mnt ext4 rw,relatime,data=ordered 0 0') or restartUnits|changed"
+  async: 2
+  poll: 0
+  ignore_errors: true
+- name: Waiting for reboot...
+  local_action: wait_for host=localhost port=22 delay=300 timeout=600 state=started
+  become: no
+  when: "(varMounted.stdout == '' or varMounted.stdout == '/dev/mapper/vgusbstorageDisk-lvvar /mnt ext4 rw,relatime,data=ordered 0 0') or restartUnits|changed"

@@ -1,0 +1,6 @@
+---
+# defaults file for read_only_root
+cryptName: usbstorageDisk
+rwDirectories:
+  - '/opt'
+  - '/srv'
