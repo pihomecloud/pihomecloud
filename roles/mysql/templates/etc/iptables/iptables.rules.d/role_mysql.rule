@@ -2,7 +2,7 @@
 #{{ansible_managed}}
 #role {{role_name}}
 
-{% if 'master' in group_names %}
+{% if 'slave' in group_names %}
 {% for slave in groups['slave'] %}
 {% if hostvars[slave]['ansible_default_ipv4'] is defined %}
 #Mysql connexion from {{slave}}
@@ -11,7 +11,7 @@
 {% endfor %}
 {% endif %}
 
-{% if 'slave' in group_names %}
+{% if 'master' in group_names %}
 {% for master in groups['master'] %}
 {% if hostvars[master]['ansible_default_ipv4'] is defined %}
 #Mysql connexion to {{master}}
