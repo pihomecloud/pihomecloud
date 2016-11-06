@@ -4,8 +4,10 @@
   pacman: name=letsencrypt state=absent
 - name: install certbot package
   pacmanneeded: name=certbot state=present
+- name: copy iptables rules associated with this role
+  include: iptables.yml
 - name: "generate certificate"
-  command: /usr/bin/certbot certonly --standalone -d "{{item}}" --rsa-key-size 4096 --standalone-supported-challenges http-01 --email {{letsEncryptEmail}} --agree-tos
+  command: /usr/bin/certbot certonly --standalone -d "{{item}}" --rsa-key-size "{{letsEncryptRsaKeySize}}" --preferred-challenges "{{letsEncryptPreferedChallenges}}" --email "{{letsEncryptEmail}}" --agree-tos -n
   args:
     creates: "/etc/letsencrypt/live/{{item}}"
   with_items: "{{letsencryptVirtualhosts|unique}}"
@@ -16,5 +18,3 @@
 - name: Install renewal cron
   cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/certbot renew && systemctl reload nginx" state="{{cronState}}"
   when: "'master' in group_names"
-- name: copy iptables rules associated with this role
-  include: iptables.yml
