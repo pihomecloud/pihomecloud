@@ -11,3 +11,4 @@ fail2BanIgnoreip: "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netma
 homecloudDir: /usr/share/webapps/nextcloud
 homecloudDataDir: "{{homecloudDir}}/data"
 homecloudLogDir: /var/log/homecloud
+fail2banDefautlAction: '%(action_ml)s'

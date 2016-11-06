@@ -9,3 +9,6 @@ banaction = iptables
 
 ignoreip = {{fail2BanIgnoreip}}
 
+action_ml = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+            %(mta)s-lines[name=%(__name__)s, sender="%(sender)s", dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
+

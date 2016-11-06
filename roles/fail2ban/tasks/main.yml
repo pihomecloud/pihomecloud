@@ -64,5 +64,8 @@
   when: not homecloudLog.stat.exists
 - name: Disable email notifications of jails stopping or starting
   template: src=etc/fail2ban/action.d/sendmail-common.local dest=/etc/fail2ban/action.d/sendmail-common.local owner=root group=root mode=0644
+- name: add action template
+  template: src=etc/fail2ban/action.d/sendmail-lines.conf dest=/etc/fail2ban/action.d/sendmail-lines.conf owner=root group=root mode=0644
+  notify: reload fail2ban
 - name: ensure fail2ban is started and enabled
   service: name=fail2ban state=started enabled=yes
