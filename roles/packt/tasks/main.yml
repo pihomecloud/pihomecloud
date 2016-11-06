@@ -13,4 +13,4 @@
     - packt.cfg
     - packt.sh
 - name: install packt cron
-  cron: name="packt downloader" hour=6 job="/srv/packt/packt.sh > /dev/null"
+  cron: name="packt downloader" minute=0 hour=6 job="/srv/packt/packt.sh > /dev/null"
