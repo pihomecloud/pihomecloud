@@ -1,5 +1,12 @@
 ---
 # tasks file for domoticz
+- name: testing if snort is installed
+  stat: path="/usr/lib/systemd/system/snort@.service"
+  register: snortService
+- name: stopping snort, too mush ram used by this service
+  service: name=snort@bond0 state=stopped
+  notify: start snort
+  when: "snortService.stat.exists"
 - name: install openzwave-git via makepkg
   makepkg: name=openzwave-git state=latest pkgver_parse=1months force_https=yes
   notify: restart domoticz
