@@ -92,6 +92,8 @@ if (! $logTime){
   }else{
     addMessage $warning,"Backup file is not from today";
   }
+}elsif (! -e $file){
+  addMessage $critical,"Backup file $file no found !";
 }else{
   my $logModification = time() - (stat("$file"))[9];
   if($logModification <= $logTime){

@@ -1,20 +1,20 @@
 #{{ansible_managed}}
 check program "Etat_du_dernier_backup" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/backup/log/ -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"
 
 check program "Etat_du_dernier_snapshot_hourly" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}} -n hourly.log -t 3660 -e"
-  if status != 0 for 4 cycles then alert
+  if status != 0 for 10 cycles then alert
 
 check program "Etat_du_dernier_snapshot_daily" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}} -n daily.log -t 86460 -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"
 
 
 check program "Etat_du_dernier_snapshot_weekly" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}} -n weekly.log -t 604860 -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"
 
 check program "Etat_du_dernier_snapshot_monthly" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}} -n monthly.log -t 2678460 -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"

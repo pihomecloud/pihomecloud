@@ -2,3 +2,4 @@
 check process snort with matching "/usr/bin/snort"
   start program = "/usr/sbin/systemctl start snort@bond0.service"
   stop program  = "/usr/sbin/systemctl stop snort@bond0.service"
+  if failed for 10 cycles then restart

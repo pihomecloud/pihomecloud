@@ -2,12 +2,12 @@
 check process "NGINX" with pidfile /run/nginx.pid
   start "/usr/sbin/systemctl start nginx"
   stop "/usr/sbin/systemctl stop nginx"
-  if failed
+  if failed for 10 cycles
     host localhost port 81 and
     send "GET /nginx-status-{{ lookup('password', 'credentials/' + ansible_hostname + '/nginx/localmonitoring_nginx chars=ascii_letters,digits') }} HTTP/1.1\r\nHost: localmonitoring\r\n\r\n"
     expect "HTTP/[0-9\.]{3} 200.*"
   then alert
-  if failed
+  if failed for 10 cycles
     host localhost port 81 and
     send "GET /nginx-status-{{ lookup('password', 'credentials/' + ansible_hostname + '/nginx/localmonitoring_nginx chars=ascii_letters,digits') }} HTTP/1.1\r\nHost: localmonitoring\r\n\r\n"
     expect "HTTP/[0-9\.]{3} 200.*"

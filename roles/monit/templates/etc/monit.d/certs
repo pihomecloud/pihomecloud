@@ -1,11 +1,11 @@
 #{{ansible_managed}}
 check program "Etat_des_certificats" with path "/srv/monitoring/plugins/check_certs.pl -w 60 -c 15 --cert=/srv/ca/intermediate/certs/ --index=/srv/ca/intermediate/index.txt -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
 
 check program "Certificat_Intermediaire" with path "/srv/monitoring/plugins/check_certs.pl -w 60 -c 15 --cert=/srv/ca/intermediate/certs/intermediate.cert.pem --index=/srv/ca/index.txt -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
 
 check program "Certificat_Root" with path "/srv/monitoring/plugins/check_certs.pl -w 60 -c 15 --cert=/srv/ca/certs/ca.cert.pem -e"
-  if status != 0 then alert
+  if status != 0 for 10 cycles then alert
 
 

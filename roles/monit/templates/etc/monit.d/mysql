@@ -2,11 +2,11 @@
 check process "MySQL" matching "/usr/sbin/mysqld"
   start program = "/usr/bin/systemctl start mysqld"
   stop program = "/usr/bin/systemctl stop mysqld"
-  if failed
+  if failed for 10 cycles
     unixsocket /var/run/mysqld/mysqld.sock
     protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
   then alert
-  if failed
+  if failed for 10 cycles
     unixsocket /var/run/mysqld/mysqld.sock
     protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
     for 3 cycles

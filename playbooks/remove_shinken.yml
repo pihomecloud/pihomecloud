@@ -1,0 +1,49 @@
+- hosts: all
+  remote_user: "{{localuser}}"
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: stoping shinken services
+      service: name="{{item}}" state=stopped
+      with_items:
+        - shinken-receiver
+        - shinken-broker
+        - shinken-scheduler
+        - shinken-reactionner
+        - shinken-poller
+        - shinken-arbiter
+      failed_when: false
+    - name: removing iptable rule
+      file: dest=/etc/iptables/iptables.rules.d/role_shinken.rule state=absent
+    - name: removing nginx configuration
+      file: dest=/etc/nginx/conf.d/shinken.conf state=absent
+    - name: removing naxsi configuration
+      file: dest=/etc/nginx/naxsi/shinken.whitelist.rules state=absent
+    - name: remove shinken user
+      user: name=shinken state=absent
+    - name: remove shinken group
+      group: name=shinken state=absent
+    - name: remove shinken packages not needed by monit
+      pacman: name="{{item}}" state=absent
+      with_items:
+        - shinken-modwebui2
+        - shinken-pickle-retention-file-scheduler
+        - shinken-pickle-retention-file-generic
+        - shinken
+        - python2-bottle
+        - python2-helper
+        - python2-cherrypy
+        - python2-html
+    - name: cleaning pacman cache
+      command: pacman -Sc --noconfirm
+    - name: reload nginx
+      service: name=nginx state=reloaded
+    - name: rebuild iptables rules
+      assemble: src=/etc/iptables/iptables.rules.d/ dest=/etc/iptables/iptables.rules validate="iptables-restore -t %s"
+    - name: removing the traces
+      shell: rm -Rf /var/log/nginx/"{{shinkenUrl}}".*.log* /var/log/shinken /var/lib/shinken /usr/lib/python2.7/site-packages/shinken /etc/shinken /srv/ca/intermediate/csr/"{{shinkenUrl}}.csr" /srv/ca/intermediate/private/"{{shinkenUrl}}".key* /srv/ca/intermediate/certs/"{{shinkenUrl}}.cert.pem" /etc/letsencrypt/live/"{{shinkenUrl}}" /etc/letsencrypt/renewal/"{{shinkenUrl}}.conf" /etc/nginx/ssl/{{shinkenUrl}}.crt" /etc/nginx/ssl/{{shinkenUrl}}.key" /etc/nginx/ssl/"{{shinkenUrl}}.key" /etc/nginx/ssl/"{{shinkenUrl}}.crt" 
+    - name: delete shinken user in mysql
+      mysql_user: name="shinken_{{ lookup('password', '../credentials/' + ansible_hostname + '/shinken/shinken_mysql_user chars=ascii_letters,digits') }}" host="localhost" login_user="root" login_password="{{mysqlPassword}}" state="absent"
+      when: mysqlPassword is defined
+    
+      

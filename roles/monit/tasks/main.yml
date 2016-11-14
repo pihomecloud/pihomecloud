@@ -9,9 +9,13 @@
     - bc
     - perl-dbi
     - perl-dbd-mysql
+- name: install perl-date-parse with makepkg
+  makepkg: name=perl-date-parse state=latest
 - name: configure monit base file
   template: src=etc/monitrc dest=/etc/monitrc owner=root group=root mode=0700
   notify: reload monit
+- name: create /etc/monit.d/ directory
+  file: dest=/etc/monit.d/ state=directory owner=root group=root mode=0700
 - name: include base monitoring
   template: src="etc/monit.d/{{item}}" dest=/etc/monit.d/ owner=root group=root mode=0600
   with_items:
@@ -22,6 +26,9 @@
     - whois
     - mysql
   notify: reload monit
+- name: add btrfs remote backup monitoring
+  template: src="etc/monit.d/btrfsRemoteBackup" dest=/etc/monit.d/ owner=root group=root mode=0600
+  when: "'slave' in group_names"
 - name: testing with the stats conditionnal monitoring
   stat: path="{{item.file}}"
   register: conditionnalMonitoring
