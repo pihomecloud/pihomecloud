@@ -84,7 +84,7 @@ import pwd
 import grp
 import shutil
 import urllib
-import urlparse
+from ansible.module_utils.six.moves.urllib.parse import urlparse, urlunparse
 
 PACMAN_PATH = "/usr/bin/pacman"
 MAKEPKG_PATH = "/usr/bin/makepkg"
@@ -293,7 +293,7 @@ def get_build_current_version(module, pkg, pkg_file):
 def prepare_aur_dir(module, build_dir, pkg):
     pkg_file_basename = "%s.tar.gz" % pkg
     pkg_file_dest = os.path.join(build_dir, pkg_file_basename)
-    aur_req = urlparse.urlunsplit((AUR_SCHEME, AUR_NETLOC, "%s/%s" % (AUR_SNAPSHOT_PATH, pkg_file_basename), "", ""))
+    aur_req = urlunparse((AUR_SCHEME, AUR_NETLOC, "%s/%s" % (AUR_SNAPSHOT_PATH, pkg_file_basename), "", "", ""))
     rsp, info = fetch_url(module, aur_req)
 
     if info['status'] != 200:
@@ -425,7 +425,7 @@ def install_package(module, pkg, pkg_file, upgrade):
     elif not pkg_file:
         # this is an aur pkg
         rpc_params = urllib.urlencode({"type": "info", "arg": pkg})
-        rpc_req = urlparse.urlunsplit((AUR_SCHEME, AUR_NETLOC, AUR_RPC_PATH, rpc_params, ""))
+        rpc_req = urlunparse((AUR_SCHEME, AUR_NETLOC, AUR_RPC_PATH, "", rpc_params, ""))
         rsp, info = fetch_url(module, rpc_req)
 
         # create a temporary file and copy content to do checksum-based replacement
