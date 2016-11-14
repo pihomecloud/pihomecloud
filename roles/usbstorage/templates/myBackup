@@ -21,6 +21,9 @@ fi
 
 exec > $bckDir/log/bck.$dateBackup.log 2>&1
 
+#Vu que l'on ne doit pas sauvegarder le mot de passe luks...
+[[ -s "/media/{{cryptName}}-unencrypted/mount/luks.txt" ]] && "/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+
 #Disque
 for disk in $listeDisks
 do

@@ -220,3 +220,5 @@
 - name: restart minidlna when mount changed
   service: name=minidlna state=restarted
   when: minidlna.stat.exists and (mount|changed)
+- name: my hook for mounting via an external web interface
+  include: mount_hook.yml

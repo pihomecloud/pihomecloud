@@ -34,6 +34,9 @@ then
   exit 1
 fi
 
+#Vu que l'on ne doit pas sauvegarder le mot de passe luks...
+[[ -s "/media/{{cryptName}}-unencrypted/mount/luks.txt" ]] && "/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+
 log=$logDir/$type.log
 
 exec > $log 2>&1

@@ -41,4 +41,6 @@ backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvo
 {% endif %}
 {% endfor %}
 {% endif %}
-
+#Vu que l'on ne doit pas sauvegarder le mot de passe luks...
+backup ALL= NOPASSWD:/usr/bin/test -s /media/usbstorageDisk-unencrypted/mount/luks.txt
+backup ALL= NOPASSWD:/media/{{cryptName}}-unencrypted/luksAutoMount.sh

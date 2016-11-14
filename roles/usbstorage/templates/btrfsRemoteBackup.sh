@@ -207,6 +207,9 @@ if ! lock; then
     exit
 fi
 
+#Vu que l'on ne doit pas sauvegarder le mot de passe luks...
+$ssh /usr/bin/test -s "/media/{{cryptName}}-unencrypted/mount/luks.txt" && echo "removing luks.txt" && $ssh "/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+
 if [[ -z "$init" ]]; then
     [ ! -z "$verbose" ] && echo $ssh /usr/bin/test -e "$dest_pool/${vol}${pf}_last"
     $ssh /usr/bin/test -e "$dest_pool/${vol}${pf}_last" \
