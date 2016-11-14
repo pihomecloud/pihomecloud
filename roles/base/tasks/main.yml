@@ -162,6 +162,8 @@
   when: "'ARMv7 Processor rev 4 (v7l)' in ansible_processor"
 - name: copy iptables rules associated with this role
   include: iptables.yml
+- name: rootfs optimization
+  mount: name="/" src="/dev/mmcblk0p2" fstype="ext4" opts="defaults,noatime,nodiratime" dump=0 passno=0 state=mounted
 - name: additional mounts
   mount: name="{{item.dir}}" src="{{item.filesystem}}" fstype="{{item.type}}" opts="{{item.options}}" dump={{item.dump | default(0)}} passno={{item.pass | default(0)}} state=mounted
   with_items: "{{additionalMounts}}"
