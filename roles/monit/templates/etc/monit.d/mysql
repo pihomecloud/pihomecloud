@@ -2,12 +2,15 @@
 check process "MySQL" matching "/usr/sbin/mysqld"
   start program = "/usr/bin/systemctl start mysqld"
   stop program = "/usr/bin/systemctl stop mysqld"
-  if failed for 10 cycles
+  if failed
     unixsocket /var/run/mysqld/mysqld.sock
     protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
+    for 10 cycles
   then alert
-  if failed for 10 cycles
+  if failed
     unixsocket /var/run/mysqld/mysqld.sock
     protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
-    for 3 cycles
+    for 10 cycles
   then restart
+  if does not exist for 10 cycles then alert
+  if does not exist for 10 cycles then restart

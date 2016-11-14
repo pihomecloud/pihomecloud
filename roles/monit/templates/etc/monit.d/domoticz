@@ -6,4 +6,6 @@ check process domoticz matching /opt/domoticz/domoticz
      url http://127.0.0.1:8080/json.htm?type=command&param=getversion
          and content = '"status" : "OK"'
      for 10 cycles
-     then restart
+  then restart
+  if does not exist for 10 cycles then alert
+  if does not exist for 10 cycles then restart

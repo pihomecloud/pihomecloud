@@ -2,4 +2,5 @@
 check process fail2ban with pidfile /var/run/fail2ban/fail2ban.pid
   start program = "/usr/sbin/systemctl start fail2ban"
   stop  program = "/usr/sbin/systemctl stop fail2ban"
-  if failed for 10 cycles then restart
+  if does not exist for 10 cycles then alert
+  if does not exist for 10 cycles then restart

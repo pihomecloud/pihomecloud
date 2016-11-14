@@ -3,3 +3,5 @@ check process php-fpm with matching "php-fpm: master process"
   start program = "/usr/sbin/systemctl start php-fpm"
   stop program  = "/usr/sbin/systemctl stop php-fpm"
   if failed unixsocket /run/php-fpm/php-fpm.sock for 10 cycles then restart
+  if does not exist for 10 cycles then alert
+  if does not exist for 10 cycles then restart
