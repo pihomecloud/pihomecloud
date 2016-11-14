@@ -56,15 +56,18 @@
   failed_when: "consoleAMA0.stderr"
   changed_when: false
   register: consoleAMA0
+- name: disable blutooth on rpi3
+  lineinfile: dest=/boot/config.txt regexp="dtoverlay=pi3-disable-bt" line="dtoverlay=pi3-disable-bt"
+  register: rebootPI
 - name: disable console on serial port
   command: sed -i 's/ [^ ]*ttyAMA0[^ ]*//g' /boot/cmdline.txt
-  register: rebootPI
+  register: rebootPI2
   when: not consoleAMA0|failed
 - name: disable Serial Getty on ttyAMA0
   service: name=serial-getty@ttyAMA0 state=stopped enabled=no
 - name: reboot PI
   shell: sleep 2 ; reboot &
-  when: "rebootPI|changed"
+  when: "rebootPI|changed or rebootPI2|changed"
   async: 2
   poll: 0
   ignore_errors: true
