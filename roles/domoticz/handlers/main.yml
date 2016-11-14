@@ -4,6 +4,3 @@
   service: name=domoticz state=restarted
 - name: reload nginx
   service: name=nginx state=reloaded
-- name: start snort
-  service: name="snort@bond0" state=started
-
