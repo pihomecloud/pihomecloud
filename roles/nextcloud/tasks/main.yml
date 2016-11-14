@@ -167,6 +167,9 @@
   become: yes
   become_user: http
   when: "not 'cron' in check_background_jobs.stdout and 'master' in group_names"
+- name: install nextcloud cron
+  lineinfile: dest=/etc/cron.d/nextcloud regexp="cron.php" line='*/15 * * * * http php -d"open_basedir={{homecloud_open_basedir}}" {{homecloudDir}}/cron.php' create=yes
+  when: "'master' in group_names"
 - name: test if slave have a backup of config
   stat: path="/media/{{cryptName}}/masterbackup/backup_last/sys/usr/share/webapp/nextcloud/config/config.php"
   register: backupConfig
