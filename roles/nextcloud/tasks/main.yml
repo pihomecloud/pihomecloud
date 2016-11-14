@@ -113,7 +113,7 @@
 - name: create database for homecloud
   mysql_db: name={{homecloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create homecloud mysql user with password
-  mysql_user21: user="{{homecloudMySQLUser}}" password="{{homecloudMySQLPassword}}" priv="{{homecloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
+  mysql_user21: user="{{homecloudMySQLUser}}" password="{{homecloudMySQLPassword}}" priv="{{homecloudDataBase}}.*:CREATE,DROP,ALTER,DELETE,INDEX,INSERT,SELECT,UPDATE,CREATE TEMPORARY TABLES,LOCK TABLES" host="localhost" login_user=root login_password={{mysqlPassword}}
 - name: verifiy if homecloud is installed
   stat: "path=/var/lib/mysql/homecloud/{{homecloudDbtableprefix}}properties.frm"
   register: homecloudDbInstalled
