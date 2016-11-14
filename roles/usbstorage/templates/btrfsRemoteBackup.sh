@@ -187,6 +187,7 @@ DATE="$(date '+%Y%m%d_%H:%M:%S')"
 vol="$1"
 src_pool="$2"
 dest_pool="$3"
+lock="$lock-"$(echo $dest_pool/$vol| md5sum | awk '{ print $1 }')
 
 lock() {
     local lock_file=$lock
@@ -202,8 +203,9 @@ lock() {
 # shlock (from inn) does the right thing and grabs a lock for a dead process
 # (it checks the PID in the lock file and if it's not there, it
 # updates the PID with the value given to -p)
+echo $src_pool $dest_pool locking
 if ! lock; then
-    echo "$lock held for $PROG, quitting" >&2
+    echo "[CRITICAL] $lock held for $PROG, quitting" >&2
     exit
 fi
 
@@ -273,10 +275,20 @@ else
 fi
 if [[ -n "$failed" ]]; then
     echo >&2
-    echo "ABORT: $ssh btrfs send -p ${src_snap:-} $src_newsnap | $sudo btrfs -v receive $dest_pool/ failed" >&2
+    if [[ -n "$init" ]]; then
+        echo "[CRITICAL] $ssh btrfs send $dest_pool/$src_newsnap | $sudo btrfs receive -v $dest_pool/" >&2
+    else
+        echo "[CRITICAL] $ssh btrfs send -p ${src_snap:-} $src_newsnap | $sudo btrfs -v receive $dest_pool/ failed" >&2
+    fi
     $ssh btrfs subvolume delete "$dest_pool/$src_newsnap" | grep -v 'Transaction commit:'
     $sudo btrfs subvolume delete "$dest_pool/$src_newsnap" | grep -v 'Transaction commit:'
     exit 1
+else
+    if [[ -n "$init" ]]; then
+        echo "[OK] $ssh btrfs send $dest_pool/$src_newsnap | $sudo btrfs receive -v $dest_pool/"
+    else
+        echo "[OK] $ssh btrfs send -p ${src_snap:-} $src_newsnap | $sudo btrfs -v receive $dest_pool/"
+    fi
 fi
 
 # We make a read-write snapshot in case you want to use it for a chroot
@@ -335,4 +347,4 @@ done
 rm $lock
 duration=$(($(date +%s)-$start_backup))
 echo "[OK] $vol received on $src_newsnap in $duration seconds"
-echo "[OK] Backup complete"
+echo "Backup finished"
