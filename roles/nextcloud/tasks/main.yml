@@ -171,9 +171,9 @@
   lineinfile: dest=/etc/cron.d/nextcloud regexp="cron.php" line='*/15 * * * * http php -d"open_basedir={{homecloud_open_basedir}}" {{homecloudDir}}/cron.php' create=yes
   when: "'master' in group_names"
 - name: test if slave have a backup of config
-  stat: path="/media/{{cryptName}}/masterbackup/backup_last/sys/usr/share/webapp/nextcloud/config/config.php"
+  stat: path="/media/{{cryptName}}/masterbackup/backup_last/sys/{{homecloudDir}}/config/config.php"
   register: backupConfig
   when: "'slave' in group_names"
 - name: copy homecloud config on slave
-  copy: src="/media/{{cryptName}}/masterbackup/backup_last/sys/usr/share/webapp/nextcloud/config/config.php" dest=/usr/share/webapp/nextcloud/config/config.php remote_src=yes
+  copy: src="/media/{{cryptName}}/masterbackup/backup_last/sys/{{homecloudDir}}/config/config.php" dest="{{homecloudDir}}/nextcloud/config/config.php" remote_src=yes
   when: "'slave' in group_names and backupConfig.stat.exists"
