@@ -109,7 +109,7 @@
   register: restrictHomecloudHttpHttp
   changed_when: restrictHomecloudHttpHttp.stdout
 - name: allow write of config by nextcloud
-  file: path=/usr/share/webapps/nextcloud/config owner=http group=http mode=770
+  file: path=/usr/share/webapps/nextcloud/config owner=http group=http mode=750
 - name: create database for homecloud
   mysql_db: name={{homecloudDataBase}} state=present login_user=root login_password={{mysqlPassword}}
 - name: create homecloud mysql user with password
