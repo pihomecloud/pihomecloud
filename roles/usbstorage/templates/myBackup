@@ -5,7 +5,7 @@ startBackup=$(date +%s)
 export LANG=fr_FR.UTF-8
 export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 bckDir="/media/{{cryptName}}/backup/"
-listeDisks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "\sdisk$" | grep -v -P "crypto_LUKS\s+disk$" | awk '{print "/dev/"$1}')"
+listeDisks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "\sdisk$" | grep -v -P "crypto_LUKS\s+disk$|LVM2_member\s+disk$" | awk '{print "/dev/"$1}')"
 mysqlUser='backup_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_user chars=ascii_letters,digits') }}'
 mysqlPwd='{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_password') }}'
 purgeDays=7
@@ -35,7 +35,7 @@ do
   echo -e "Backup mbr $disk"
 done
 
-listLuks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "\sdisk$" | grep -P "crypto_LUKS\s+disk$" | awk '{print "/dev/"$1}')"
+listLuks="$(sblk -l -o NAME,FSTYPE,TYPE | grep -P "crypto_LUKS\s+" | sed -e 's/^\([^ ]*\)\(.*lvm\)$/mapper\/\1/' | awk '{print "/dev/"$1}') "
 for disk in $listLuks
 do
   cryptsetup luksHeaderBackup $disk --header-backup-file $bckDir/disk/$(basename $disk).$dateBackup.luks.img
