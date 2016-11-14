@@ -67,7 +67,7 @@ die () {
 
     rm $lock
 
-    echo "$msg" >&2
+    echo "[CRITICAL] $msg" >&2
     echo >&2
 
     # This is a fancy shell core dumper
