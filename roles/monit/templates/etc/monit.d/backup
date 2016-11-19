@@ -10,7 +10,6 @@ check program "Etat_du_dernier_snapshot_daily" with path "/srv/monitoring/plugin
   if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"
 
-
 check program "Etat_du_dernier_snapshot_weekly" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}} -n weekly.log -t 604860 -e"
   if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"

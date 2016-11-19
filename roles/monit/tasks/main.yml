@@ -68,6 +68,10 @@
     login_password: "{{mysqlPassword}}"
   when: mysqlPassword is defined
 
+#FIXME: sometimes monit http server is down, i need to restart it...
+- name: add cron for restart in case of http failure
+  cron: name="restart monit" minute=42 job="/usr/bin/systemctl is-active monit && (/usr/bin/curl -connect-timeout 2 http://localhost:{{monitPort}} || /usr/bin/systemctl restart monit)"
+
 #nginx frontend
 - name: verify if letsencrypt cert generated
   stat: path=/etc/letsencrypt/live/{{monitUrl}}/fullchain.pem

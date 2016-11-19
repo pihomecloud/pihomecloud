@@ -7,19 +7,7 @@ check filesystem "FS_{{mount.mount}}" with path "{{mount.device | regex_replace(
 {% endif %}
 {% endfor %}
 
-{% for mount in btrfsSubVolumes %}
-check filesystem "FS_{{mount.name}}" with path "{{mount.mount | regex_replace('\\\\040',' ')}}"
-  if space usage > 80% for 5 times within 15 cycles then alert
-  if inode usage > 90% then alert
-{% endfor %}
-
-{% for mount in btrfsSubVolumesAdditionnals %}
-check filesystem "FS_{{mount.name}}" with path "{{mount.mount | regex_replace('\\\\040',' ')}}"
-  if space usage > 80% for 5 times within 15 cycles then alert
-  if inode usage > 90% then alert
-{% endfor %}
-
-{% if "slave" not in group_names %}
+{% if "master" in group_names %}
 {% for mount in additionalMounts %}
 check program "Disk_{{mount.dir}}" with path "/usr/lib/monitoring-plugins/check_disk -w 0 -c 0 -E {{mount.dir}}"
   if status != 0 for 10 cycles then alert
@@ -27,22 +15,22 @@ check program "Disk_{{mount.dir}}" with path "/usr/lib/monitoring-plugins/check_
 {% endif %}
 
 {% if cryptName is defined %}
+{% for mount in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
+check filesystem "FS_{{mount.name}}" with path "/media/{{cryptName}}/{{mount.mount | regex_replace('\\\\040',' ')}}"
+  if space usage > 80% for 5 times within 15 cycles then alert
+  if inode usage > 90% then alert
+{% endfor %}
+
 check program "Disk_/media/{{cryptName}}/{{cryptName}}-top-lvl" with path "/usr/lib/monitoring-plugins/check_disk -w 0 -c 0 -E /media/{{cryptName}}/{{cryptName}}-top-lvl"
   if status != 0 for 10 cycles then alert
 
-{% for mount in btrfsSubVolumes %}
-check program "Disk_/media/{{cryptName}}/{{mount.mount}}" with path "/usr/lib/monitoring-plugins/check_disk -w 0 -c 0 -E /media/{{cryptName}}/{{mount.mount}}"
-  if status != 0 for 10 cycles then alert
-{% endfor %}
-{% for mount in btrfsSubVolumesAdditionnals %}
-
+{% for mount in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 check program "Disk_/media/{{cryptName}}/{{mount.mount}}" with path "/usr/lib/monitoring-plugins/check_disk -w 0 -c 0 -E /media/{{cryptName}}/{{mount.mount}}"
   if status != 0 for 10 cycles then alert
 {% endfor %}
 {% endif %}
 
-{% for mount in monitCheckMounts %}
-
+{% for mount in monitCheckMounts  %}
 check program "Disk_{{mount.mount}}" with path "/usr/lib/monitoring-plugins/check_disk -w 0 -c 0 -E {{mount.mount}}"
   if status != 0 for 10 cycles then alert
 {% endfor %}
