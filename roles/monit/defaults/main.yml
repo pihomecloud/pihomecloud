@@ -23,3 +23,7 @@ ssmtpAuthPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/ssmt
 mailHostIps: "{{ lookup('dig', mailHost, wantlist=True) }}"
 monitMySQLUser: "monit_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/monit_mysql_user chars=ascii_letters,digits length=10') }}"
 monitMySQLPass: "{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/monit_mysql_password') }}"
+rwDirectories:
+  - {name: var, size: 10G, path: /var}
+  - {name: opt, size: 1G, path: /opt}
+  - {name: srv, size: 1G, path: /srv}

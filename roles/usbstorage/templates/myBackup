@@ -61,10 +61,17 @@ rsync --inplace -av /var/lib/mysql/mysql-bin.* $bckDir/mysql/
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Rsync mysql binlog"
 
-#var Backup
-/usr/bin/rsync --inplace --bwlimit={{rsyncBwLimit}} -av --delete "/var/" "$bckDir/sys/"
+#Systeme
+rsync -avx --inplace --delete  / $bckDir/sys/
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
-echo -e "Rsync /var/"
+echo -e "Backup systeme"
+
+{% for mount in rwDirectories %}
+#var Backup
+/usr/bin/rsync --inplace --bwlimit={{rsyncBwLimit}} -av --delete "{{mount.path}}/" "$bckDir/sys/{{mount.path}}/"
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+echo -e "Rsync {{mount.path}}/"
+{% endfor %}
 
 #unencrypted Backup
 /usr/bin/rsync --inplace --bwlimit={{rsyncBwLimit}} -av --delete "/media/{{cryptName}}-unencrypted/" "$bckDir/{{cryptName}}-unencrypted"
@@ -89,11 +96,6 @@ echo -e "Backup {{fs.source}}"
 {%- endif %}
 
 {% endfor %}
-
-#Systeme
-rsync -avx --inplace --delete  / $bckDir/sys/
-[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
-echo -e "Backup systeme"
 
 #Purge logs needs SUPER...
 #mysql -u$mysqlUser -p$mysqlPwd -e " PURGE BINARY LOGS BEFORE DATE(NOW() - INTERVAL $purgeDays DAY);"
