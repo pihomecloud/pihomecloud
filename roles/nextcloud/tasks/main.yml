@@ -1,9 +1,12 @@
 ---
 # tasks file for nextcloud
 - name: Install nextcloud packages
-  pacmanneeded: name={{item}} state=present
+  makepkg: name={{item}} state=latest gpg_key="D75899B9A724937A"
   with_items:
     - nextcloud
+- name: Install nextcloud packages
+  pacmanneeded: name={{item}} state=present
+  with_items:
     - libreoffice-still
 - name: verify if letsencrypt cert generated
   stat: path=/etc/letsencrypt/live/{{homecloudUrl}}/fullchain.pem

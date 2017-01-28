@@ -4,6 +4,12 @@
   group: name=http gid=33 state=present
 - name: add http user
   user: name=http uid=33 group=http createhome=no home=/srv/http system=yes shell=/usr/bin/nologin
+- name: add optionnel http groups
+  user: name=http groups={{item}} append=yes
+  with_items: "{{webserverAdditionnalGroups}}"
+  notify:
+    - restart nginx
+    - restart php-fpm
 - name: install php deps
   pacmanneeded:  name={{item}} state=present
   with_items:

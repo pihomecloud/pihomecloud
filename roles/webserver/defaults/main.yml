@@ -8,3 +8,4 @@ naxsiRfi: 8
 naxsiTraversal: 4
 naxsiEvade: 4
 naxsiXSS: 8
+webserverAdditionnalGroups: []
