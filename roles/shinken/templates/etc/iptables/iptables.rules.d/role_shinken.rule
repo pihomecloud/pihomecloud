@@ -1,7 +1,0 @@
-
-#{{ansible_managed}}
-
-#WHOIS
--A OUTPUT -p udp -m udp --dport 43 -j ACCEPT
--A OUTPUT -p tcp -m tcp --dport 43 -j ACCEPT
-

@@ -1,7 +1,0 @@
----
-# handlers file for owncloud
-- name: restart php-fpm
-  service: name=php-fpm state=restarted
-- name: reload nginx
-  service: name=nginx state=reloaded
-
