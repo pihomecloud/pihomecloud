@@ -15,3 +15,5 @@ homecloudAdminPassword: "{{ lookup('password', 'credentials/common/' + role_name
 homecloudApps: []
 homecloud_open_basedir: "{{homecloudLogDir}}:/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/nextcloud/config{{homecloudAdditional_open_basedir}}"
 cryptName: usbstorageDisk
+otherServers: "{{groups['all']}}"
+letsencryptVirtualhosts: []
