@@ -347,4 +347,25 @@ done
 rm $lock
 duration=$(($(date +%s)-$start_backup))
 echo "[OK] $vol received on $src_newsnap in $duration seconds"
+
+
+###########Slave folders sync
+#################backup_last
+{% for folder in folderSync %}
+#######################{{folder.folder}}
+if [ -e {{folder.folder}} ] && [ -e /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} ]
+then
+{% if folder.service is defined %}
+  NB=$(rsync -avnu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}} 2>/dev/null|wc -l)
+{% endif %}
+  rsync -avu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
+{% if folder.service is defined %}
+  [ 0$NB -ge 4 ] && systemctl restart {{folder.service}}
+{% endif %}
+fi
+{% endfor %}
+
+
+
+####Backup End
 echo "Backup finished"

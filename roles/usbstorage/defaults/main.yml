@@ -17,6 +17,8 @@ hourlySnapToKeep: 24
 dailySnapToKeep: 7
 weeklySnapToKeep: 5
 monthlySnapToKeep: 12
+homecloudDir: /usr/share/webapps/nextcloud
+
 
 #bandwith limits
 btrfsSshMaxUpload: -1
@@ -26,3 +28,11 @@ rwDirectories:
   - {name: var, size: 10G, path: /var}
   - {name: opt, size: 1G, path: /opt}
   - {name: srv, size: 1G, path: /srv}
+notSyncOnSlaveDirectory: ['/var']
+
+folderSync:
+  - folder: "/etc/letsencrypt/"
+    service: "nginx"
+  - folder: "/srv/ca/"
+    service: "nginx"
+  - folder: "{{homecloudDir}}/config/config.php"

@@ -67,7 +67,7 @@ rsync -avx --inplace --delete  / $bckDir/sys/
 echo -e "Backup systeme"
 
 {% for mount in rwDirectories %}
-#var Backup
+#{{mount.path}} Backup
 /usr/bin/rsync --inplace --bwlimit={{rsyncBwLimit}} -av --delete "{{mount.path}}/" "$bckDir/sys/{{mount.path}}/"
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Rsync {{mount.path}}/"
