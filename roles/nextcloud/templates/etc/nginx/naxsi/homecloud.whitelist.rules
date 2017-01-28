@@ -54,6 +54,8 @@ BasicRule  wl:1005 "mz:$BODY_VAR:requesttoken";
 #Rule (1008) ; in stuff
 #uri : /index.php/apps/galleryplus/files/list
 #var_name : mediatypes
+BasicRule  wl:1008 "mz:$ARGS_VAR:mediatypes|$URL:/index.php/apps/gallery/files/list";
+BasicRule  wl:1008 "mz:$ARGS_VAR:ids|$URL:/index.php/apps/gallery/thumbnails";
 BasicRule  wl:1008 "mz:$ARGS_VAR:mediatypes|$URL:/index.php/apps/galleryplus/files/list";
 BasicRule  wl:1008 "mz:$ARGS_VAR:ids|$URL:/index.php/apps/galleryplus/thumbnails";
 
@@ -102,13 +104,14 @@ BasicRule  wl:1303 "mz:$URL_X:^/index.php/apps/files/api/v1/tags/_$!<[A-z]>!$/[A
 #Rule (1315) double encoding !
 #var_name : cookie
 BasicRule  wl:1315 "mz:$HEADERS_VAR:cookie";
+BasicRule  wl:1315 "mz:$ARGS_VAR:location|$URL:/index.php/apps/gallery/files/list";
 BasicRule  wl:1315 "mz:$ARGS_VAR:location|$URL:/index.php/apps/galleryplus/files/list";
 
 ###########
 # DOWNLOAD
 ##########
 
-BasicRule  wl:1001 "mz:$ARGS_VAR:files|$URL:/index.php/apps/files/ajax/download.php";
+BasicRule  wl:0 "mz:$ARGS_VAR:files|$URL:/index.php/apps/files/ajax/download.php";
 
 ##########
 # UPLOAD
@@ -118,10 +121,12 @@ BasicRule  wl:2 "mz:BODY|$URL:/index.php/apps/files/";
 BasicRule  wl:2 "mz:BODY|$URL:/remote.php/webdav/";
 
 ############
-# PDF PREVIEW
+# PREVIEW
 ############
 
 BasicRule  wl:0 "mz:$ARGS_VAR:files|$URL:/index.php/apps/files_pdfviewer/";
+BasicRule  wl:0 "mz:$ARGS_VAR:file|$URL:/index.php/apps/files_pdfviewer/";
+BasicRule  wl:0 "mz:$ARGS_VAR:file|$URL:/index.php/core/preview.png";
 
 ############
 # SEARCH BAR
