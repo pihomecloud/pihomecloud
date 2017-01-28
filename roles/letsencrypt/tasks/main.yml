@@ -15,6 +15,8 @@
 - name: we remove cron on the slave
   set_fact: cronState="absent"
   when: "'slave' in group_names"
+- name: create challenge directory
+  file: dest=/srv/letsencrypt state=directory mode=750
 - name: Install renewal cron
-  cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/certbot renew && systemctl reload nginx" state="{{cronState}}"
+  cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/certbot renew --preferred-challenges "{{letsEncryptPreferedChallenges}}" ; systemctl reload nginx" state="{{cronState}}"
   when: "'master' in group_names"
