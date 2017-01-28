@@ -20,3 +20,6 @@ BasicRule wl:2 "mz:BODY|$URL:/storesettings.webem";
 #url : /json.htm update sensor
 BasicRule wl:0 "mz:$ARGS_VAR:valuelist|$URL:/json.htm";
 
+#url event_create.webem update and save events
+BasicRule wl:0 "mz:$BODY_VAR:xml|$URL:/event_create.webem";
+BasicRule wl:0 "mz:$BODY_VAR:logicarray|$URL:/event_create.webem";
