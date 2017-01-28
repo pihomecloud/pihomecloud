@@ -104,15 +104,34 @@ BasicRule  wl:1303 "mz:$URL_X:^/index.php/apps/files/api/v1/tags/_$!<[A-z]>!$/[A
 BasicRule  wl:1315 "mz:$HEADERS_VAR:cookie";
 BasicRule  wl:1315 "mz:$ARGS_VAR:location|$URL:/index.php/apps/galleryplus/files/list";
 
+###########
+# DOWNLOAD
+##########
+
+BasicRule  wl:1001 "mz:$ARGS_VAR:files|$URL:/index.php/apps/files/ajax/download.php";
+
+##########
+# UPLOAD
+##########
+
+BasicRule  wl:2 "mz:BODY|$URL:/index.php/apps/files/";
+BasicRule  wl:2 "mz:BODY|$URL:/remote.php/webdav/";
+
+############
+# PDF PREVIEW
+############
+
+BasicRule  wl:0 "mz:$ARGS_VAR:files|$URL:/index.php/apps/files_pdfviewer/";
+
+############
+# SEARCH BAR
+############
+
+BasicRule  wl:1310 "mz:$ARGS_VAR:inapps[]|NAME|$URL:/index.php/core/search";
+BasicRule  wl:1311 "mz:$ARGS_VAR:inapps[]|NAME|$URL:/index.php/core/search";
 
 ############
 # WEBDAV
 ############
-BasicRule  wl:1000 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1001 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1009 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1010 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1011 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1013 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1015 "mz:$URL_X:^/remote.php/webdav/|URL";
-BasicRule  wl:1312 "mz:$URL_X:^/remote.php/webdav/|URL";
+BasicRule  wl:0 "mz:$URL_X:^/remote.php/webdav/|URL";
+
