@@ -72,6 +72,12 @@
 - name: copy localmonitoring conf
   template: src=etc/nginx/conf.d/localmonitoring.conf dest=/etc/nginx/conf.d/localmonitoring.conf owner=root group=root mode=0640
   notify: restart nginx
+- name: testing if letsencrypt challenge dir is present
+  stat: path=/srv/letsencrypt
+  register: letsecnryptChallenge
+- name: fixing permission for letsencrypt challenge dir if neede
+  file: dest=/srv/letsencrypt owner=http group=http
+  when: letsecnryptChallenge.stat.exists
 - name: ensure php-fpm is enabled
   service: name=php-fpm enabled=yes state=started
 - name: ensure nginx is enabled
