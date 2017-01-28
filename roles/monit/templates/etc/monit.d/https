@@ -1,0 +1,14 @@
+#{{ansible_managed}}
+{% for host in listVhosts %}
+check program "HTTPS_{{host|regex_replace('\.','_')}}" with path "/usr/lib/monitoring-plugins/check_http --ssl=1.2 --sni -H {{host}} -I 127.0.0.1 -C 30
+{%- if host in checkHttpsOptions %}
+{{ ' ' }} {{checkHttpsOptions[host]}}
+{%- endif -%}
+{%- if host == monitUrl %}
+{{ ' ' }} {{monitCheckUser}}:{{monitCheckPassword}}
+{%- endif -%}
+"
+  if status != 0 for 10 cycles then alert
+
+{% endfor %}
+

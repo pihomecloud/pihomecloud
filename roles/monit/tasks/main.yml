@@ -25,6 +25,7 @@
     - ntp
     - whois
     - mysql
+    - https
   notify: reload monit
 - name: add btrfs remote backup monitoring
   template: src="etc/monit.d/btrfsRemoteBackup" dest=/etc/monit.d/ owner=root group=root mode=0600
@@ -70,7 +71,7 @@
 
 #FIXME: sometimes monit http server is down, i need to restart it...
 - name: add cron for restart in case of http failure
-  cron: name="restart monit" minute=42 job="/usr/bin/systemctl is-active monit && (/usr/bin/curl -connect-timeout 2 http://localhost:{{monitPort}} || /usr/bin/systemctl restart monit)"
+  cron: name="restart monit" minute=42 job="/usr/bin/systemctl is-active monit >/dev/null && (/usr/bin/curl -connect-timeout 2 http://localhost:{{monitPort}} >/dev/null 2>&1 || /usr/bin/systemctl restart monit)"
 
 #nginx frontend
 - name: verify if letsencrypt cert generated

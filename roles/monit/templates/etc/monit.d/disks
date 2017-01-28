@@ -36,7 +36,7 @@ check program "Disk_{{mount.mount}}" with path "/usr/lib/monitoring-plugins/chec
 {% endfor %}
 
 {% for mount in rwDirectories %}
-check program "Disk_{{mount.path}}" with path "/usr/lib/monitoring-plugins/check_disk -w 80% -c 90% -E {{mount.path}}"
+check program "Disk_{{mount.path}}" with path "/usr/lib/monitoring-plugins/check_disk -w 20% -c 10% -E {{mount.path}}"
   if status != 0 for 10 cycles then alert
 {% endfor %}
 

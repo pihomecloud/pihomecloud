@@ -63,10 +63,12 @@ set logfile syslog
 ## Set global SSL options (just most common options showed, see manual for
 ## full list).
 #
-# set ssl {
-#     verify     : enable, # verify SSL certificates (disabled by default but STRONGLY RECOMMENDED)
-#     selfsigned : allow   # allow self signed SSL certificates (reject by default)
-# }
+set ssl {
+    VERSION    : TLSV12, #set the specific SSL/TLS version to use. By default Monit uses AUTO. 
+                         #In AUTO mode, only TLS is used, SSLv2 and SSLv3 is considered obsolete.
+    VERIFY     : ENABLE  # verify SSL certificates (disabled by default but STRONGLY RECOMMENDED)
+    #selfsigned : allow  # allow self signed SSL certificates (reject by default)
+}
 #
 #
 ## Set the list of mail servers for alert delivery. Multiple servers may be 
@@ -163,6 +165,7 @@ set httpd port {{monitPort}} and
     signature disable
     allow localhost        # allow localhost to connect to the server and
     allow {{monitUser}}:{{monitPassword}}      # require user 'admin' with password 'monit'
+    allow {{monitCheckUser}}:{{monitCheckPassword}} read-only
 
 ###############################################################################
 ## Services

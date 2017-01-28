@@ -8,4 +8,3 @@ check program "Certificat_Intermediaire" with path "/srv/monitoring/plugins/chec
 check program "Certificat_Root" with path "/srv/monitoring/plugins/check_certs.pl -w 60 -c 15 --cert=/srv/ca/certs/ca.cert.pem -e"
   if status != 0 for 10 cycles then alert
 
-
