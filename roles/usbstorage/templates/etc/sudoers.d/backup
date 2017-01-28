@@ -40,6 +40,14 @@ backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvo
 backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
 {% endif %}
 {% endfor %}
+backup ALL= NOPASSWD:/usr/bin/systemctl daemon-reload
+{% for folder in folderSync %}
+backup ALL= NOPASSWD:/usr/bin/rsync -avnu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
+backup ALL= NOPASSWD:/usr/bin/rsync -avu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
+{% if folder.service is defined %}
+backup ALL= NOPASSWD:/usr/bin/systemctl restart {{folder.service}}
+{% endif %}
+{% endfor %}
 {% endif %}
 #Vu que l'on ne doit pas sauvegarder le mot de passe luks...
 backup ALL= NOPASSWD:/usr/bin/test -s /media/usbstorageDisk-unencrypted/mount/luks.txt
