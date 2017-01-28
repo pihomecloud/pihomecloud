@@ -173,6 +173,9 @@
 - name: install nextcloud cron
   lineinfile: dest=/etc/cron.d/nextcloud regexp="cron.php" line='*/15 * * * * http php -d"open_basedir={{homecloud_open_basedir}}" {{homecloudDir}}/cron.php' create=yes
   when: "'master' in group_names"
+- name: add weekly scan in cron
+  lineinfile: dest=/etc/cron.d/nextcloud regexp="occ files:scan" line='0 5 * * 0 http php -d"open_basedir=" {{homecloudDir}}/occ files:scan --all' create=yes
+  when: "'master' in group_names"
 - name: test if slave have a backup of config
   stat: path="/media/{{cryptName}}/masterbackup/backup_last/sys/{{homecloudDir}}/config/config.php"
   register: backupConfig
