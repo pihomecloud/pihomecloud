@@ -1,7 +1,7 @@
 ---
 # tasks file for domoticz
-- name: install licurl-compat as dependency
-  makepkg: name=licurl-compat state=latest
+- name: install libcurl-compat as dependency
+  makepkg: name=libcurl-compat state=latest
   notify: restart domoticz
 - name: install openzwave-git via makepkg
   makepkg: name=openzwave-git state=latest pkgver_parse=1months force_https=yes
