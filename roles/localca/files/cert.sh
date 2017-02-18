@@ -17,7 +17,7 @@ days=375
 caFile=intermediate/certs/ca-chain.cert.pem
 
 
-[ -e $cert ] && echo "Please revoke cert before creating a new one : 
+[ -e $cert ] && echo "Please revoke cert before creating a new one :
 openssl ca -config intermediate/openssl.cnf -revoke $cert
 rm $cert" && exit
 
@@ -79,7 +79,7 @@ then
   chgrp sslread "$pks"
 fi
 
-openssl verify -CAfile $caFile "$cert" 
+openssl verify -CAfile $caFile "$cert"
 [ $? -ne 0 ] && echo "Problème $i : exit" && exit
 i=$(($i+1))
 

@@ -52,7 +52,7 @@ MainRule "str:gopher://" "msg:file:// scheme" "mz:ARGS|BODY|$HEADERS_VAR:Cookie"
 
 #######################################
 ## Directory traversal IDs:1200-1299 ##
-#######################################                                          
+#######################################
 MainRule "str:.." "msg:double dot" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1200;
 MainRule "str:/etc/passwd" "msg:obvious probe" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1202;
 MainRule "str:c:\\" "msg:obvious windows path" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1203;

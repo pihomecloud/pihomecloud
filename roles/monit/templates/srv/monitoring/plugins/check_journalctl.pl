@@ -89,7 +89,7 @@ if($timediff < $minutes){
 }else{
   #On va pas se taper toutes les logs, mais que'est ce que c'est que cette commande --since ?? fabuleux non ?
   $cmd .= " --since=-${minutes}m";
-  
+ 
   #On supprime l'entrée standard, au cas ou on a un mot de passe amettre ;p
   $cmd .= " </dev/null";
 }
@@ -119,7 +119,7 @@ if($? >0 or $#journal == 0){
     $messageToAdd .= "[".$$entry{_PID}."]" if $$entry{_PID};
     $messageToAdd .= " ".$$entry{MESSAGE} if $$entry{MESSAGE};
     $messageToAdd .= " COMMAND=".$$entry{_CMDLINE} if $$entry{_CMDLINE};
-    
+   
     addMessage $lStatus, $messageToAdd;
   }
 }else{

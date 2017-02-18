@@ -9,7 +9,7 @@ def main():
   )
 
   result, stdout, stderr = module.run_command("timedatectl  status --no-pager")
-  if re.match(r'.*Network time on: yes', stdout, re.S|re.M): 
+  if re.match(r'.*Network time on: yes', stdout, re.S|re.M):
     ntp_enabled=True
   else:
     ntp_enabled=False

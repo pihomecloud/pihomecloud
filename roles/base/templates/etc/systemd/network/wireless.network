@@ -1,6 +1,6 @@
 #{{ ansible_managed }}
 [Match]
 Name=wl*
- 
+
 [Network]
 Bond=bond0

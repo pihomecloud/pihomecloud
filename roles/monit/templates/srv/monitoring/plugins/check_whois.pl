@@ -13,7 +13,7 @@ use warnings;
 use Date::Parse;
 use Getopt::Long;
 
-my $domain; 
+my $domain;
 my $verbose;
 my $warningDays = 60;
 my $criticalDays = 15;

@@ -18,7 +18,7 @@
   file: dest="/mnt/{{ item.stat.path }}/" state=directory owner="{{ item.stat.pw_name }}" group="{{ item.stat.gr_name }}" mode="{{ item.stat.mode }}"
   with_items: "{{ oldStat.results }}"
 - name: unmounting /mnt/item
-  shell: umount /mnt "/mnt/{{ item.path }}" 
+  shell: umount /mnt "/mnt/{{ item.path }}"
   failed_when: false
   changed_when: "'umount: /mnt:' not in umount.stderr and 'umount: /mnt/{{ item.path }}:' not in umount.stderr"
   register: umount

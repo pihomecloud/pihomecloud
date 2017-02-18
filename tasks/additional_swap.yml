@@ -25,9 +25,9 @@
 #  when: "'{{additionalSwapFileDest}}' not in swapLoopdevices.stdout"
 - name: make swapfile
   command: "mkswap {{additionalSwapFileDest}}"
-  when: 
+  when:
    - "'{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"
 - name: activating swap
   command: "swapon {{additionalSwapFileDest}}"
-  when: 
+  when:
    - "'{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"

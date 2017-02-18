@@ -70,12 +70,12 @@ sub addMessage {
   $exitMessage .= "[".$statusName[$tStatus]."] ".$message;
 }
 
-GetOptions( 'cert|f=s' => \$certs, 'index|i=s' => \$index, 
+GetOptions( 'cert|f=s' => \$certs, 'index|i=s' => \$index,
             'warning|w=i' => \$warningDays, 'critical|c=i' => \$criticalDays,
             'error|e' => \$errorOnly) or usage;
 
-usage "certificate option is mandatory" unless $certs; 
-usage "warning ($warningDays) must be greater or equal critical ($criticalDays)" if $warningDays < $criticalDays; 
+usage "certificate option is mandatory" unless $certs;
+usage "warning ($warningDays) must be greater or equal critical ($criticalDays)" if $warningDays < $criticalDays;
 
 if ($index){
   open(my $fh, '<', $index)
@@ -91,14 +91,14 @@ sub checkCert {
   my $certName = basename $cert;
   $certName =~ s/\.pem$//;
   $certName =~ s/\.cert$//;
-  
+ 
   my ($endDate, $serial) = `openssl x509 -enddate -serial -noout -in "$cert"` or finalExit($unknown,"\nunable to get $cert information");
   $endDate =~ s/.*=//;
   chomp $endDate;
   $serial =~ s/.*=//;
   chomp $serial;
   my $timeRemaining = str2time($endDate) - time();
-  
+ 
   if ($timeRemaining > $warningDays*86400){
     addMessage $ok,"Certificate $certName expires on $endDate > $warningDays days";
   }elsif($timeRemaining < $criticalDays*86400){

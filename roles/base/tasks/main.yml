@@ -7,7 +7,7 @@
   hostname:
     name: "{{ inventory_hostname_short }}"
 - name: set hostname in /etc/hosts
-  lineinfile: 
+  lineinfile:
     dest: /etc/hosts
     regexp: "^127.0.0.1"
     line: "127.0.0.1 localhost {{ inventory_hostname_short }} {{ inventory_hostname }}"
@@ -130,7 +130,7 @@
 - name: configure bond module
   template: src=etc/modprobe.d/bonding dest=/etc/modprobe.d/bonding owner=root group=systemd-network mode=0640
 - name: enable systemd-networkd
-  service: name=systemd-networkd enabled=yes 
+  service: name=systemd-networkd enabled=yes
 #wireless
 #- name: install Driver for Realtek RTL8188CUS (8188C, 8192C) chipset wireless cards
 #  pacman: name=dkms-8192cu state=present
@@ -144,7 +144,7 @@
 - name: create wpa_suplicant dependency directory
   file: dest=/etc/systemd/system/wpa_supplicant@{{ wlan_interface }}.service.d state=directory owner=root group=systemd-network mode=0640
 - name: set wpa_suplicant dependency with network for wext driver
-  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant-wext@{{ wlan_interface }}.service.d/customdependency.conf owner=root group=systemd-network mode=0640 
+  template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant-wext@{{ wlan_interface }}.service.d/customdependency.conf owner=root group=systemd-network mode=0640
 - name: set wpa_suplicant dependency with network
   template: src=etc/systemd/system/wpa_supplicant@wlan.service.d/customdependency.conf dest=/etc/systemd/system/wpa_supplicant@{{ wlan_interface }}.service.d/customdependency.conf owner=root group=systemd-network mode=0640
 - name: add wpa_supplicant-wext@.service
@@ -154,11 +154,11 @@
   command: systemctl daemon-reload
   when: systemctlReload|changed
 #- name: enable wpa_supplicant
-#  service: name=wpa_supplicant-wext@{{ wlan_interface }} enabled=yes 
+#  service: name=wpa_supplicant-wext@{{ wlan_interface }} enabled=yes
 #Raspberry PI 3 has embeded wifi and normal driver works fine
 #Une der 32 bit, cpu is reported as "ARMv7 Processor rev 4 (v7l)"
 - name: enable wpa_supplicant
-  service: name=wpa_supplicant@{{ wlan_interface }} enabled=yes 
+  service: name=wpa_supplicant@{{ wlan_interface }} enabled=yes
   when: "'ARMv7 Processor rev 4 (v7l)' in ansible_processor"
 - name: copy iptables rules associated with this role
   include: iptables.yml

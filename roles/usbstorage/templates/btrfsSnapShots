@@ -53,7 +53,7 @@ then
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
   echo -e "Snapshot {{ subvolume.name }} under /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/$type/{{ subvolume.name }}/$dateSnap"
 {% endif %}
-{% endfor %} 
+{% endfor %}
 fi
 sync
 
@@ -66,7 +66,7 @@ do
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
   echo -e "Snapshot delete $snap"
 done
-{% endfor %} 
+{% endfor %}
 #btrfs excludes must be all purged
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name in snapVolumesExclude %}
@@ -77,7 +77,7 @@ do
   echo -e "Snapshot delete $snap"
 done
 {% endif %}
-{% endfor %} 
+{% endfor %}
 
 echo snaphosts done in $(($(date +%s)-$startBackup)) seconds
 echo "Backup finished"

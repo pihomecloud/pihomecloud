@@ -12,11 +12,11 @@
         name: root
         password: "{{prompt_pass_root | password_hash('sha512') }}"
   vars_prompt:
-  - name: "prompt_pass"    
-    prompt: "Enter a password for the localuser"    
-    private: yes    
-    confirm: yes    
-  - name: "prompt_pass_root"    
-    prompt: "Enter a password for root"    
-    private: yes    
-    confirm: yes    
+  - name: "prompt_pass"
+    prompt: "Enter a password for the localuser"
+    private: yes
+    confirm: yes
+  - name: "prompt_pass_root"
+    prompt: "Enter a password for root"
+    private: yes
+    confirm: yes

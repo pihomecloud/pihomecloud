@@ -83,7 +83,7 @@ set mailserver
   using ssl
   using hostname {{ ssmtpHostname }}
 
-  
+ 
 # set mailserver mail.bar.baz,               # primary mailserver
 #                backup.bar.baz port 10025,  # backup mailserver on port 10025
 #                localhost                   # fallback relay

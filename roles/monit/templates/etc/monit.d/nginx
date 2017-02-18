@@ -6,7 +6,7 @@ check process "NGINX" with pidfile /run/nginx.pid
     host localhost port 81 and
     send "GET /nginx-status-{{ lookup('password', 'credentials/' + ansible_hostname + '/nginx/localmonitoring_nginx chars=ascii_letters,digits') }} HTTP/1.1\r\nHost: localmonitoring\r\n\r\n"
     expect "HTTP/[0-9\.]{3} 200.*"
-    for 10 cycles 
+    for 10 cycles
   then alert
   if failed
     host localhost port 81 and

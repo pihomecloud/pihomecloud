@@ -281,7 +281,7 @@ def get_build_current_version(module, pkg, pkg_file):
                     if rc != 0:
                         module.fail_json(msg="failed to execute pkgver function for %s" %(pkg), stderr=stderr)
                     pkgver = stdout.strip()
-        current_version = pkgver + '-' + pkgrel 
+        current_version = pkgver + '-' + pkgrel
     if os.path.exists(build_dir):
       try:
           shutil.rmtree(build_dir)
@@ -468,7 +468,7 @@ def check_package(module, pkg, state, pkg_file):
     if ((state == "present" or state == "latest") and not installed):
         # if the build would fail because of the state of the system we want to know
         check_build_environment(module)
-        state = "installed" 
+        state = "installed"
         changed = True
 
     if (state == "absent" and installed):

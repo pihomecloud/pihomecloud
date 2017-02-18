@@ -121,7 +121,7 @@ sub usage() {
   print "check_mem.pl comes with absolutely NO WARRANTY either implied or explicit\n";
   print "This program is licensed under the terms of the\n";
   print "MIT License (check source code for details)\n";
-  exit $exit_codes{'UNKNOWN'}; 
+  exit $exit_codes{'UNKNOWN'};
 }
 
 sub get_memory_info {

@@ -131,7 +131,7 @@
   pacman: name=trickle state=present
   when: "'slave' in group_names and (btrfsSshMaxUpload > 0 or btrfsSshMaxDownload > 0)"
 - name: create backup user
-  user: 
+  user:
   args:
     name: backup
     group: users

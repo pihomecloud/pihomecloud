@@ -1,7 +1,7 @@
 - name: set master name fact
   set_fact: mysqlMasterName="{{ groups['master'][0] }}"
 - name: create replication user
-  mysql_user: 
+  mysql_user:
     login_user: root
     login_password: "{{ mysqlPassword }}"
     name: "repl_{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_user chars=ascii_letters,digits') }}"

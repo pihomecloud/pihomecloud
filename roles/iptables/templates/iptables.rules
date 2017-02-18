@@ -22,7 +22,7 @@
 {%- if rule.chain is defined %}
 -A {{ rule.chain }}
 {%- else %}
--A {{ chain }} 
+-A {{ chain }}
 {%- endif %}
 {%- if rule.in_interface is defined %} -i {{ rule.in_interface }} {%- endif %}
 {%- if rule.out_interface is defined %} -o {{ rule.out_interface }} {%- endif %}
@@ -33,7 +33,7 @@
 {%- if rule.ctstate is defined %} --ctstate {{ rule.ctstate }} {%- endif %}
 {%- if rule.sport is defined %} --sport {{ rule.sport }} {%- endif %}
 {%- if rule.dport is defined %} --dport {{ rule.dport }} {%- endif %}
-{%- if rule.jump is defined %} -j {{ rule.jump }} 
+{%- if rule.jump is defined %} -j {{ rule.jump }}
 {%- else %} -j ACCEPT
 {%- endif %}
 {%- if rule.logprefix is defined %} --log-prefix {{ rule.logprefix }} {%- endif %}

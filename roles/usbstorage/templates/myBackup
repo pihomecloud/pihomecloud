@@ -47,7 +47,7 @@ vgcfgbackup --file $bckDir/disk/vgbackup.$dateBackup.cfg
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Backup LVM"
 
-#Mysql 
+#Mysql
 mysqldump -u$mysqlUser -p$mysqlPwd --opt --all-databases | gzip -9 > $bckDir/mysql/mysqldump.$dateBackup.sql.gz
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Backup MySQL"

@@ -10,7 +10,7 @@
 # Installation
 http://archlinuxarm.org/platforms/armv6/raspberry-pi
 
-- on the controller : 
+- on the controller :
   sudo pacman -Sy python2-netdev
 - Intall ansible deps (defaults pass : ssh : alarm ; sudo : root)
 ```

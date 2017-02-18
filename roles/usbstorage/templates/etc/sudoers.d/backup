@@ -1,6 +1,6 @@
 #{{ ansible_managed }}
 {% if 'master' in group_names %}
-backup ALL= NOPASSWD:/usr/bin/ls -rd /media/{{ cryptName }}/masterbackup/* 
+backup ALL= NOPASSWD:/usr/bin/ls -rd /media/{{ cryptName }}/masterbackup/*
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name not in snapVolumesExclude %}
 backup ALL= NOPASSWD:/usr/bin/btrfs subvolume snapshot -r /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ subvolume.name }} /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*

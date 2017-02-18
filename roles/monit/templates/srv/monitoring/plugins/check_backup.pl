@@ -45,7 +45,7 @@ sub finalExit {
   if ($logTime){
     $timeMessage="has less than ${logTime}s";
   }
-  
+ 
   $summary = "Log seems complete, $timeMessage and no error found" unless $summary;
   status $tStatus if $tStatus;
   $exitMessage = "[".$statusName[$status]."] Check is ".$statusName[$status]." " unless $exitMessage;

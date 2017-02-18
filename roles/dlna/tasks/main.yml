@@ -8,7 +8,7 @@
   template: src=etc/minidlna.conf dest=/etc/minidlna.conf owner=root group=root mode=0644
   notify: restart minidlna
 - name: increase fs.inotify.max_user_watches
-  copy: 
+  copy:
     content: "fs.inotify.max_user_watches = {{ max_user_watches }}"
     dest: /etc/sysctl.d/minidlna.conf
     owner: root
