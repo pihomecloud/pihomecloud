@@ -1,15 +1,15 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 check process "MySQL" matching "/usr/sbin/mysqld"
   start program = "/usr/bin/systemctl start mysqld"
   stop program = "/usr/bin/systemctl stop mysqld"
   if failed
     unixsocket /var/run/mysqld/mysqld.sock
-    protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
+    protocol mysql username "{{ monitMySQLUser }}" password "{{ monitMySQLPass }}"
     for 10 cycles
   then alert
   if failed
     unixsocket /var/run/mysqld/mysqld.sock
-    protocol mysql username "{{monitMySQLUser}}" password "{{monitMySQLPass}}"
+    protocol mysql username "{{ monitMySQLUser }}" password "{{ monitMySQLPass }}"
     for 10 cycles
   then restart
   if does not exist for 10 cycles then alert

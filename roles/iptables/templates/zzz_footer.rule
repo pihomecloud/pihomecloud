@@ -1,5 +1,5 @@
 
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 #Log if needed
 -A INPUT -m limit --limit 5/min -j LOG --log-prefix "IPTables-INPUT: DROP: "

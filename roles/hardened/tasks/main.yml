@@ -7,7 +7,7 @@
   template: src=etc/modprobe.d/hardened.conf dest=/etc/modprobe.d/hardened.conf owner=root group=root mode=0644
 # inutile de garde le suid/guid
 - name: remove suid and guid bits unneeded
-  file: dest={{item}} mode="u-s,g-s"
+  file: dest={{ item }} mode="u-s,g-s"
   with_items:
     - /usr/bin/chfn
     - /usr/bin/chsh
@@ -33,7 +33,7 @@
   command: systemctl daemon-reload
   when: systemctlReload|changed
 - name: restrict acces to some directories
-  file: state=directory path={{item}} owner=root group=root mode=0700
+  file: state=directory path={{ item }} owner=root group=root mode=0700
   with_items:
     #- /boot
     - /etc/iptables
@@ -43,12 +43,12 @@
     - /etc/cron.monthly
     - /etc/cron.d
 - name: restrict cron
-  file: dest={{item}} state=absent
+  file: dest={{ item }} state=absent
   with_items:
     - /etc/cron.deny
     - /etc/at.deny
 - name: restrict access to some files
-  copy: content="" dest={{item}} owner=root group=root mode=0600 force=no
+  copy: content="" dest={{ item }} owner=root group=root mode=0600 force=no
   with_items:
     - /etc/crontab
     - /etc/cron.allow
@@ -57,7 +57,7 @@
 - name: remove localhost ipv6 entry
   lineinfile: dest=/etc/hosts regexp='::1' line='#::1		localhost.localdomain	localhost'
 - name: Locking out user IDs after n unsuccessful consecutive login attempts mitigates brute force password attacks against your systems
-  lineinfile: dest={{item}} regexp="pam_tally" line="auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900"
+  lineinfile: dest={{ item }} regexp="pam_tally" line="auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900"
   with_items: 
     - /etc/pam.d/system-auth
 - name: Ensure password reuse is limited

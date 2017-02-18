@@ -2,6 +2,6 @@
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: set role_name fact
   set_fact: role_name= "{{ lookup('pipe','pwd')|dirname|basename }}"
-- name: copy iptables rules for {{role_name}}
-  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables rules for {{ role_name }}
+  template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
 

@@ -42,7 +42,7 @@
 ###################################################
 
 # Setup the network addresses you are protecting
-ipvar HOME_NET [{{trustedNetworks|join(',')}}]
+ipvar HOME_NET [{{ trustedNetworks|join(',') }}]
 
 # Set up the external network addresses. Leave as "any" in most situations
 ipvar EXTERNAL_NET any

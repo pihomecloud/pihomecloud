@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 {%- if not naxsiLearningMode -%}
 #
 {%- endif -%}
@@ -8,11 +8,11 @@ SecRulesEnabled;
 {% else %}
 #SecRulesDisabled;
 {% endif %}
-DeniedUrl "{{naxsiDeniedUrl}}";
+DeniedUrl "{{ naxsiDeniedUrl }}";
 ## check rules
-CheckRule "$SQL >= {{naxsiSQL}}" BLOCK;
-CheckRule "$RFI >= {{naxsiRfi}}" BLOCK;
-CheckRule "$TRAVERSAL >= {{naxsiTraversal}}" BLOCK;
-CheckRule "$EVADE >= {{naxsiEvade}}" BLOCK;
-CheckRule "$XSS >= {{naxsiXSS}}" BLOCK;
+CheckRule "$SQL >= {{ naxsiSQL }}" BLOCK;
+CheckRule "$RFI >= {{ naxsiRfi }}" BLOCK;
+CheckRule "$TRAVERSAL >= {{ naxsiTraversal }}" BLOCK;
+CheckRule "$EVADE >= {{ naxsiEvade }}" BLOCK;
+CheckRule "$XSS >= {{ naxsiXSS }}" BLOCK;
 

@@ -1,8 +1,8 @@
 #!/bin/bash
-#{{ansible_managed}}
+#{{ ansible_managed }}
 set -o pipefail
 startBackup=$(date +%s)
-snapRoot=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}
+snapRoot=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}
 
 [ -z "$1" ] && echo "usage: $0 <hourly, daily, weekly or monthly>" && exit 1
 
@@ -10,16 +10,16 @@ type=$1
 
 case $1 in
   hourly)
-    keep={{hourlySnapToKeep}}
+    keep={{ hourlySnapToKeep }}
     ;;
   daily)
-    keep={{dailySnapToKeep}}
+    keep={{ dailySnapToKeep }}
     ;;
   weekly)
-    keep={{weeklySnapToKeep}}
+    keep={{ weeklySnapToKeep }}
     ;;
   monthly)
-    keep={{monthlySnapToKeep}}
+    keep={{ monthlySnapToKeep }}
     ;;
   *)
     echo $1 not in hourly, daily, weekly or monthly
@@ -35,7 +35,7 @@ then
 fi
 
 #Vu que l'on ne doit pas sauvegarder le mot de passe luks...
-[[ -s "/media/{{cryptName}}-unencrypted/mount/luks.txt" ]] && "/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+[[ -s "/media/{{ cryptName }}-unencrypted/mount/luks.txt" ]] && "/media/{{ cryptName }}-unencrypted/luksAutoMount.sh"
 
 log=$logDir/$type.log
 
@@ -49,9 +49,9 @@ if [ $keep -gt 0 ]
 then
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name not in snapVolumesExclude %}
-  btrfs subvolume snapshot -r "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}}" "/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
+  btrfs subvolume snapshot -r "/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ subvolume.name }}" "/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/$type/{{ subvolume.name }}/$dateSnap"
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
-  echo -e "Snapshot {{subvolume.name}} under /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/$dateSnap"
+  echo -e "Snapshot {{ subvolume.name }} under /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/$type/{{ subvolume.name }}/$dateSnap"
 {% endif %}
 {% endfor %} 
 fi
@@ -60,7 +60,7 @@ sync
 #Purge
 #btrfs snapshots
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
-for snap in $(ls -rd /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/* | tail -n +$(( $keep + 1 )))
+for snap in $(ls -rd /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/$type/{{ subvolume.name }}/* | tail -n +$(( $keep + 1 )))
 do
   btrfs subvolume delete "$snap"
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
@@ -70,7 +70,7 @@ done
 #btrfs excludes must be all purged
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name in snapVolumesExclude %}
-for snap in $(ls -rd /media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/$type/{{subvolume.name}}/*)
+for snap in $(ls -rd /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/$type/{{ subvolume.name }}/*)
 do
   btrfs subvolume delete "$snap"
   [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"

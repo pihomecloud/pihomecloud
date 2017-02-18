@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-#{{ansible_managed}}
+#{{ ansible_managed }}
 # check_nginx_status.pl
 # Version : 0.10
 # Author  : regis.leroy at makina-corpus.com

@@ -1,19 +1,19 @@
 ---
 # defaults file for nextcloud
 myDomain: example.com
-homecloudUrl: homecloud.{{myDomain}}
+homecloudUrl: homecloud.{{ myDomain }}
 homecloudDBHost: localhost
 homecloudAdditional_open_basedir: ''
 homecloudDir: /usr/share/webapps/nextcloud
-homecloudDataDir: "{{homecloudDir}}/data"
+homecloudDataDir: "{{ homecloudDir }}/data"
 homecloudDbtableprefix: "hc_"
 homecloudLogDir: /var/log/homecloud
 homecloudDataBase: homecloud
-homecloudCert: /etc/nginx/ssl/{{homecloudUrl}}.crt
-homecloudKey: /etc/nginx/ssl/{{homecloudUrl}}.key
+homecloudCert: /etc/nginx/ssl/{{ homecloudUrl }}.crt
+homecloudKey: /etc/nginx/ssl/{{ homecloudUrl }}.key
 homecloudAdminPassword: "{{ lookup('password', 'credentials/common/' + role_name + '/admin-password') }}"
 homecloudApps: []
-homecloud_open_basedir: "{{homecloudLogDir}}:/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/nextcloud/config{{homecloudAdditional_open_basedir}}"
+homecloud_open_basedir: "{{ homecloudLogDir }}:/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom:/etc/webapps/nextcloud/config{{ homecloudAdditional_open_basedir }}"
 cryptName: usbstorageDisk
-otherServers: "{{groups['all']}}"
+otherServers: "{{ groups['all'] }}"
 letsencryptVirtualhosts: []

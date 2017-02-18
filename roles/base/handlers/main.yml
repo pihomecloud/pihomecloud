@@ -7,4 +7,4 @@
 - name: restart network
   service: name=systemd-networkd state=restarted
 - name: restart wpa_supplicant
-  service: name=wpa_supplicant@{{wlan_interface}} state=restarted
+  service: name=wpa_supplicant@{{ wlan_interface }} state=restarted

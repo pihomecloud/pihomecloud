@@ -1,14 +1,14 @@
 ---
 # tasks file for packt
 - name: create directories
-  file: path="{{item}}" state=directory
+  file: path="{{ item }}" state=directory
   with_items:
-    - "{{pactRootDir}}"
-    - "{{pactRootDir}}/log/"
-    - "{{pactRootDir}}/ebooks/"
-    - "{{packtDir}}"
+    - "{{ pactRootDir }}"
+    - "{{ pactRootDir }}/log/"
+    - "{{ pactRootDir }}/ebooks/"
+    - "{{ packtDir }}"
 - name: install pack files
-  template: src=srv/packt/{{item}} dest=/srv/packt/ owner=root group=root mode=700
+  template: src=srv/packt/{{ item }} dest=/srv/packt/ owner=root group=root mode=700
   with_items:
     - packt.cfg
     - packt.sh

@@ -1,5 +1,5 @@
 #!/bin/bash
-#{{ansible_managed}}
+#{{ ansible_managed }}
 #From https://github.com/igustin/packt
 
 # Packt daily free e-book claim & download

@@ -7,7 +7,7 @@ btrfsSubVolumes:
   - { name: 'backup', mount: 'backup'}
   - { name: 'masterbackup', mount: 'masterbackup'}
 btrfsSubVolumesAdditionnals: []
-dmDisk: "/dev/mapper/{{cryptName}}"
+dmDisk: "/dev/mapper/{{ cryptName }}"
 btrfsVolumesToHTTP: []
 additionalBackup: []
 rsyncBwLimit: 5000
@@ -35,4 +35,4 @@ folderSync:
     service: "nginx"
   - folder: "/srv/ca/"
     service: "nginx"
-  - folder: "{{homecloudDir}}/config/config.php"
+  - folder: "{{ homecloudDir }}/config/config.php"

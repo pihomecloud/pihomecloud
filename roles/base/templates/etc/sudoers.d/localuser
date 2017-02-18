@@ -1,2 +1,2 @@
-#{{ansible_managed}}
-{{localuser}} ALL=(ALL) NOPASSWD:ALL
+#{{ ansible_managed }}
+{{ localuser }} ALL=(ALL) NOPASSWD:ALL

@@ -3,7 +3,7 @@
 - name: install monit
   pacman: name=monit state=latest
 - name: monitoring deps
-  pacman: name={{item}} state=present
+  pacman: name={{ item }} state=present
   with_items:
     - monitoring-plugins
     - bc
@@ -17,7 +17,7 @@
 - name: create /etc/monit.d/ directory
   file: dest=/etc/monit.d/ state=directory owner=root group=root mode=0700
 - name: include base monitoring
-  template: src="etc/monit.d/{{item}}" dest=/etc/monit.d/ owner=root group=root mode=0600
+  template: src="etc/monit.d/{{ item }}" dest=/etc/monit.d/ owner=root group=root mode=0600
   with_items:
     - system
     - disks
@@ -31,7 +31,7 @@
   template: src="etc/monit.d/btrfsRemoteBackup" dest=/etc/monit.d/ owner=root group=root mode=0600
   when: "'slave' in group_names"
 - name: testing with the stats conditionnal monitoring
-  stat: path="{{item.file}}"
+  stat: path="{{ item.file }}"
   register: conditionnalMonitoring
   with_items:
     - {name: 'certs', file:  '/srv/ca/index.txt'}
@@ -41,8 +41,8 @@
     - {name: 'snort', file:  '/usr/lib/systemd/system/snort@.service'}
     - {name: 'fail2ban', file:  '/usr/lib/systemd/system/fail2ban.service'}
 - name: include conditionnal monitoring
-  template: src="etc/monit.d/{{item.item.name}}" dest=/etc/monit.d/ owner=root group=root mode=0600
-  with_items: "{{conditionnalMonitoring.results}}"
+  template: src="etc/monit.d/{{ item.item.name }}" dest=/etc/monit.d/ owner=root group=root mode=0600
+  with_items: "{{ conditionnalMonitoring.results }}"
   when: "item.stat.exists"
   notify: reload monit
 - name: add eventqueue dir
@@ -58,50 +58,50 @@
     - utils.sh
 - name: Copy all files recursively under /srv/monitoring
   template: src={{ item }} dest={{ item|replace(role_path+'/templates/', '/') }} owner=root group=root mode=0750
-  with_items: "{{ lookup('pipe', 'find {{role_path}}/templates/srv/monitoring/ -type f').split('\n') }}"
+  with_items: "{{ lookup('pipe', 'find {{ role_path }}/templates/srv/monitoring/ -type f').split('\n') }}"
 - name: set mysql password when mysqlPassword defined
   mysql_user21:
-    user: "{{monitMySQLUser}}"
-    password: "{{monitMySQLPass}}"
+    user: "{{ monitMySQLUser }}"
+    password: "{{ monitMySQLPass }}"
     priv: "*.*:USAGE"
     host: "localhost"
     login_user: root
-    login_password: "{{mysqlPassword}}"
+    login_password: "{{ mysqlPassword }}"
   when: mysqlPassword is defined
 
 #FIXME: sometimes monit http server is down, i need to restart it...
 - name: add cron for restart in case of http failure
-  cron: name="restart monit" minute=42 job="/usr/bin/systemctl is-active monit >/dev/null && (/usr/bin/curl -connect-timeout 2 http://localhost:{{monitPort}} >/dev/null 2>&1 || /usr/bin/systemctl restart monit)"
+  cron: name="restart monit" minute=42 job="/usr/bin/systemctl is-active monit >/dev/null && (/usr/bin/curl -connect-timeout 2 http://localhost:{{ monitPort }} >/dev/null 2>&1 || /usr/bin/systemctl restart monit)"
 
 #nginx frontend
 - name: verify if letsencrypt cert generated
-  stat: path=/etc/letsencrypt/live/{{monitUrl}}/fullchain.pem
+  stat: path=/etc/letsencrypt/live/{{ monitUrl }}/fullchain.pem
   register: monitLetsEncryptCert
 - name: set certificate and key of monit to letsencrypt
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/etc/letsencrypt/live/{{monitUrl}}/fullchain.pem", dest: "{{monitUrl}}.active.crt"}
-    - { src: "/etc/letsencrypt/live/{{monitUrl}}/privkey.pem", dest: "{{monitUrl}}.active.key"}
+    - { src: "/etc/letsencrypt/live/{{ monitUrl }}/fullchain.pem", dest: "{{ monitUrl }}.active.crt"}
+    - { src: "/etc/letsencrypt/live/{{ monitUrl }}/privkey.pem", dest: "{{ monitUrl }}.active.key"}
   when: monitLetsEncryptCert.stat.exists
   notify: reload nginx
 - name: verify if localca cert exists
-  stat: path=/srv/ca/intermediate/certs/{{monitUrl}}.cert.pem
+  stat: path=/srv/ca/intermediate/certs/{{ monitUrl }}.cert.pem
   register: monitLocalcaCert
 - name: set certificate and key of monit to localca
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/srv/ca/intermediate/certs/{{monitUrl}}.cert.pem", dest: "{{monitUrl}}.active.crt"}
-    - { src: "/srv/ca/intermediate/private/{{monitUrl}}.key.nopass", dest: "{{monitUrl}}.active.key"}
+    - { src: "/srv/ca/intermediate/certs/{{ monitUrl }}.cert.pem", dest: "{{ monitUrl }}.active.crt"}
+    - { src: "/srv/ca/intermediate/private/{{ monitUrl }}.key.nopass", dest: "{{ monitUrl }}.active.key"}
   when: not monitLetsEncryptCert.stat.exists and monitLocalcaCert.stat.exists
   notify: reload nginx
 - name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
-  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{monitUrl}}.key -out /etc/nginx/ssl/{{monitUrl}}.crt -batch -subj '/CN={{monitUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{monitUrl}}.crt
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{ monitUrl }}.key -out /etc/nginx/ssl/{{ monitUrl }}.crt -batch -subj '/CN={{ monitUrl }}/O=Acme/C=US' creates=/etc/nginx/ssl/{{ monitUrl }}.crt
   when: not monitLetsEncryptCert.stat.exists and not monitLocalcaCert.stat.exists
 - name: set certificate and key of monit to a non sense cert
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/etc/nginx/ssl/{{monitUrl}}.crt", dest: "{{monitUrl}}.active.crt"}
-    - { src: "/etc/nginx/ssl/{{monitUrl}}.key", dest: "{{monitUrl}}.active.key"}
+    - { src: "/etc/nginx/ssl/{{ monitUrl }}.crt", dest: "{{ monitUrl }}.active.crt"}
+    - { src: "/etc/nginx/ssl/{{ monitUrl }}.key", dest: "{{ monitUrl }}.active.key"}
   when: not monitLetsEncryptCert.stat.exists and not monitLocalcaCert.stat.exists
   notify: reload nginx
 - name: copy nginx configuration
@@ -110,7 +110,7 @@
 - name: create naxsi configuration
   template: src=etc/nginx/naxsi/monit.whitelist.rules dest=/etc/nginx/naxsi/monit.whitelist.rules owner=root group=root mode=0640
   notify: reload nginx
-- name: copy iptables rules for {{role_name}}
-  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables rules for {{ role_name }}
+  template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
 - name: enable and start monit
   service: name=monit state=started enabled=yes

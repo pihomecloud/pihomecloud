@@ -1,5 +1,5 @@
-#{{ansible_managed}}
-{{homecloudLogDir}}/homecloud.log {
+#{{ ansible_managed }}
+{{ homecloudLogDir }}/homecloud.log {
         rotate 52
 	missingok
 	create 640 http log

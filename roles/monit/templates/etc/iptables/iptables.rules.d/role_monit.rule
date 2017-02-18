@@ -1,5 +1,5 @@
 
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 #WHOIS
 -A OUTPUT -p udp -m udp --dport 43 -j ACCEPT

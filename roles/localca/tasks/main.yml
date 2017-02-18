@@ -1,7 +1,7 @@
 ---
 # tasks file for localca
 - name: create /srv/ca/ structure
-  file: state=directory path=/srv/ca/{{item}} owner=root group=root mode=0755
+  file: state=directory path=/srv/ca/{{ item }} owner=root group=root mode=0755
   with_items:
     - .
     - certs
@@ -9,13 +9,13 @@
     - intermediate
     - newcerts
 - name: check if backup is aviable for slave
-  command: find "/media/{{cryptName}}/masterbackup/backup_last/sys/srv/ca/" -name ca.key -o -name intermediate.key
+  command: find "/media/{{ cryptName }}/masterbackup/backup_last/sys/srv/ca/" -name ca.key -o -name intermediate.key
   failed_when: false
   changed_when: false
   register: ca_backup
   when: "'slave' in group_names"
 - name: synchronize last backup on slave
-  command: rsync --info=name -a /media/{{cryptName}}/masterbackup/backup_last/sys/srv/ca/ /srv/ca/
+  command: rsync --info=name -a /media/{{ cryptName }}/masterbackup/backup_last/sys/srv/ca/ /srv/ca/
   register: sync_ca
   changed_when: sync_ca.stdout
   when: "'slave' in group_names and ca_backup is defined and ca_backup.stdout_lines|length  >=2"
@@ -33,16 +33,16 @@
   template: src=openssl.cnf dest=/srv/ca/ owner=root group=root mode=0644
 #Generation du CA Root
 - name: generate /srv/ca/private/ca.key
-  shell: openssl genrsa -aes256 -out /srv/ca/private/ca.key -passout pass:{{caRootPass}} 4096 creates=/srv/ca/private/ca.key
+  shell: openssl genrsa -aes256 -out /srv/ca/private/ca.key -passout pass:{{ caRootPass }} 4096 creates=/srv/ca/private/ca.key
 - name: permissions on /srv/ca/private/ca.key
   file: state=file path=/srv/ca/private/ca.key owner=root group=root mode=0600
-- name: generate /srv/ca/certs/ca.cert.pem '/C={{country}}/ST={{state}}/O={{organisation}}/CN={{organisation}} Root CA'
-  shell: openssl req -config /srv/ca/openssl.cnf -key /srv/ca/private/ca.key -new -x509 -days 7300 -sha256 -extensions v3_ca -out /srv/ca/certs/ca.cert.pem -passin pass:{{caRootPass}} -batch -subj '/C={{country}}/ST={{state}}/O={{organisation}}/CN={{organisation}} Root CA' creates=/srv/ca/certs/ca.cert.pem
+- name: generate /srv/ca/certs/ca.cert.pem '/C={{ country }}/ST={{ state }}/O={{ organisation }}/CN={{ organisation }} Root CA'
+  shell: openssl req -config /srv/ca/openssl.cnf -key /srv/ca/private/ca.key -new -x509 -days 7300 -sha256 -extensions v3_ca -out /srv/ca/certs/ca.cert.pem -passin pass:{{ caRootPass }} -batch -subj '/C={{ country }}/ST={{ state }}/O={{ organisation }}/CN={{ organisation }} Root CA' creates=/srv/ca/certs/ca.cert.pem
 - name: permissions on /srv/ca/certs/ca.cert.pem
   file: state=file path=/srv/ca/certs/ca.cert.pem owner=root group=root mode=0444
 #Generation du CA intermediaire
 - name: create /srv/ca/intermediate/ structure
-  file: state=directory path=/srv/ca/intermediate/{{item}} owner=root group=root mode=0755
+  file: state=directory path=/srv/ca/intermediate/{{ item }} owner=root group=root mode=0755
   with_items:
     - .
     - certs
@@ -68,13 +68,13 @@
   template: src=intermediate/openssl.cnf dest=/srv/ca/intermediate/ owner=root group=root mode=0644
 #Generation du certificat intermediaire
 - name: generate /srv/ca/intermediate/private/intermediate.key
-  shell: openssl genrsa -aes256 -out /srv/ca/intermediate/private/intermediate.key -passout pass:{{caIntermediatePass}} 4096 creates=/srv/ca/intermediate/private/intermediate.key
+  shell: openssl genrsa -aes256 -out /srv/ca/intermediate/private/intermediate.key -passout pass:{{ caIntermediatePass }} 4096 creates=/srv/ca/intermediate/private/intermediate.key
 - name: permissions on /srv/ca/intermediate/private/intermediate.key
   file: state=file path=/srv/ca/intermediate/private/intermediate.key owner=root group=root mode=0400
 - name: generate intermediate ca request  /srv/ca/intermediate/csr/intermediate.csr
-  shell: openssl req -config /srv/ca/intermediate/openssl.cnf -new -sha256 -key /srv/ca/intermediate/private/intermediate.key -out /srv/ca/intermediate/csr/intermediate.csr -passin pass:{{caIntermediatePass}} -batch -subj '/C={{country}}/ST={{state}}/O={{organisation}}/CN={{organisation}} Intermediate CA' creates=/srv/ca/intermediate/csr/intermediate.csr
+  shell: openssl req -config /srv/ca/intermediate/openssl.cnf -new -sha256 -key /srv/ca/intermediate/private/intermediate.key -out /srv/ca/intermediate/csr/intermediate.csr -passin pass:{{ caIntermediatePass }} -batch -subj '/C={{ country }}/ST={{ state }}/O={{ organisation }}/CN={{ organisation }} Intermediate CA' creates=/srv/ca/intermediate/csr/intermediate.csr
 - name: generate intermediate ca cert /srv/ca/intermediate/certs/intermediate.cert.pem
-  shell: openssl ca -config /srv/ca/openssl.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -in /srv/ca/intermediate/csr/intermediate.csr -out /srv/ca/intermediate/certs/intermediate.cert.pem -passin pass:{{caRootPass}} -batch creates=/srv/ca/intermediate/certs/intermediate.cert.pem
+  shell: openssl ca -config /srv/ca/openssl.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -in /srv/ca/intermediate/csr/intermediate.csr -out /srv/ca/intermediate/certs/intermediate.cert.pem -passin pass:{{ caRootPass }} -batch creates=/srv/ca/intermediate/certs/intermediate.cert.pem
 - name: permissions on /srv/ca/intermediate/certs/intermediate.cert.pem
   file: state=file path=/srv/ca/intermediate/certs/intermediate.cert.pem owner=root group=root mode=0444
 - name: create cert bundle
@@ -82,30 +82,30 @@
 - name: permissions on /srv/ca/bundle.pem
   file: state=file path=/srv/ca/bundle.pem owner=root group=root mode=0444
 - name: copy tools under /srv/ca
-  copy: src={{item}} dest=/srv/ca  owner=root group=root mode=0700
+  copy: src={{ item }} dest=/srv/ca  owner=root group=root mode=0700
   with_items:
     - cert.sh
     - user_cert.sh
     - website_cert.sh
 #create sslHostsCerts
-- name: generate /srv/ca/intermediate/private/{{item}}.key
-  shell: openssl genrsa -aes256 -passout pass:temp -out /srv/ca/intermediate/private/{{item}}.key 4096 creates=/srv/ca/intermediate/private/{{item}}.key
-  with_items: "{{sslHosts}}"
-- name: permissions on /srv/ca/intermediate/private/{{item}}.key
-  file: state=file path=/srv/ca/intermediate/private/{{item}}.key owner=root group=root mode=0400
-  with_items: "{{sslHosts}}"
-- name: remove dummy password in /srv/ca/intermediate/private/{{item}}.key
-  shell: openssl rsa -passin pass:temp -in /srv/ca/intermediate/private/{{item}}.key -out /srv/ca/intermediate/private/{{item}}.key.nopass creates=/srv/ca/intermediate/private/{{item}}.key.nopass
-  with_items: "{{sslHosts}}"
-- name: permissions on /srv/ca/intermediate/private/{{item}}.key.nopass
-  file: state=file path=/srv/ca/intermediate/private/{{item}}.key.nopass owner=root group=root mode=0400
-  with_items: "{{sslHosts}}"
-- name: generate {{item}} request  /srv/ca/intermediate/csr/{{item}}.csr
-  shell: openssl req -config /srv/ca/intermediate/openssl.cnf -new -sha256 -key /srv/ca/intermediate/private/{{item}}.key.nopass -out /srv/ca/intermediate/csr/{{item}}.csr -batch -subj '/C={{country}}/ST={{state}}/O={{organisation}}/CN={{item}}' creates=/srv/ca/intermediate/csr/{{item}}.csr
-  with_items: "{{sslHosts}}"
-- name: generate {{item}} cert /srv/ca/intermediate/certs/{{item}}.cert.pem
-  shell: openssl ca -config /srv/ca/intermediate/openssl.cnf -extensions server_cert -days 3650 -notext -md sha256 -in /srv/ca/intermediate/csr/{{item}}.csr -out /srv/ca/intermediate/certs/{{item}}.cert.pem -passin pass:{{caIntermediatePass}} -batch creates=/srv/ca/intermediate/certs/{{item}}.cert.pem
-  with_items: "{{sslHosts}}"
-- name: permissions on /srv/ca/intermediate/certs/{{item}}.cert.pem
-  file: state=file path=/srv/ca/intermediate/certs/{{item}}.cert.pem owner=root group=root mode=0444
-  with_items: "{{sslHosts}}"
+- name: generate /srv/ca/intermediate/private/{{ item }}.key
+  shell: openssl genrsa -aes256 -passout pass:temp -out /srv/ca/intermediate/private/{{ item }}.key 4096 creates=/srv/ca/intermediate/private/{{ item }}.key
+  with_items: "{{ sslHosts }}"
+- name: permissions on /srv/ca/intermediate/private/{{ item }}.key
+  file: state=file path=/srv/ca/intermediate/private/{{ item }}.key owner=root group=root mode=0400
+  with_items: "{{ sslHosts }}"
+- name: remove dummy password in /srv/ca/intermediate/private/{{ item }}.key
+  shell: openssl rsa -passin pass:temp -in /srv/ca/intermediate/private/{{ item }}.key -out /srv/ca/intermediate/private/{{ item }}.key.nopass creates=/srv/ca/intermediate/private/{{ item }}.key.nopass
+  with_items: "{{ sslHosts }}"
+- name: permissions on /srv/ca/intermediate/private/{{ item }}.key.nopass
+  file: state=file path=/srv/ca/intermediate/private/{{ item }}.key.nopass owner=root group=root mode=0400
+  with_items: "{{ sslHosts }}"
+- name: generate {{ item }} request  /srv/ca/intermediate/csr/{{ item }}.csr
+  shell: openssl req -config /srv/ca/intermediate/openssl.cnf -new -sha256 -key /srv/ca/intermediate/private/{{ item }}.key.nopass -out /srv/ca/intermediate/csr/{{ item }}.csr -batch -subj '/C={{ country }}/ST={{ state }}/O={{ organisation }}/CN={{ item }}' creates=/srv/ca/intermediate/csr/{{ item }}.csr
+  with_items: "{{ sslHosts }}"
+- name: generate {{ item }} cert /srv/ca/intermediate/certs/{{ item }}.cert.pem
+  shell: openssl ca -config /srv/ca/intermediate/openssl.cnf -extensions server_cert -days 3650 -notext -md sha256 -in /srv/ca/intermediate/csr/{{ item }}.csr -out /srv/ca/intermediate/certs/{{ item }}.cert.pem -passin pass:{{ caIntermediatePass }} -batch creates=/srv/ca/intermediate/certs/{{ item }}.cert.pem
+  with_items: "{{ sslHosts }}"
+- name: permissions on /srv/ca/intermediate/certs/{{ item }}.cert.pem
+  file: state=file path=/srv/ca/intermediate/certs/{{ item }}.cert.pem owner=root group=root mode=0444
+  with_items: "{{ sslHosts }}"

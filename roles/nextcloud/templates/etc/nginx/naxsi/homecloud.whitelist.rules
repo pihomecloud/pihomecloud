@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 #Rule (11) unknown content-type
 #uri : /remote.php/caldav/calendars/*/personnel/4064df3b-8794-4a7e-a3f1-744c9c315532.ics
 BasicRule  wl:11 "mz:BODY|$URL_X:^/remote.php/.*ics$";

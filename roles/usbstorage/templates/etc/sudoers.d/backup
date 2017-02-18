@@ -1,54 +1,54 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 {% if 'master' in group_names %}
-backup ALL= NOPASSWD:/usr/bin/ls -rd /media/{{cryptName}}/masterbackup/* 
+backup ALL= NOPASSWD:/usr/bin/ls -rd /media/{{ cryptName }}/masterbackup/* 
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name not in snapVolumesExclude %}
-backup ALL= NOPASSWD:/usr/bin/btrfs subvolume snapshot -r /media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}} /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume snapshot -r /media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}} /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume snapshot -r /media/{{cryptName}}/{{cryptName}}-top-lvl/{{subvolume.name}} /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:/usr/bin/btrfs send /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
-backup ALL= NOPASSWD:!/usr/bin/btrfs send /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs send /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:/usr/bin/test -e /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:/usr/bin/readlink -e /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:/usr/bin/btrfs send -p /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
-backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:/usr/bin/btrfs subvolume find-new /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* [0-9]*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume find-new /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro [0-9]*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume find-new /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro [0-9]* *
+backup ALL= NOPASSWD:/usr/bin/btrfs subvolume snapshot -r /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ subvolume.name }} /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume snapshot -r /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ subvolume.name }} /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume snapshot -r /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ subvolume.name }} /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:/usr/bin/btrfs send /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*
+backup ALL= NOPASSWD:!/usr/bin/btrfs send /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs send /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* * /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:/usr/bin/test -e /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:/usr/bin/readlink -e /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:/usr/bin/btrfs send -p /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*
+backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* * /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:!/usr/bin/btrfs send -p /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* * /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:/usr/bin/btrfs subvolume find-new /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* [0-9]*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume find-new /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro [0-9]*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume find-new /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro [0-9]* *
 {% endif %}
 {% endfor %}
 {% endif %}
 {% if 'slave' in group_names %}
-backup ALL= NOPASSWD:/usr/bin/btrfs receive -v /media/{{cryptName}}/masterbackup/
+backup ALL= NOPASSWD:/usr/bin/btrfs receive -v /media/{{ cryptName }}/masterbackup/
 {% for subvolume in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {% if subvolume.name not in snapVolumesExclude %}
-backup ALL= NOPASSWD:/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..*
-backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* *
-backup ALL= NOPASSWD:/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro*..* /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
-backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{cryptName}}/masterbackup/{{subvolume.name}}_ro* * /media/{{cryptName}}/masterbackup/{{subvolume.name}}_last
+backup ALL= NOPASSWD:/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..*
+backup ALL= NOPASSWD:!/usr/bin/btrfs subvolume delete /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* *
+backup ALL= NOPASSWD:/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro*..* /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
+backup ALL= NOPASSWD:!/usr/bin/ln -snf /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_ro* * /media/{{ cryptName }}/masterbackup/{{ subvolume.name }}_last
 {% endif %}
 {% endfor %}
 backup ALL= NOPASSWD:/usr/bin/systemctl daemon-reload
 {% for folder in folderSync %}
-backup ALL= NOPASSWD:/usr/bin/rsync -avnu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
-backup ALL= NOPASSWD:/usr/bin/rsync -avu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
+backup ALL= NOPASSWD:/usr/bin/rsync -avnu --inplace /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} {{ folder.folder }}
+backup ALL= NOPASSWD:/usr/bin/rsync -avu --inplace /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} {{ folder.folder }}
 {% if folder.service is defined %}
-backup ALL= NOPASSWD:/usr/bin/systemctl restart {{folder.service}}
+backup ALL= NOPASSWD:/usr/bin/systemctl restart {{ folder.service }}
 {% endif %}
 {% endfor %}
 {% endif %}
 #Vu que l'on ne doit pas sauvegarder le mot de passe luks...
 backup ALL= NOPASSWD:/usr/bin/test -s /media/usbstorageDisk-unencrypted/mount/luks.txt
-backup ALL= NOPASSWD:/media/{{cryptName}}-unencrypted/luksAutoMount.sh
+backup ALL= NOPASSWD:/media/{{ cryptName }}-unencrypted/luksAutoMount.sh

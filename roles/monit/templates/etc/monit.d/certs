@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 check program "Etat_des_certificats" with path "/srv/monitoring/plugins/check_certs.pl -w 60 -c 15 --cert=/srv/ca/intermediate/certs/ --index=/srv/ca/intermediate/index.txt -e"
   if status != 0 for 10 cycles then alert
 

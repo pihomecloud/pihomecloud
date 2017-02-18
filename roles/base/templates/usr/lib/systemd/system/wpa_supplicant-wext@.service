@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 [Unit]
 Description=WPA supplicant daemon (interface-specific version)
 Requires=sys-subsystem-net-devices-%i.device

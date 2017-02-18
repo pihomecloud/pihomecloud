@@ -1,15 +1,15 @@
 ---
 # defaults file for ssmtp
 myDomain: example.com
-rootMail: "root@{{myDomain}}"
+rootMail: "root@{{ myDomain }}"
 mailHubPort: 465
-mailHost: "smtp.{{myDomain}}"
-mailHub: "{{mailHost}}:{{mailHubPort}}"
-rewriteDomain: "{{myDomain}}"
-ssmtpHostname: "{{inventory_hostname_short}}.{{myDomain}}"
+mailHost: "smtp.{{ myDomain }}"
+mailHub: "{{ mailHost }}:{{ mailHubPort }}"
+rewriteDomain: "{{ myDomain }}"
+ssmtpHostname: "{{ inventory_hostname_short }}.{{ myDomain }}"
 FromLineOverride: "Yes"
 useTLS: "Yes"
 useSTARTTLS: "No"
-ssmtpAuthUser: "{{rootMail}}"
+ssmtpAuthUser: "{{ rootMail }}"
 ssmtpAuthPass: "{{ lookup('password', 'credentials/' + role_name + '/ssmtpAuthPass') }}"
 mailHostIps: "{{ lookup('dig', mailHost, wantlist=True) }}"

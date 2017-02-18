@@ -1,5 +1,5 @@
 #!/bin/bash
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 # By Marc MERLIN <marc_soft@merlins.org>
 # License: Apache-2.0
@@ -172,10 +172,10 @@ ssh="$ssh $sudo "
 {% if btrfsSshMaxUpload > 0 or btrfsSshMaxDownload > 0 %}
 ssh="trickle -s 
 {%- if btrfsSshMaxUpload > 0-%}
-{{ ' ' }} -u {{btrfsSshMaxUpload}}
+{{ ' ' }} -u {{ btrfsSshMaxUpload }}
 {%- endif -%}
 {%- if btrfsSshMaxDownload > 0-%}
-{{ ' ' }} -d {{btrfsSshMaxDownload}}
+{{ ' ' }} -d {{ btrfsSshMaxDownload }}
 {%- endif -%}
 {{ ' ' }} $ssh"
 {% endif %}
@@ -210,7 +210,7 @@ if ! lock; then
 fi
 
 #Vu que l'on ne doit pas sauvegarder le mot de passe luks...
-$ssh /usr/bin/test -s "/media/{{cryptName}}-unencrypted/mount/luks.txt" && echo "removing luks.txt" && $ssh "/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+$ssh /usr/bin/test -s "/media/{{ cryptName }}-unencrypted/mount/luks.txt" && echo "removing luks.txt" && $ssh "/media/{{ cryptName }}-unencrypted/luksAutoMount.sh"
 
 if [[ -z "$init" ]]; then
     [ ! -z "$verbose" ] && echo $ssh /usr/bin/test -e "$dest_pool/${vol}${pf}_last"
@@ -352,16 +352,16 @@ echo "[OK] $vol received on $src_newsnap in $duration seconds"
 ###########Slave folders sync
 #################backup_last
 {% for folder in folderSync %}
-#######################{{folder.folder}}
-if [ -e {{folder.folder}} ] && [ -e /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} ]
+#######################{{ folder.folder }}
+if [ -e {{ folder.folder }} ] && [ -e /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} ]
 then
 {% if folder.service is defined %}
-  NB=$(sudo rsync -avnu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}} 2>/dev/null|wc -l)
+  NB=$(sudo rsync -avnu --inplace /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} {{ folder.folder }} 2>/dev/null|wc -l)
 {% endif %}
-  echo rsync -avu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
-  sudo rsync -avu --inplace /media/{{cryptName}}/masterbackup/backup_last/sys{{folder.folder}} {{folder.folder}}
+  echo rsync -avu --inplace /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} {{ folder.folder }}
+  sudo rsync -avu --inplace /media/{{ cryptName }}/masterbackup/backup_last/sys{{ folder.folder }} {{ folder.folder }}
 {% if folder.service is defined %}
-  [ 0$NB -gt 4 ] && sudo systemctl daemon-reload && sudo systemctl restart {{folder.service}}
+  [ 0$NB -gt 4 ] && sudo systemctl daemon-reload && sudo systemctl restart {{ folder.service }}
 {% endif %}
 fi
 {% endfor %}

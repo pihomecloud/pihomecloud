@@ -3,7 +3,7 @@
 - name: install snort
   makepkg: name=snort state=latest
   args:
-    force_arch: "{{ansible_architecture}}' 'armv7h' 'armv6h"
+    force_arch: "{{ ansible_architecture }}' 'armv7h' 'armv6h"
     git_source: "https://github.com/pihomecloud/archlinux-snort.git"
   notify: restart snort
   register: systemctlReload
@@ -15,7 +15,7 @@
 - name: create snort user
   user: name=snort group=snort system=yes shell=/sbin/nologin comment="Snort IDS system user"
 - name: install pulledpork dependencies via makepkg
-  makepkg: name="{{item}}" state=latest
+  makepkg: name="{{ item }}" state=latest
   with_items:
     - perl-crypt-random-tesha2 #dependency for perl-crypt-random-seed
     - perl-crypt-random-seed #dependency for perl-bytes-random-secure
@@ -27,7 +27,7 @@
 - name: create directory for iplists
   file: path="/etc/snort/rules/iplists" state=directory owner=root group=snort mode=0750
 - name: create directory for snort rules
-  file: path="/etc/snort/{{snortRulePath}}" state=directory owner=root group=snort mode=0750
+  file: path="/etc/snort/{{ snortRulePath }}" state=directory owner=root group=snort mode=0750
 - name: configure snort
   template: src=snort.conf dest="/etc/snort/snort.conf" owner=root group=snort mode=0640
   notify: restart snort
@@ -35,16 +35,16 @@
 - name: copy the validated default configuration file
   template: src=snort.conf.pacvalidated dest="/etc/snort/snort.conf.pacvalidated" owner=root group=snort mode=0640
 - name: create symlinks to standard configuration directory for our conf
-  file: src="/etc/snort/rules/{{item}}" dest="/etc/snort/{{snortRulePath}}/{{item}}" state=link force=yes
+  file: src="/etc/snort/rules/{{ item }}" dest="/etc/snort/{{ snortRulePath }}/{{ item }}" state=link force=yes
   with_items:
     - snort.rules
     - local.rules
   notify: restart snort
 - name: configure pulledpork
-  lineinfile: dest=/etc/pulledpork/pulledpork.conf regexp="{{item.regexp}}" line="{{item.line}}"
+  lineinfile: dest=/etc/pulledpork/pulledpork.conf regexp="{{ item.regexp }}" line="{{ item.line }}"
   with_items:
-    - { regexp: "^rule_path=", line: "rule_path=/etc/snort/{{snortRulePath}}/snort.rules"}
-    - { regexp: "^local_rules=", line: "local_rules=/etc/snort/{{snortRulePath}}/local.rules"}
+    - { regexp: "^rule_path=", line: "rule_path=/etc/snort/{{ snortRulePath }}/snort.rules"}
+    - { regexp: "^local_rules=", line: "local_rules=/etc/snort/{{ snortRulePath }}/local.rules"}
     - { regexp: "^sid_msg=", line: "sid_msg=/etc/snort/sid-msg.map"}
     - { regexp: "^config_path=", line: "config_path=/etc/snort/.conf"}
     - { regexp: "black_list=", line: "black_list=/etc/snort/rules/iplists/default.blacklist"}
@@ -53,8 +53,8 @@
     - { regexp: "dropsid=", line: "dropsid=/etc/pulledpork/dropsid.conf"}
     - { regexp: "disablesid=", line: "disablesid=/etc/pulledpork/disablesid.conf"}
     - { regexp: "modifysid=", line: "modifysid=/etc/pulledpork/modifysid.conf"}
-    #- { regexp: 'rule_url=https://www.snort.org/reg-rules/\|opensource.gz\|', line: "rule_url=https://www.snort.org/reg-rules/|opensource.gz|{{snortOinkCode}}"}
-    - { regexp: '^rule_url=https://www.snort.org/rules/\|snortrules-snapshot.tar.gz\|', line: "rule_url=https://www.snort.org/rules/|snortrules-snapshot.tar.gz|{{snortOinkCode}}"}
+    #- { regexp: 'rule_url=https://www.snort.org/reg-rules/\|opensource.gz\|', line: "rule_url=https://www.snort.org/reg-rules/|opensource.gz|{{ snortOinkCode }}"}
+    - { regexp: '^rule_url=https://www.snort.org/rules/\|snortrules-snapshot.tar.gz\|', line: "rule_url=https://www.snort.org/rules/|snortrules-snapshot.tar.gz|{{ snortOinkCode }}"}
     #- { regexp: 'rule_url=https://snort.org/downloads/community/\|community-rules.tar.gz\|Community', line: "rule_url=https://snort.org/downloads/community/|community-rules.tar.gz|Community"}
     - { regexp: 'rule_url=http://talosintel.com/feeds/ip-filter.blf\|IPBLACKLIST\|open', line: "rule_url=http://talosintel.com/feeds/ip-filter.blf|IPBLACKLIST|open"}
   register: pulledpork

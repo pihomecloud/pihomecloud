@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 *filter
 :INPUT DROP [0:0]
@@ -12,7 +12,7 @@
 -A INPUT -s 127.0.0.0/8 -m limit --limit 5/min -j LOG --log-prefix "IPTables-INPUT: DROP: "
 -A INPUT -s 127.0.0.0/8 -j DROP
 
--A INPUT -d {{ansible_default_ipv4.broadcast}} -j DROP
+-A INPUT -d {{ ansible_default_ipv4.broadcast }} -j DROP
 -A INPUT -d 255.255.255.255 -j DROP
 
 #Established connextions
@@ -20,7 +20,7 @@
 -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
 #SSH local network : put it here, orelse, you may forgot it !
--A INPUT -s {{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}} -p tcp -m tcp --dport 22 -j ACCEPT
+-A INPUT -s {{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }} -p tcp -m tcp --dport 22 -j ACCEPT
 
 #PING OUTPUT allowed
 -A OUTPUT -p icmp -j ACCEPT

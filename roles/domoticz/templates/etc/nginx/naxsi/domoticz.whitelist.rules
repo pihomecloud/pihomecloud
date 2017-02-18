@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 #Rule (1000) sql keywords
 #uri : /js/dataTables.tableTools.min.js
 BasicRule  wl:1000 "mz:$URL_X:/js/.*.js|URL";

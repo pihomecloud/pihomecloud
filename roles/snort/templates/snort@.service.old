@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 [Unit]
 Description=Snort IDS system listening on '%I'
 After=syslog.target network.target

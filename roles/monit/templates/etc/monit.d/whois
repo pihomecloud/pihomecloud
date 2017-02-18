@@ -1,5 +1,5 @@
-#{{ansible_managed}}
-check program "Expiration_domaine" with path "/srv/monitoring/plugins/check_whois.pl -d {{myDomain}} -w 60 -c 30"
+#{{ ansible_managed }}
+check program "Expiration_domaine" with path "/srv/monitoring/plugins/check_whois.pl -d {{ myDomain }} -w 60 -c 30"
   if status != 0 then alert
   if status = 2 then alert
   every 120 cycles

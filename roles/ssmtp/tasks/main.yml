@@ -5,10 +5,10 @@
 - name: configure ssmtp
   template: src=etc/ssmtp/ssmtp.conf dest=/etc/ssmtp/ssmtp.conf owner=root group=root mode=0644
 - name: configure aliases
-  lineinfile: dest=/etc/ssmtp/revaliases regexp="^{{item}}:" line="{{item}}:{{rootMail}}"
+  lineinfile: dest=/etc/ssmtp/revaliases regexp="^{{ item }}:" line="{{ item }}:{{ rootMail }}"
   with_items:
     - root
-    - "{{localuser}}"
+    - "{{ localuser }}"
     - backup
-- name: copy iptables rules for {{role_name}}
-  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables rules for {{ role_name }}
+  template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700

@@ -2,7 +2,7 @@
 # defaults file for snort
 snortRulePath: 'rules.auto'
 trustedNetworks:
-  - "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}"
+  - "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"
 snortMaxTcp: 10240
 snortMaxUdp: 10240
 snortReputationMemCap: 500

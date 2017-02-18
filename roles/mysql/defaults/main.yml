@@ -1,5 +1,5 @@
 ---
 # defaults file for mysql
 mysqlExpireLogsDays: 7
-mysqlSlaveDumpPath: "/tmp/mysqlDump.{{ansible_hostname}}.sql"
+mysqlSlaveDumpPath: "/tmp/mysqlDump.{{ ansible_hostname }}.sql"
 

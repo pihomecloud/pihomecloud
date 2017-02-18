@@ -1,4 +1,4 @@
 - name: copy mount watcher
-  template: src=luksAutoMount.sh dest="/media/{{cryptName}}-unencrypted/" owner=root group=root mode=0700
+  template: src=luksAutoMount.sh dest="/media/{{ cryptName }}-unencrypted/" owner=root group=root mode=0700
 - name: add watcher in crontab every minute
-  cron: name="mount watcher" job="/media/{{cryptName}}-unencrypted/luksAutoMount.sh"
+  cron: name="mount watcher" job="/media/{{ cryptName }}-unencrypted/luksAutoMount.sh"

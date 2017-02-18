@@ -3,6 +3,6 @@
 cronState: "present"
 letsencryptVirtualhosts: []
 myDomain: "example.org"
-letsEncryptEmail: "admin@{{myDomain}}"
+letsEncryptEmail: "admin@{{ myDomain }}"
 letsEncryptRsaKeySize: 2048
 letsEncryptPreferedChallenges: "http"

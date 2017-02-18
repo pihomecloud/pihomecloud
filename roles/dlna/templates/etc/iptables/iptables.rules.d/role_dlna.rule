@@ -1,13 +1,13 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 #minidlna IN
 {% for net in trustedNetworks %}
--A INPUT -s {{net}} -p tcp -m tcp --dport 8200 -j ACCEPT
--A INPUT -s {{net}} -d 239.255.255.250 -p udp -m udp --dport 1900 -j ACCEPT
+-A INPUT -s {{ net }} -p tcp -m tcp --dport 8200 -j ACCEPT
+-A INPUT -s {{ net }} -d 239.255.255.250 -p udp -m udp --dport 1900 -j ACCEPT
 {% endfor %}
 #minidlna OUT
 -A OUTPUT -d 239.255.255.250 -p udp -m udp --dport 1900 -j ACCEPT
 {% for net in trustedNetworks %}
--A OUTPUT -d {{net}} -p udp -m udp --sport 1900 -j ACCEPT
+-A OUTPUT -d {{ net }} -p udp -m udp --sport 1900 -j ACCEPT
 {% endfor %}
 
 #IGMP discovery

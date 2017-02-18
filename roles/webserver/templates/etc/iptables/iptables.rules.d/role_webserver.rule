@@ -1,6 +1,6 @@
 
-#{{ansible_managed}}
-#role {{role_name}}
+#{{ ansible_managed }}
+#role {{ role_name }}
 
 #HTTPS
 -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT

@@ -10,33 +10,33 @@
   makepkg: name=domoticz state=latest
   notify: restart domoticz
 - name: verify if letsencrypt cert generated
-  stat: path=/etc/letsencrypt/live/{{domoticzUrl}}/fullchain.pem
+  stat: path=/etc/letsencrypt/live/{{ domoticzUrl }}/fullchain.pem
   register: domoticzLetsEncryptCert
 - name: set certificate and key of domoticz to letsencrypt
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/etc/letsencrypt/live/{{domoticzUrl}}/fullchain.pem", dest: "{{domoticzUrl}}.active.crt"}
-    - { src: "/etc/letsencrypt/live/{{domoticzUrl}}/privkey.pem", dest: "{{domoticzUrl}}.active.key"}
+    - { src: "/etc/letsencrypt/live/{{ domoticzUrl }}/fullchain.pem", dest: "{{ domoticzUrl }}.active.crt"}
+    - { src: "/etc/letsencrypt/live/{{ domoticzUrl }}/privkey.pem", dest: "{{ domoticzUrl }}.active.key"}
   when: domoticzLetsEncryptCert.stat.exists
   notify: reload nginx
 - name: verify if localca cert exists
-  stat: path=/srv/ca/intermediate/certs/{{domoticzUrl}}.cert.pem
+  stat: path=/srv/ca/intermediate/certs/{{ domoticzUrl }}.cert.pem
   register: domoticzLocalcaCert
 - name: set certificate and key of domoticz to localca
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/srv/ca/intermediate/certs/{{domoticzUrl}}.cert.pem", dest: "{{domoticzUrl}}.active.crt"}
-    - { src: "/srv/ca/intermediate/private/{{domoticzUrl}}.key.nopass", dest: "{{domoticzUrl}}.active.key"}
+    - { src: "/srv/ca/intermediate/certs/{{ domoticzUrl }}.cert.pem", dest: "{{ domoticzUrl }}.active.crt"}
+    - { src: "/srv/ca/intermediate/private/{{ domoticzUrl }}.key.nopass", dest: "{{ domoticzUrl }}.active.key"}
   when: not domoticzLetsEncryptCert.stat.exists and domoticzLocalcaCert.stat.exists
   notify: reload nginx
 - name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
-  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{domoticzUrl}}.key -out /etc/nginx/ssl/{{domoticzUrl}}.crt -batch -subj '/CN={{domoticzUrl}}/O=Acme/C=US' creates=/etc/nginx/ssl/{{domoticzUrl}}.crt
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{ domoticzUrl }}.key -out /etc/nginx/ssl/{{ domoticzUrl }}.crt -batch -subj '/CN={{ domoticzUrl }}/O=Acme/C=US' creates=/etc/nginx/ssl/{{ domoticzUrl }}.crt
   when: not domoticzLetsEncryptCert.stat.exists and not domoticzLocalcaCert.stat.exists
 - name: set certificate and key of domoticz to a non sense cert
-  file: src={{item.src}} dest=/etc/nginx/ssl/{{item.dest}} state=link force=yes
+  file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
   with_items:
-    - { src: "/etc/nginx/ssl/{{domoticzUrl}}.crt", dest: "{{domoticzUrl}}.active.crt"}
-    - { src: "/etc/nginx/ssl/{{domoticzUrl}}.key", dest: "{{domoticzUrl}}.active.key"}
+    - { src: "/etc/nginx/ssl/{{ domoticzUrl }}.crt", dest: "{{ domoticzUrl }}.active.crt"}
+    - { src: "/etc/nginx/ssl/{{ domoticzUrl }}.key", dest: "{{ domoticzUrl }}.active.key"}
   when: not domoticzLetsEncryptCert.stat.exists and not domoticzLocalcaCert.stat.exists
   notify: reload nginx
 - name: create nginx configuration

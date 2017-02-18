@@ -5,13 +5,13 @@
 - name: add http user
   user: name=http uid=33 group=http createhome=no home=/srv/http system=yes shell=/usr/bin/nologin
 - name: add optionnel http groups
-  user: name=http groups={{item}} append=yes
-  with_items: "{{webserverAdditionnalGroups}}"
+  user: name=http groups={{ item }} append=yes
+  with_items: "{{ webserverAdditionnalGroups }}"
   notify:
     - restart nginx
     - restart php-fpm
 - name: install php deps
-  pacmanneeded:  name={{item}} state=present
+  pacmanneeded:  name={{ item }} state=present
   with_items:
     - php-fpm
     - php-intl
@@ -41,7 +41,7 @@
   template: src=etc/nginx/nginx.conf dest=/etc/nginx/nginx.conf owner=root group=root mode=0644
   notify: restart nginx
 - name: set php options
-  ini_file: dest=/etc/php/php.ini section=PHP option={{item.name}} value={{item.value}} backup=yes owner=root group=root mode=0644
+  ini_file: dest=/etc/php/php.ini section=PHP option={{ item.name }} value={{ item.value }} backup=yes owner=root group=root mode=0644
   with_items:
     - {name: open_basedir, value: "/srv/http/:/home/:/tmp/:/usr/share/pear/:/usr/share/webapps/:/dev/urandom"}
     - {name: max_execution_time, value: "30000"}
@@ -50,7 +50,7 @@
     - {name: upload_max_filesize, value: "1G"}
   notify: restart php-fpm
 - name: activate php extensions
-  lineinfile: dest=/etc/php/php.ini regexp="extension={{item}}" line="extension={{item}}"
+  lineinfile: dest=/etc/php/php.ini regexp="extension={{ item }}" line="extension={{ item }}"
   with_items:
     - bz2.so
     - gd.so
@@ -61,7 +61,7 @@
     - pdo_mysql.so
     - xmlrpc.so
 - name: set php-fpm www options
-  ini_file: dest=/etc/php/php-fpm.d/www.conf section="{{item.section}}" option="{{item.option}}" value="{{item.value}}" backup=yes owner=root group=root mode=0644
+  ini_file: dest=/etc/php/php-fpm.d/www.conf section="{{ item.section }}" option="{{ item.option }}" value="{{ item.value }}" backup=yes owner=root group=root mode=0644
   with_items:
     - { section: 'www', option: 'access.log', value: '/var/log/php-fpm.$pool.access.log'}
     - { section: 'www', option: 'env[HOSTNAME]', value: '$HOSTNAME'}
@@ -88,5 +88,5 @@
   service: name=php-fpm enabled=yes state=started
 - name: ensure nginx is enabled
   service: name=nginx enabled=yes state=started
-- name: copy iptables rules for {{role_name}}
-  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables rules for {{ role_name }}
+  template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700

@@ -1,12 +1,12 @@
 
-#{{ansible_managed}}
-#role {{role_name}}
+#{{ ansible_managed }}
+#role {{ role_name }}
 
 {% if 'slave' in group_names %}
 {% for slave in groups['slave'] %}
 {% if hostvars[slave]['ansible_default_ipv4'] is defined %}
-#Mysql connexion from {{slave}}
--A INPUT -p tcp -m tcp -s {{hostvars[slave]['ansible_default_ipv4']['address']}} --dport 3306 -j ACCEPT
+#Mysql connexion from {{ slave }}
+-A INPUT -p tcp -m tcp -s {{ hostvars[slave]['ansible_default_ipv4']['address'] }} --dport 3306 -j ACCEPT
 {% endif %}
 {% endfor %}
 {% endif %}
@@ -14,8 +14,8 @@
 {% if 'master' in group_names %}
 {% for master in groups['master'] %}
 {% if hostvars[master]['ansible_default_ipv4'] is defined %}
-#Mysql connexion to {{master}}
--A OUTPUT -p tcp -m tcp -d {{hostvars[master]['ansible_default_ipv4']['address']}} --dport 3306 -j ACCEPT
+#Mysql connexion to {{ master }}
+-A OUTPUT -p tcp -m tcp -d {{ hostvars[master]['ansible_default_ipv4']['address'] }} --dport 3306 -j ACCEPT
 {% endif %}
 {% endfor %}
 {% endif %}

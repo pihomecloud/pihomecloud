@@ -14,100 +14,100 @@
   fail: msg="No valid disk found"
   when: diskDeviceList.stdout_lines | length == 0
 - name: show disk List
-  debug: msg="{{diskList.stdout_lines}}"
+  debug: msg="{{ diskList.stdout_lines }}"
 - name: prompt disk if not in defined variables
   pause: prompt="usbstorageDisk is not defined, please enter the NAME (without /dev/) of the disk choosen set usbstorageDisk in your playbook to avoid this"
   register: prompt_usbstorageDisk
   when: usbstorageDisk is not defined
 - name: set usbstorageDisk from input
-  set_fact: usbstorageDisk="/dev/{{prompt_usbstorageDisk.user_input}}"
+  set_fact: usbstorageDisk="/dev/{{ prompt_usbstorageDisk.user_input }}"
   when: usbstorageDisk is not defined
 - name: fail if the disk choosen is not in the list
-  fail: msg="The disk {{usbstorageDisk}} is not a valid disk"
+  fail: msg="The disk {{ usbstorageDisk }} is not a valid disk"
   when: "usbstorageDisk not in diskDeviceList.stdout_lines"
 - name: create pv on usbstorageDisk
-  lvg:  vg="vg{{cryptName}}" pvs=/dev/sda
+  lvg:  vg="vg{{ cryptName }}" pvs=/dev/sda
 - name: create lv unencrypted on usbstorageDisk
-  lvol: vg="vg{{cryptName}}" lv=lvunencrypted size=10%VG
+  lvol: vg="vg{{ cryptName }}" lv=lvunencrypted size=10%VG
 - name: create lv crypted on usbstorageDisk
-  lvol: vg="vg{{cryptName}}" lv=lvcrypted size=80%VG
+  lvol: vg="vg{{ cryptName }}" lv=lvcrypted size=80%VG
 - name: format disk on lvunencrypted
-  filesystem: dev="/dev/mapper/vg{{cryptName}}-lvunencrypted" fstype=ext4
+  filesystem: dev="/dev/mapper/vg{{ cryptName }}-lvunencrypted" fstype=ext4
 - name: gather list of luks volumes on the choosen usb disk
-  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS" | awk '{print $1}' | grep "^vg{{cryptName}}-lvcrypted$"
+  shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS" | awk '{print $1}' | grep "^vg{{ cryptName }}-lvcrypted$"
   changed_when: false
   failed_when: luksDevice.stderr
   register: luksDevice
 - name: initialize cryptSetup disk if needed
-  shell: echo "{{cryptPass}}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat "/dev/mapper/vg{{cryptName}}-lvcrypted"
+  shell: echo "{{ cryptPass }}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat "/dev/mapper/vg{{ cryptName }}-lvcrypted"
   when: luksDevice.stdout_lines | length == 0
 - name: verify if usbstorageDisk is opened
-  shell: dmsetup ls --target crypt | grep "^{{cryptName}}\s"
+  shell: dmsetup ls --target crypt | grep "^{{ cryptName }}\s"
   register: luksOpennedDevice
   changed_when: false
   failed_when: luksOpennedDevice.stderr
 - name: open luks usb volume if needed
-  shell: echo "{{cryptPass}}" | cryptsetup luksOpen "/dev/mapper/vg{{cryptName}}-lvcrypted" {{cryptName}}
+  shell: echo "{{ cryptPass }}" | cryptsetup luksOpen "/dev/mapper/vg{{ cryptName }}-lvcrypted" {{ cryptName }}
   when: luksOpennedDevice.stdout_lines | length == 0
 - name: create btrfs volume
-  filesystem: dev="{{dmDisk}}" fstype=btrfs
+  filesystem: dev="{{ dmDisk }}" fstype=btrfs
 - name: create /media/
   file: path=/media/ state=directory owner=root group=root mode=0755
-- name: create /media/{{cryptName}}-unencrypted
-  file: path=/media/{{cryptName}}-unencrypted state=directory owner=root group=root mode=0755
+- name: create /media/{{ cryptName }}-unencrypted
+  file: path=/media/{{ cryptName }}-unencrypted state=directory owner=root group=root mode=0755
 - name: add lvunencrypted to fstab and mount it
-  mount: src="/dev/mapper/vg{{cryptName}}-lvunencrypted" name="/media/{{cryptName}}-unencrypted" fstype=ext4 state=mounted opts=noatime,nodiratime
-- name: create /media/{{cryptName}}
-  file: path=/media/{{cryptName}} state=directory owner=root group=root mode=0755
-- name: mount btrfs volume {{cryptName}} and add it to fstab
-  mount: name=/media/{{cryptName}}/{{cryptName}}-top-lvl src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,noatime,nodiratime
-- name: scan btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
-  shell: btrfs subvolume list "/media/{{cryptName}}/{{cryptName}}-top-lvl/" | sed -e 's/.* path //' | grep -v -e "^{{snapDir}}"
+  mount: src="/dev/mapper/vg{{ cryptName }}-lvunencrypted" name="/media/{{ cryptName }}-unencrypted" fstype=ext4 state=mounted opts=noatime,nodiratime
+- name: create /media/{{ cryptName }}
+  file: path=/media/{{ cryptName }} state=directory owner=root group=root mode=0755
+- name: mount btrfs volume {{ cryptName }} and add it to fstab
+  mount: name=/media/{{ cryptName }}/{{ cryptName }}-top-lvl src={{ dmDisk }} fstype=btrfs state=mounted opts=noauto,nofail,noatime,nodiratime
+- name: scan btrfs subvolumes under /media/{{ cryptName }}/{{ cryptName }}-top-lvl
+  shell: btrfs subvolume list "/media/{{ cryptName }}/{{ cryptName }}-top-lvl/" | sed -e 's/.* path //' | grep -v -e "^{{ snapDir }}"
   changed_when: false
   failed_when: btrfsVolumeList.stderr
   register: btrfsVolumeList
-- name: create btrfs subvolumes under /media/{{cryptName}}/{{cryptName}}-top-lvl
-  command: btrfs subvolume create /media/{{cryptName}}/{{cryptName}}-top-lvl/{{item.name}}
+- name: create btrfs subvolumes under /media/{{ cryptName }}/{{ cryptName }}-top-lvl
+  command: btrfs subvolume create /media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ item.name }}
   with_items:
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
   register: mount
   when: item.name not in btrfsVolumeList.stdout_lines
-- name: mount btrfs volume under /media/{{cryptName}} and add it to fstab
-  mount: name=/media/{{cryptName}}/{{item.mount}} src={{dmDisk}} fstype=btrfs state=mounted opts=noauto,nofail,subvol={{item.name}}
+- name: mount btrfs volume under /media/{{ cryptName }} and add it to fstab
+  mount: name=/media/{{ cryptName }}/{{ item.mount }} src={{ dmDisk }} fstype=btrfs state=mounted opts=noauto,nofail,subvol={{ item.name }}
   with_items:
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
 - name: create backup structure
-  file: path=/media/{{cryptName}}/backup/{{item}} state=directory
+  file: path=/media/{{ cryptName }}/backup/{{ item }} state=directory
   with_items:
     - sys
     - mysql
     - disk
     - log
-    - "{{cryptName}}-unencrypted"
+    - "{{ cryptName }}-unencrypted"
 - name: create snapshot directory
-  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/ owner=root group=log mode=0750 state=directory
+  file: path=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/ owner=root group=log mode=0750 state=directory
 - name: create snapshot hourly structure
-  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/hourly/{{item.name}} owner=root group=log mode=0750 state=directory
+  file: path=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/hourly/{{ item.name }} owner=root group=log mode=0750 state=directory
   with_items:
     - { name: "."}
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
 - name: create snapshot daily structure
-  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/daily/{{item.name}} owner=root group=log mode=0750 state=directory
+  file: path=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/daily/{{ item.name }} owner=root group=log mode=0750 state=directory
   with_items:
     - { name: "."}
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
 - name: create snapshot weekly structure
-  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/weekly/{{item.name}} owner=root group=log mode=0750 state=directory
+  file: path=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/weekly/{{ item.name }} owner=root group=log mode=0750 state=directory
   with_items:
     - { name: "."}
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
 - name: create snapshot monthly structure
-  file: path=/media/{{cryptName}}/{{cryptName}}-top-lvl/{{snapDir}}/monthly/{{item.name}} owner=root group=log mode=0750 state=directory
+  file: path=/media/{{ cryptName }}/{{ cryptName }}-top-lvl/{{ snapDir }}/monthly/{{ item.name }} owner=root group=log mode=0750 state=directory
   with_items:
     - { name: "."}
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
 - name: adjust mount point permissions
-  file: path=/media/{{cryptName}}/data owner=http group=http state=directory mode=0755
+  file: path=/media/{{ cryptName }}/data owner=http group=http state=directory mode=0755
 - name: create mysql user for backup
   mysql_user:
     user: "backup_{{ lookup('password', 'credentials/' + ansible_hostname + '/' + role_name + '/mysql_user chars=ascii_letters,digits') }}"
@@ -115,14 +115,14 @@
     priv: "*.*:SELECT,SHOW DATABASES,SHOW VIEW,RELOAD,REPLICATION CLIENT,EVENT,TRIGGER,LOCK TABLES"
     host: "localhost"
     login_user: root
-    login_password: "{{mysqlPassword}}"
+    login_password: "{{ mysqlPassword }}"
   when: mysqlPassword is defined
-- name: permit {{localuser}} to access to storage
-  user: name="{{localuser}}" groups=http append=yes
+- name: permit {{ localuser }} to access to storage
+  user: name="{{ localuser }}" groups=http append=yes
 - name: adjust permissions to http user and group if needed
-  file: path=/media/{{cryptName}}/{{item}} owner=http group=http state=directory mode=0755
+  file: path=/media/{{ cryptName }}/{{ item }} owner=http group=http state=directory mode=0755
   with_items:
-    - "{{btrfsVolumesToHTTP}}"
+    - "{{ btrfsVolumesToHTTP }}"
 - name: install rsync as backup dependency
   pacman: name=rsync state=present
 - name: install parted as backup dependency
@@ -139,19 +139,19 @@
     shell: /bin/bash
     generate_ssh_key: yes
 - name: create btrfsRemoteBackup logs
-  copy: content="" dest=/media/{{cryptName}}/backup/btrfsRemoteBackup.{{item.name}}.log owner=backup group=root mode=0640 force=no
+  copy: content="" dest=/media/{{ cryptName }}/backup/btrfsRemoteBackup.{{ item.name }}.log owner=backup group=root mode=0640 force=no
   with_items:
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
   when: "'slave' in group_names and item.name not in snapVolumesExclude"
 - name: copy btrfs backup script
-  template: src=btrfsRemoteBackup.sh dest=/media/{{cryptName}}/backup/ owner=backup group=root mode=0750
+  template: src=btrfsRemoteBackup.sh dest=/media/{{ cryptName }}/backup/ owner=backup group=root mode=0750
 - name: authorize backup to use commands in sudo
   template: src=etc/sudoers.d/backup dest=/etc/sudoers.d/backup owner=root group=root mode=0600 validate='visudo -cf %s'
 #SSH port must be openned for initial backup
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
-- name: copy iptables rules for {{role_name}}
-  template: src=etc/iptables/iptables.rules.d/role_{{role_name}}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
+- name: copy iptables rules for {{ role_name }}
+  template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
 - name: Populate iptables file /etc/iptables/iptables.rules
   assemble: src=/etc/iptables/iptables.rules.d/ dest=/etc/iptables/iptables.rules validate="iptables-restore -t %s" owner=root group=root mode=0600
   register: iptables
@@ -161,34 +161,34 @@
 #Key exchange is mandatory for rsync ssh
 - name: gather slave backup public key
   command: cat /home/backup/.ssh/id_rsa.pub
-  delegate_to: "{{item}}"
-  with_items: "{{groups['slave']|default([])}}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['slave']|default([]) }}"
   changed_when: false
   register: backup_keys
   when: "'master' in group_names and 'ansible_distribution' in hostvars[item]"
 - name: append slave backup public key to master
-  authorized_key: user=backup key="{{item}}"
-  with_items: "{{backup_keys.results|map(attribute='stdout_lines')|list}}"
+  authorized_key: user=backup key="{{ item }}"
+  with_items: "{{ backup_keys.results|map(attribute='stdout_lines')|list }}"
   when: "not backup_keys|skipped and 'master' in group_names and 'results' in backup_keys"
 - name: gather master host public key
-  command: "ssh-keyscan -T 10 {{item}}"
-  with_items: "{{groups['master']}}"
+  command: "ssh-keyscan -T 10 {{ item }}"
+  with_items: "{{ groups['master'] }}"
   changed_when: false
   register: master_backup_keys
   when: "'slave' in group_names  and 'ansible_distribution' in hostvars[item]"
 - name: append master keys to slave's backup known_host
-  lineinfile: dest=/home/backup/.ssh/known_hosts regexp="{{item | regex_escape() }}" line="{{item}}" owner=backup group=users mode=0600 create=yes
-  with_items: "{{master_backup_keys.results|map(attribute='stdout_lines')|list}}"
+  lineinfile: dest=/home/backup/.ssh/known_hosts regexp="{{ item | regex_escape() }}" line="{{ item }}" owner=backup group=users mode=0600 create=yes
+  with_items: "{{ master_backup_keys.results|map(attribute='stdout_lines')|list }}"
   when: "'slave' in group_names and 'results' in master_backup_keys"
 #btrfs remote backup could be very looong, so fire and forget !
 - name: initialize btrfs backup
-  shell: "/media/{{cryptName}}/backup/btrfsRemoteBackup.sh --init --source {{groups['master'][0]}} --port 22 --verbose {{item.name}} /media/{{cryptName}}/{{cryptName}}-top-lvl /media/{{cryptName}}/masterbackup >/media/{{cryptName}}/backup/btrfsRemoteBackup.{{item.name}}.log 2>&1 &"
+  shell: "/media/{{ cryptName }}/backup/btrfsRemoteBackup.sh --init --source {{ groups['master'][0] }} --port 22 --verbose {{ item.name }} /media/{{ cryptName }}/{{ cryptName }}-top-lvl /media/{{ cryptName }}/masterbackup >/media/{{ cryptName }}/backup/btrfsRemoteBackup.{{ item.name }}.log 2>&1 &"
   args:
-    creates: /media/{{cryptName}}/masterbackup/{{item.name}}_last
+    creates: /media/{{ cryptName }}/masterbackup/{{ item.name }}_last
   become: yes
   become_user: backup
   with_items:
-    - "{{btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount')}}"
+    - "{{ btrfsSubVolumes + btrfsSubVolumesAdditionnals | sort(attribute='mount') }}"
   when: "'slave' in group_names and item.name not in snapVolumesExclude"
 - name: activate btrfs backup cron
   template: src=etc/cron.d/btrfsRemoteBackup dest=/etc/cron.d/btrfsRemoteBackup owner=root group=root mode=0644
@@ -197,15 +197,15 @@
   file: dest=/etc/cron.d/btrfsRemoteBackup state=absent
   when: "'slave' not in group_names"
 - name: create backup script
-  template: src=myBackup dest=/media/{{cryptName}}/backup/myBackup owner=root group=root mode=0750
+  template: src=myBackup dest=/media/{{ cryptName }}/backup/myBackup owner=root group=root mode=0750
 - name: create snapshot script
-  template: src=btrfsSnapShots dest=/media/{{cryptName}}/backup/btrfsSnapShots owner=root group=root mode=0750
+  template: src=btrfsSnapShots dest=/media/{{ cryptName }}/backup/btrfsSnapShots owner=root group=root mode=0750
 - name: activate backup in crontab
-  file: state=link src=/media/{{cryptName}}/backup/myBackup dest=/etc/cron.daily/myBackup
+  file: state=link src=/media/{{ cryptName }}/backup/myBackup dest=/etc/cron.daily/myBackup
 - name: activate snapshots in crontabs
   copy:
-    content: "#!/bin/bash\n/media/{{cryptName}}/backup/btrfsSnapShots {{item}}\n"
-    dest: /etc/cron.{{item}}/btrfsSnapShots
+    content: "#!/bin/bash\n/media/{{ cryptName }}/backup/btrfsSnapShots {{ item }}\n"
+    dest: /etc/cron.{{ item }}/btrfsSnapShots
     owner: root
     group: root
     mode: 0750

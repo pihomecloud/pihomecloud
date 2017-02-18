@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 # Heavily based on the script from:
 # check_mem.pl Copyright (C) 2000 Dan Larsson <dl@tyfon.net>

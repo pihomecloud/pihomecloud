@@ -1,5 +1,5 @@
 #$Id$
-#{{ansible_managed}}
+#{{ ansible_managed }}
 #	$OpenBSD: sshd_config,v 1.97 2015/08/06 14:53:21 deraadt Exp $
 
 # This is the sshd server system-wide configuration file.  See
@@ -137,4 +137,4 @@ Subsystem	sftp	/usr/lib/ssh/sftp-server
 #	AllowTcpForwarding no
 #	PermitTTY no
 #	ForceCommand cvs server
-AllowUsers {{sshUsers}}
+AllowUsers {{ sshUsers }}

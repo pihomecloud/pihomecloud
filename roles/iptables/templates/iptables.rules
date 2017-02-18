@@ -1,5 +1,5 @@
 #jinja2: trim_blocks: False, lstrip_blocks: False
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 *filter
 :INPUT ACCEPT [0:0]
@@ -17,27 +17,27 @@
 {%- if iptablesFilter|length > 0 %}
 {% for rule in iptablesFilter %}
 {%- if rule.name is defined %}
-#{{rule.name}}
+#{{ rule.name }}
 {%- endif %}
 {%- if rule.chain is defined %}
--A {{rule.chain}}
+-A {{ rule.chain }}
 {%- else %}
--A {{chain}} 
+-A {{ chain }} 
 {%- endif %}
-{%- if rule.in_interface is defined %} -i {{rule.in_interface}} {%- endif %}
-{%- if rule.out_interface is defined %} -o {{rule.out_interface}} {%- endif %}
-{%- if rule.source is defined %} -s {{rule.source}} {%- endif %}
-{%- if rule.destination is defined %} -d {{rule.destination}} {%- endif %}
-{%- if rule.protocol is defined %} -p {{rule.protocol}} {%- endif %}
-{%- if rule.match is defined %} -m {{rule.match}} {%- endif %}
-{%- if rule.ctstate is defined %} --ctstate {{rule.ctstate}} {%- endif %}
-{%- if rule.sport is defined %} --sport {{rule.sport}} {%- endif %}
-{%- if rule.dport is defined %} --dport {{rule.dport}} {%- endif %}
-{%- if rule.jump is defined %} -j {{rule.jump}} 
+{%- if rule.in_interface is defined %} -i {{ rule.in_interface }} {%- endif %}
+{%- if rule.out_interface is defined %} -o {{ rule.out_interface }} {%- endif %}
+{%- if rule.source is defined %} -s {{ rule.source }} {%- endif %}
+{%- if rule.destination is defined %} -d {{ rule.destination }} {%- endif %}
+{%- if rule.protocol is defined %} -p {{ rule.protocol }} {%- endif %}
+{%- if rule.match is defined %} -m {{ rule.match }} {%- endif %}
+{%- if rule.ctstate is defined %} --ctstate {{ rule.ctstate }} {%- endif %}
+{%- if rule.sport is defined %} --sport {{ rule.sport }} {%- endif %}
+{%- if rule.dport is defined %} --dport {{ rule.dport }} {%- endif %}
+{%- if rule.jump is defined %} -j {{ rule.jump }} 
 {%- else %} -j ACCEPT
 {%- endif %}
-{%- if rule.logprefix is defined %} --log-prefix {{rule.logprefix}} {%- endif %}
-{%- if rule.rejectwith is defined %} --reject-with {{rule.rejectwith}} {%- endif %}
+{%- if rule.logprefix is defined %} --log-prefix {{ rule.logprefix }} {%- endif %}
+{%- if rule.rejectwith is defined %} --reject-with {{ rule.rejectwith }} {%- endif %}
 {%- endfor %}
 {% endif %}
 {%- endfor %}

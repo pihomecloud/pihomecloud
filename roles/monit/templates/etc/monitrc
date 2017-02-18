@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 ###############################################################################
 ## Monit control file
 ###############################################################################
@@ -77,11 +77,11 @@ set ssl {
 # port 25 - it is possible to override this with the PORT option.
 #
 set mailserver
-  {{mailHost}}
-  port {{mailHubPort}}
-  username {{ssmtpAuthUser}} password {{ssmtpAuthPass}}
+  {{ mailHost }}
+  port {{ mailHubPort }}
+  username {{ ssmtpAuthUser }} password {{ ssmtpAuthPass }}
   using ssl
-  using hostname {{ssmtpHostname}}
+  using hostname {{ ssmtpHostname }}
 
   
 # set mailserver mail.bar.baz,               # primary mailserver
@@ -136,7 +136,7 @@ set eventqueue
 ## or sender using the MAIL-FORMAT statement. Macros such as $DATE, etc.
 ## are expanded at runtime. For example, to override the sender, use:
 #
-set mail-format { from: {{rootMail}} }
+set mail-format { from: {{ rootMail }} }
 #
 #
 ## You can set alert recipients whom will receive alerts if/when a 
@@ -144,7 +144,7 @@ set mail-format { from: {{rootMail}} }
 ## events by using a filter as in the second example below.
 #
 # set alert sysadm@foo.bar                       # receive all alerts
-set alert {{rootMail}} with reminder on 2880
+set alert {{ rootMail }} with reminder on 2880
 #
 ## Do not alert when Monit starts, stops or performs a user initiated action.
 ## This filter is recommended to avoid getting alerts for trivial cases.
@@ -160,12 +160,12 @@ set alert {{rootMail}} with reminder on 2880
 ## commands to a running Monit daemon. See the Monit Wiki if you want to 
 ## enable SSL for the HTTP interface. 
 #
-set httpd port {{monitPort}} and
+set httpd port {{ monitPort }} and
     use address localhost  # only accept connection from localhost
     signature disable
     allow localhost        # allow localhost to connect to the server and
-    allow {{monitUser}}:{{monitPassword}}      # require user 'admin' with password 'monit'
-    allow {{monitCheckUser}}:{{monitCheckPassword}} read-only
+    allow {{ monitUser }}:{{ monitPassword }}      # require user 'admin' with password 'monit'
+    allow {{ monitCheckUser }}:{{ monitCheckPassword }} read-only
 
 ###############################################################################
 ## Services

@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 # Override the Fail2Ban defaults in sendmail-common.conf with these entries
 
 [Definition]

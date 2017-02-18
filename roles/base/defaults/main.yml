@@ -13,4 +13,4 @@ wifis: []
 #  - {name: 'VPN', src: '192.168.2.0/24'}
 sshAuthorized: []
 additionalMounts: []
-sshUsers: "{{localuser}}"
+sshUsers: "{{ localuser }}"

@@ -1,7 +1,7 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 {% for item in btrfsSubVolumes + btrfsSubVolumesAdditionnals %}
 {%- if item.name not in snapVolumesExclude -%}
-check program "Etat_du_dernier_backup_master_{{item.name}}" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{cryptName}}/backup/ -n btrfsRemoteBackup.{{item.name}}.log -t 86400 -e"
+check program "Etat_du_dernier_backup_master_{{ item.name }}" with path "/srv/monitoring/plugins/check_backup.pl -d /media/{{ cryptName }}/backup/ -n btrfsRemoteBackup.{{ item.name }}.log -t 86400 -e"
   if status != 0 for 10 cycles then alert
   every "* 12-23 * * *"
 {%- endif -%}

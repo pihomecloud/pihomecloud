@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 # OpenSSL root CA configuration file.
 # Copy to `/srv/ca/openssl.cnf`.
 
@@ -82,7 +82,7 @@ emailAddress                    = Email Address
 countryName_default             = FR
 stateOrProvinceName_default     = France
 localityName_default            =
-0.organizationName_default      = {{organisation}}
+0.organizationName_default      = {{ organisation }}
 organizationalUnitName_default  =
 commonName_default              =
 emailAddress_default            =

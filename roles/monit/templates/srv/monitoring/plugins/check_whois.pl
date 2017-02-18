@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#{{ansible_managed}}
+#{{ ansible_managed }}
 
 #===============================================================================
 # Auteur : pihomecloud

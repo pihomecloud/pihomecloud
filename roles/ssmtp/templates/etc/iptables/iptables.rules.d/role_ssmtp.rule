@@ -1,8 +1,8 @@
 
-#{{ansible_managed}}
-#role {{role_name}}
+#{{ ansible_managed }}
+#role {{ role_name }}
 
 #MailHosts
 {% for ip in mailHostIps %}
--A OUTPUT -p tcp -m tcp -d {{ip}} --dport {{mailHubPort}} -j ACCEPT
+-A OUTPUT -p tcp -m tcp -d {{ ip }} --dport {{ mailHubPort }} -j ACCEPT
 {% endfor %}

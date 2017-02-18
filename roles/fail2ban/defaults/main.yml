@@ -1,14 +1,14 @@
 ---
 # defaults file for fail2ban
 myDomain: example.com
-rootMail: "root@{{myDomain}}"
-fail2BanDestEmail: "{{rootMail}}"
-fail2banSenderEmail: "{{fail2BanDestEmail}}"
+rootMail: "root@{{ myDomain }}"
+fail2BanDestEmail: "{{ rootMail }}"
+fail2banSenderEmail: "{{ fail2BanDestEmail }}"
 fail2banFindTime: 600
 fail2banBanTime: 600
 honeyPotBanTime: 864000
-fail2BanIgnoreip: "{{ansible_default_ipv4.network}}/{{ansible_default_ipv4.netmask}}"
+fail2BanIgnoreip: "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"
 homecloudDir: /usr/share/webapps/nextcloud
-homecloudDataDir: "{{homecloudDir}}/data"
+homecloudDataDir: "{{ homecloudDir }}/data"
 homecloudLogDir: /var/log/homecloud
 fail2banDefautlAction: '%(action_ml)s'

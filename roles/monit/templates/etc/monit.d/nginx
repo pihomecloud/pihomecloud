@@ -1,4 +1,4 @@
-#{{ansible_managed}}
+#{{ ansible_managed }}
 check process "NGINX" with pidfile /run/nginx.pid
   start "/usr/sbin/systemctl start nginx"
   stop "/usr/sbin/systemctl stop nginx"

@@ -1,47 +1,47 @@
 ---
 # tasks file for read_only_root
 - name: create lv for item on external storage
-  lvol: vg="vg{{cryptName}}" lv=lv{{item.name}} size={{item.size}}
-  with_items: "{{rwDirectories}}"
+  lvol: vg="vg{{ cryptName }}" lv=lv{{ item.name }} size={{ item.size }}
+  with_items: "{{ rwDirectories }}"
 - name: format lvitem
-  filesystem: dev="/dev/mapper/vg{{cryptName}}-lv{{item.name}}" fstype=ext4
-  with_items: "{{rwDirectories}}"
+  filesystem: dev="/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}" fstype=ext4
+  with_items: "{{ rwDirectories }}"
 - name: add item to fstab
-  mount: src="/dev/mapper/vg{{cryptName}}-lv{{item.name}}" name="{{item.path}}/" fstype=ext4 state=present opts=noatime,nodiratime,nodev,nosuid
-  with_items: "{{rwDirectories}}"
+  mount: src="/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}" name="{{ item.path }}/" fstype=ext4 state=present opts=noatime,nodiratime,nodev,nosuid
+  with_items: "{{ rwDirectories }}"
   register: fstab
 - name: gathering old stats
-  stat: path="{{item.path}}"
+  stat: path="{{ item.path }}"
   register: oldStat
-  with_items: "{{rwDirectories}}"
+  with_items: "{{ rwDirectories }}"
 - name: create /mnt/item/
-  file: dest="/mnt/{{item.stat.path}}/" state=directory owner="{{item.stat.pw_name}}" group="{{item.stat.gr_name}}" mode="{{item.stat.mode}}"
-  with_items: "{{oldStat.results}}"
+  file: dest="/mnt/{{ item.stat.path }}/" state=directory owner="{{ item.stat.pw_name }}" group="{{ item.stat.gr_name }}" mode="{{ item.stat.mode }}"
+  with_items: "{{ oldStat.results }}"
 - name: unmounting /mnt/item
-  shell: umount /mnt "/mnt/{{item.path}}" 
+  shell: umount /mnt "/mnt/{{ item.path }}" 
   failed_when: false
-  changed_when: "'umount: /mnt:' not in umount.stderr and 'umount: /mnt/{{item.path}}:' not in umount.stderr"
+  changed_when: "'umount: /mnt:' not in umount.stderr and 'umount: /mnt/{{ item.path }}:' not in umount.stderr"
   register: umount
-  with_items: "{{rwDirectories}}"
+  with_items: "{{ rwDirectories }}"
 - name: test if lvitem is mounted
-  shell: grep "^/dev/mapper/vg{{cryptName}}-lv{{item.name}} " /proc/mounts || true
+  shell: grep "^/dev/mapper/vg{{ cryptName }}-lv{{ item.name }} " /proc/mounts || true
   failed_when: isMounted.stderr
   changed_when: false
   register: isMounted
   with_items:
-    - "{{rwDirectories}}"
+    - "{{ rwDirectories }}"
   check_mode: no
 - name: lvitem to /mnt if needed
-  shell: mount "/dev/mapper/vg{{cryptName}}-lv{{item.item.name}}" "/mnt/{{item.item.path}}"
+  shell: mount "/dev/mapper/vg{{ cryptName }}-lv{{ item.item.name }}" "/mnt/{{ item.item.path }}"
   when: "'stdout' in item and item.stdout == ''"
-  with_items: "{{isMounted.results}}"
+  with_items: "{{ isMounted.results }}"
 - name: list services on /item/
-  shell: find /proc/*/fd/ -xtype f -exec file {} \; 2>/dev/null| grep -P '^/proc/[0-9]+/fd/[0-9]+{{":"}} symbolic link to {{item.item.path}}/' | sed -e 's/\/fd.*//' -e 's/\/proc\///' | sort -u| while read pid; do systemctl status $pid --no-pager -n0 --no-legend | grep -B1 'Loaded{{":"}} loaded (/usr/lib/systemd/' | grep -v 'Loaded{{":"}} loaded (/usr/lib/systemd/'; done | awk '{print $2}'| sort -u | grep -v sshd || true
+  shell: find /proc/*/fd/ -xtype f -exec file {} \; 2>/dev/null| grep -P '^/proc/[0-9]+/fd/[0-9]+{{ ":" }} symbolic link to {{ item.item.path }}/' | sed -e 's/\/fd.*//' -e 's/\/proc\///' | sort -u| while read pid; do systemctl status $pid --no-pager -n0 --no-legend | grep -B1 'Loaded{{ ":" }} loaded (/usr/lib/systemd/' | grep -v 'Loaded{{ ":" }} loaded (/usr/lib/systemd/'; done | awk '{print $2}'| sort -u | grep -v sshd || true
   when: "'stdout_lines' in item and item.stdout == ''"
   failed_when: services.stderr
   changed_when: services.stdout
   register: services
-  with_items: "{{isMounted.results}}"
+  with_items: "{{ isMounted.results }}"
   check_mode: no
 - name: testing id monit is installed
   stat: path=/usr/lib/systemd/system/monit.service
@@ -50,21 +50,21 @@
   service: name=monit state=stopped
   when: "monit.stat.exists and services|changed"
 - name: stoping services on /item
-  service: name="{{item}}" state=stopped
-  with_items: "{{services.results|map(attribute='stdout_lines')|list}}"
+  service: name="{{ item }}" state=stopped
+  with_items: "{{ services.results|map(attribute='stdout_lines')|list }}"
   register: restartUnits
 - name: copy old /item to /mnt
-  shell: "rsync -avu {{item.item.path}}/ /mnt/{{item.item.path}}"
+  shell: "rsync -avu {{ item.item.path }}/ /mnt/{{ item.item.path }}"
   when: "'stdout' in item and (item.stdout == '')"
-  with_items: "{{isMounted.results}}"
+  with_items: "{{ isMounted.results }}"
   register: copy
 - name: moving old dir to another
-  command: mv "{{item.item.path}}/" "{{item.item.path}}.old"
-  with_items: "{{isMounted.results}}"
+  command: mv "{{ item.item.path }}/" "{{ item.item.path }}.old"
+  with_items: "{{ isMounted.results }}"
   when: "'stdout' in item and (item.stdout == '')"
 - name: creating mount point for item
-  file: dest="{{item.stat.path}}/" state=directory owner="{{item.stat.pw_name}}" group="{{item.stat.gr_name}}" mode="{{item.stat.mode}}"
-  with_items: "{{oldStat.results}}"
+  file: dest="{{ item.stat.path }}/" state=directory owner="{{ item.stat.pw_name }}" group="{{ item.stat.gr_name }}" mode="{{ item.stat.mode }}"
+  with_items: "{{ oldStat.results }}"
 - name: rebooting
   shell: sleep 2 ; reboot &
   when: "restartUnits|changed or copy|changed or fstab|changed"

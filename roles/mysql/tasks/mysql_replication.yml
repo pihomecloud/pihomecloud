@@ -1,60 +1,60 @@
 - name: set master name fact
-  set_fact: mysqlMasterName="{{groups['master'][0]}}"
+  set_fact: mysqlMasterName="{{ groups['master'][0] }}"
 - name: create replication user
   mysql_user: 
     login_user: root
-    login_password: "{{mysqlPassword}}"
+    login_password: "{{ mysqlPassword }}"
     name: "repl_{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_user chars=ascii_letters,digits') }}"
     password: "{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_pass chars=ascii_letters,digits') }}"
     priv: "*.*:REPLICATION SLAVE"
-    host: "{{ansible_default_ipv4.address}}"
+    host: "{{ ansible_default_ipv4.address }}"
     state: present
-  delegate_to: "{{mysqlMasterName}}"
+  delegate_to: "{{ mysqlMasterName }}"
   when: "'slave' in group_names"
 - name: set master ip fact
   set_fact: mysqlMasterIp="{{ hostvars[groups['master'][0]]['ansible_default_ipv4']['address'] }}"
 - name: get slave status
-  mysql_replication: login_user=root login_password={{mysqlPassword}}
+  mysql_replication: login_user=root login_password={{ mysqlPassword }}
   register: mysqlSlave
   when: "'slave' in group_names"
   ignore_errors: yes
-- debug: msg="master={{mysqlMasterName}}/{{mysqlMasterIp}} slave={{mysqlSlave}}"
-- name: dump sql for {{ansible_hostname}}
-  shell: mysqldump -uroot -p"{{mysqlPassword}}" --opt -R --master-data --databases $(mysql -uroot -p"{{mysqlPassword}}" -NBe 'show databases' | grep -wv 'mysql\|information_schema\|performance_schema') > {{mysqlSlaveDumpPath}}
+- debug: msg="master={{ mysqlMasterName }}/{{ mysqlMasterIp }} slave={{ mysqlSlave }}"
+- name: dump sql for {{ ansible_hostname }}
+  shell: mysqldump -uroot -p"{{ mysqlPassword }}" --opt -R --master-data --databases $(mysql -uroot -p"{{ mysqlPassword }}" -NBe 'show databases' | grep -wv 'mysql\|information_schema\|performance_schema') > {{ mysqlSlaveDumpPath }}
   no_log: yes
-  delegate_to: "{{mysqlMasterName}}"
+  delegate_to: "{{ mysqlMasterName }}"
   when: "'slave' in group_names and mysqlSlave|failed"
   register: mysqlDump
 - name: copy dump from master to slave with scp on localhost
-  local_action: command scp -3 "{{localuser}}@{{mysqlMasterName}}":"{{mysqlSlaveDumpPath}}" "{{localuser}}@{{ansible_hostname}}":"{{mysqlSlaveDumpPath}}"
+  local_action: command scp -3 "{{ localuser }}@{{ mysqlMasterName }}":"{{ mysqlSlaveDumpPath }}" "{{ localuser }}@{{ ansible_hostname }}":"{{ mysqlSlaveDumpPath }}"
   become: no
   when: mysqlDump|changed
 - name: stop slave
-  mysql_replication: login_user=root login_password="{{mysqlPassword}}" mode=stopslave
+  mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=stopslave
   when: mysqlDump|changed
 - name: reset slave all
-  mysql_replication: login_user=root login_password="{{mysqlPassword}}" mode=resetslaveall
+  mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=resetslaveall
   when: mysqlDump|changed
 - name: setup replication
   mysql_replication:
     login_user: root
-    login_password: "{{mysqlPassword}}"
+    login_password: "{{ mysqlPassword }}"
     mode: changemaster
-    master_host: "{{mysqlMasterIp}}"
+    master_host: "{{ mysqlMasterIp }}"
     master_user: "repl_{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_user chars=ascii_letters,digits') }}"
     master_password: "{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_pass chars=ascii_letters,digits') }}"
   when: mysqlDump|changed
 - name: import dump on slave
-  shell: mysql -uroot -p"{{mysqlPassword}}" < "{{mysqlSlaveDumpPath}}"
+  shell: mysql -uroot -p"{{ mysqlPassword }}" < "{{ mysqlSlaveDumpPath }}"
   no_log: yes
   when: mysqlDump|changed
 - name: start slave
-  mysql_replication: login_user=root login_password="{{mysqlPassword}}" mode=startslave
+  mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=startslave
   when: "'slave' in group_names"
 - name: delete dump on master
-  file: path="{{mysqlSlaveDumpPath}}" state=absent
-  delegate_to: "{{mysqlMasterName}}"
+  file: path="{{ mysqlSlaveDumpPath }}" state=absent
+  delegate_to: "{{ mysqlMasterName }}"
   when: mysqlDump|changed
 - name: delete dump on slave
-  file: path="{{mysqlSlaveDumpPath}}" state=absent
+  file: path="{{ mysqlSlaveDumpPath }}" state=absent
   when: mysqlDump|changed

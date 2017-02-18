@@ -1,5 +1,5 @@
-#{{ansible_managed}}
-primary={{ethernet_interface}}
+#{{ ansible_managed }}
+primary={{ ethernet_interface }}
 primary_reselect=always
 mode=active-backup
 miimon=100
