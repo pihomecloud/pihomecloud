@@ -1,10 +1,10 @@
 - hosts: all
-  remote_user: "{{localuser}}"
+  remote_user: "{{ localuser }}"
   become: yes
   become_method: sudo
   tasks:
     - name: stoping shinken services
-      service: name="{{item}}" state=stopped
+      service: name="{{ item }}" state=stopped
       with_items:
         - shinken-receiver
         - shinken-broker
@@ -24,7 +24,7 @@
     - name: remove shinken group
       group: name=shinken state=absent
     - name: remove shinken packages not needed by monit
-      pacman: name="{{item}}" state=absent
+      pacman: name="{{ item }}" state=absent
       with_items:
         - shinken-modwebui2
         - shinken-pickle-retention-file-scheduler
@@ -41,7 +41,7 @@
     - name: rebuild iptables rules
       assemble: src=/etc/iptables/iptables.rules.d/ dest=/etc/iptables/iptables.rules validate="iptables-restore -t %s"
     - name: removing the traces
-      shell: rm -Rf /var/log/nginx/"{{shinkenUrl}}".*.log* /var/log/shinken /var/lib/shinken /usr/lib/python2.7/site-packages/shinken /etc/shinken /srv/ca/intermediate/csr/"{{shinkenUrl}}.csr" /srv/ca/intermediate/private/"{{shinkenUrl}}".key* /srv/ca/intermediate/certs/"{{shinkenUrl}}.cert.pem" /etc/letsencrypt/live/"{{shinkenUrl}}" /etc/letsencrypt/renewal/"{{shinkenUrl}}.conf" /etc/nginx/ssl/{{shinkenUrl}}.crt" /etc/nginx/ssl/{{shinkenUrl}}.key" /etc/nginx/ssl/"{{shinkenUrl}}.key" /etc/nginx/ssl/"{{shinkenUrl}}.crt"
+      shell: rm -Rf /var/log/nginx/"{{ shinkenUrl }}".*.log* /var/log/shinken /var/lib/shinken /usr/lib/python2.7/site-packages/shinken /etc/shinken /srv/ca/intermediate/csr/"{{ shinkenUrl }}.csr" /srv/ca/intermediate/private/"{{ shinkenUrl }}".key* /srv/ca/intermediate/certs/"{{ shinkenUrl }}.cert.pem" /etc/letsencrypt/live/"{{ shinkenUrl }}" /etc/letsencrypt/renewal/"{{ shinkenUrl }}.conf" /etc/nginx/ssl/{{ shinkenUrl }}.crt" /etc/nginx/ssl/{{ shinkenUrl }}.key" /etc/nginx/ssl/"{{ shinkenUrl }}.key" /etc/nginx/ssl/"{{ shinkenUrl }}.crt"
     - name: delete shinken user in mysql
-      mysql_user: name="shinken_{{ lookup('password', '../credentials/' + ansible_hostname + '/shinken/shinken_mysql_user chars=ascii_letters,digits') }}" host="localhost" login_user="root" login_password="{{mysqlPassword}}" state="absent"
+      mysql_user: name="shinken_{{ lookup('password', '../credentials/' + ansible_hostname + '/shinken/shinken_mysql_user chars=ascii_letters,digits') }}" host="localhost" login_user="root" login_password="{{ mysqlPassword }}" state="absent"
       when: mysqlPassword is defined

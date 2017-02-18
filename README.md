@@ -23,7 +23,7 @@ ansible-playbook -i raspberrypi init_once.yml --ask-pass --ask-become-pass
 
 - form my PC
 ```
-ssh-copy-id {{localuser}}@raspberrypi
+ssh-copy-id {{ localuser }}@raspberrypi
 /etc/ansible.cfg
 scp_if_ssh = True
 ```

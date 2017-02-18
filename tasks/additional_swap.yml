@@ -5,29 +5,29 @@
 #Changing mounted swap size needs swapoff
 - name: umount swapfile
   command: swapoff /var/swapFile
-  when: "'{{additionalSwapFileDest}}' in swapInfo.stdout and '{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"
+  when: "'{{ additionalSwapFileDest }}' in swapInfo.stdout and '{{ additionalSwapFileDest }} {{ additionalSwapfileSize }}M' not in swapInfo.stdout_lines"
 - name: stat swapfile
-  stat: path="{{additionalSwapFileDest}}"
+  stat: path="{{ additionalSwapFileDest }}"
   register: swapFile
 - name: create swap file
-  command: "dd if=/dev/zero of={{additionalSwapFileDest}} bs=1M count={{additionalSwapfileSize}}"
-  when: "not swapFile.stat.exists or '{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"
+  command: "dd if=/dev/zero of={{ additionalSwapFileDest }} bs=1M count={{ additionalSwapfileSize }}"
+  when: "not swapFile.stat.exists or '{{ additionalSwapFileDest }} {{ additionalSwapfileSize }}M' not in swapInfo.stdout_lines"
 - name: set swap perms
-  file: path="{{additionalSwapFileDest}}" owner=root group=root mode=0600
+  file: path="{{ additionalSwapFileDest }}" owner=root group=root mode=0600
 #If you want it on btrfs (very very very slow, adapt the mkswap and swapon on /dev/loop0
 #- name: search swap file in loop devices
-#  shell: losetup -l | grep "{{additionalSwapFileDest}}" || true
+#  shell: losetup -l | grep "{{ additionalSwapFileDest }}" || true
 #  changed_when: false
 #  register: swapLoopdevices
 ##btrfs swapfile support does not exists : using the slow loop swap file instead
 #- name: setup a loopdevice to swap file
-#  command: "losetup /dev/loop0 {{additionalSwapFileDest}}"
-#  when: "'{{additionalSwapFileDest}}' not in swapLoopdevices.stdout"
+#  command: "losetup /dev/loop0 {{ additionalSwapFileDest }}"
+#  when: "'{{ additionalSwapFileDest }}' not in swapLoopdevices.stdout"
 - name: make swapfile
-  command: "mkswap {{additionalSwapFileDest}}"
+  command: "mkswap {{ additionalSwapFileDest }}"
   when:
-   - "'{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"
+   - "'{{ additionalSwapFileDest }} {{ additionalSwapfileSize }}M' not in swapInfo.stdout_lines"
 - name: activating swap
-  command: "swapon {{additionalSwapFileDest}}"
+  command: "swapon {{ additionalSwapFileDest }}"
   when:
-   - "'{{additionalSwapFileDest}} {{additionalSwapfileSize}}M' not in swapInfo.stdout_lines"
+   - "'{{ additionalSwapFileDest }} {{ additionalSwapfileSize }}M' not in swapInfo.stdout_lines"

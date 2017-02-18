@@ -5,4 +5,4 @@
 #Changing mounted swap size needs swapoff
 - name: umount swapfile
   command: swapoff /var/swapFile
-  when: "'{{additionalSwapFileDest}} ' in swapInfo.stdout"
+  when: "'{{ additionalSwapFileDest }} ' in swapInfo.stdout"

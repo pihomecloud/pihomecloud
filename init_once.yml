@@ -3,14 +3,14 @@
   become: yes
   become_method: su
   tasks:
-    - group: name="{{localuser}}" gid=1001 state=present
-    - user: name={{localuser}} group={{localuser}} groups=log append=yes generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa password={{prompt_pass | password_hash('sha512') }}
-    - name: copy sudoers file for {{localuser}}
-      copy: content="{{localuser}} ALL=(ALL) ALL" dest=/etc/sudoers.d/{{localuser}} owner=root group=root mode=0644
+    - group: name="{{ localuser }}" gid=1001 state=present
+    - user: name={{ localuser }} group={{ localuser }} groups=log append=yes generate_ssh_key=yes ssh_key_bits=2048 ssh_key_file=.ssh/id_rsa password={{ prompt_pass | password_hash('sha512') }}
+    - name: copy sudoers file for {{ localuser }}
+      copy: content="{{ localuser }} ALL=(ALL) ALL" dest=/etc/sudoers.d/{{ localuser }} owner=root group=root mode=0644
     - name: set root password
       user:
         name: root
-        password: "{{prompt_pass_root | password_hash('sha512') }}"
+        password: "{{ prompt_pass_root | password_hash('sha512') }}"
   vars_prompt:
   - name: "prompt_pass"
     prompt: "Enter a password for the localuser"
