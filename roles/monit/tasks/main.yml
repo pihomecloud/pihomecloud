@@ -11,6 +11,8 @@
     - perl-dbd-mysql
 - name: install perl-date-parse with makepkg
   makepkg: name=perl-date-parse state=latest
+- name: actualyse inventory
+  setup:
 - name: configure monit base file
   template: src=etc/monitrc dest=/etc/monitrc owner=root group=root mode=0700
   notify: reload monit
