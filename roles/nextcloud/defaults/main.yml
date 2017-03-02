@@ -17,3 +17,4 @@ homecloud_open_basedir: "{{ homecloudLogDir }}:/srv/http/:/home/:/tmp/:/usr/shar
 cryptName: usbstorageDisk
 otherServers: "{{ groups['all'] }}"
 letsencryptVirtualhosts: []
+nextcloudDefaultApps: [ 'bookmarks', 'calendar', 'contacts', 'notes' ]

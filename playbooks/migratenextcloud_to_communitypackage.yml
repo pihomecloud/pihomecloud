@@ -1,0 +1,15 @@
+- hosts: all
+  remote_user: "{{ localuser }}"
+  become: yes
+  become_method: sudo
+  gather_facts: False 
+  tasks:
+    - include_vars: ../roles/nextcloud/defaults/main.yml
+      when: nextcloudDefaultApps is not defined
+    - name: move config to /etc
+      command: mv /usr/share/webapps/nextcloud/config /etc/webapps/
+      ignore_errors: true
+    - name: Install nextcloud apps
+      pacmanneeded: name="nextcloud-app-{{item}}" state=present force=yes
+      with_items: "{{ nextcloudDefaultApps }}"
+
