@@ -165,7 +165,12 @@ def update_package_db(module, pacman_path):
         module.fail_json(msg="could not update package db")
 
 def upgrade(module, pacman_path):
-    cmdupgrade = "%s -Suq --noconfirm" % (pacman_path)
+    if module.params["force"]:
+        args = "Suq --force"
+    else:
+        args = "Suq"
+
+    cmdupgrade = "%s -%s --noconfirm" % (pacman_path, args)
     cmdneedrefresh = "%s -Qqu" % (pacman_path)
     rc, stdout, stderr = module.run_command(cmdneedrefresh, check_rc=False)
 
@@ -177,7 +182,7 @@ def upgrade(module, pacman_path):
         if rc == 0:
             module.exit_json(changed=True, msg='System upgraded')
         else:
-            module.fail_json(msg="Could not upgrade : %s " % stderr)
+            module.fail_json(msg="Could not upgrade : %s runiing %s" % (stderr, cmdupgrade))
     else:
         module.exit_json(changed=False, msg='Nothing to upgrade')
 
@@ -219,6 +224,11 @@ def install_packages(module, pacman_path, state, packages, package_files):
     install_c = 0
     package_err = []
     message = ""
+    if module.params["force"]:
+        force = " --force "
+    else:
+        force = ""
+
 
     for i, package in enumerate(packages):
         # if the package is installed and state == present or state == latest and is up-to-date then skip
@@ -226,19 +236,19 @@ def install_packages(module, pacman_path, state, packages, package_files):
         if latestError and state == 'latest':
             package_err.append(package)
 
-        if installed and (state == 'present' or (state == 'latest' and updated)):
+        if installed and (state == 'present' or (state == 'latest' and updated)) and not module.params["force"]:
             continue
 
         if package_files[i]:
-            params = '-U %s' % package_files[i]
+            params = ' %s -U %s' % (force, package_files[i])
         else:
-            params = '-S %s' % package
+            params = ' %s -S %s' % (force, package)
 
         cmd = "%s %s --noconfirm --needed" % (pacman_path, params)
         rc, stdout, stderr = module.run_command(cmd, check_rc=False)
 
         if rc != 0:
-            module.fail_json(msg="failed to install %s" % (package))
+            module.fail_json(msg="failed to install %s running %s" % (package, cmd))
 
         install_c += 1
 
