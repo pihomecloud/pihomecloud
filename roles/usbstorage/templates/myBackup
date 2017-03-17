@@ -55,7 +55,7 @@ echo -e "Backup MySQL"
 echo -e "Verification sauvegarde MySQL"
 gzip -t $bckDir/mysql/mysqldump.$dateBackup.sql.gz && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Validite sauvegarde MySQL"
-zgrep 'CREATE DATABASE /\*!32312 IF NOT EXISTS\*/ `mysql` /\*!40100 DEFAULT CHARACTER SET utf8 \*/;' $bckDir/mysql/mysqldump.$dateBackup.sql.gz | head -1 && echo -e "[OK] \c" || echo -e "[KO] \c"
+zgrep 'CREATE DATABASE /\*!32312 IF NOT EXISTS\*/ `mysql`' $bckDir/mysql/mysqldump.$dateBackup.sql.gz | head -1 && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Contenu dump MySQL"
 rsync --inplace -av /var/lib/mysql/mysql-bin.* $bckDir/mysql/
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
