@@ -74,7 +74,7 @@
   template: src=etc/nginx/conf.d/default.conf dest=/etc/nginx/conf.d/default.conf owner=root group=root mode=0640
   notify: restart nginx
 - name: create self dummy signed cert because i don't care about default website
-  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/default.key -out /etc/nginx/ssl/default.crt -batch -subj '/CN=DaffyDuck/O=Acme/C=US' creates=/etc/nginx/ssl/default.crt
+  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/default.key -out /etc/nginx/ssl/default.crt -batch -subj "{{sslDefaultSubject}}" creates=/etc/nginx/ssl/default.crt
 - name: copy localmonitoring conf
   template: src=etc/nginx/conf.d/localmonitoring.conf dest=/etc/nginx/conf.d/localmonitoring.conf owner=root group=root mode=0640
   notify: restart nginx

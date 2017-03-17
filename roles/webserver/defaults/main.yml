@@ -9,3 +9,4 @@ naxsiTraversal: 4
 naxsiEvade: 4
 naxsiXSS: 8
 webserverAdditionnalGroups: []
+sslDefaultSubject: '/CN=DaffyDuck/O=Acme/C=US'
