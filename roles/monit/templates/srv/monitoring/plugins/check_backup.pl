@@ -117,7 +117,7 @@ while (my $line = <$fh>) {
 if ($seemsTbeComplete){
   addMessage $ok,"Backup seems to be complete";
 }else{
-  addMessage $critical,"Backup doen't seems to be complete : '$lastCheck' not found";
+  addMessage $critical,"Backup doesn't seems to be complete : '$lastCheck' not found";
 }
 
 $exitMessage = "[".$statusName[$status]."] Backup log $file".$messageSeparator.$exitMessage;
