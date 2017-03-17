@@ -168,5 +168,10 @@
   mount: name="{{ item.dir }}" src="{{ item.filesystem }}" fstype="{{ item.type }}" opts="{{ item.options }}" dump={{ item.dump | default(0) }} passno={{ item.pass | default(0) }} state=mounted
   with_items: "{{ additionalMounts }}"
   when: "'master' in group_names"
+- name: configure vim
+  lineinfile: dest="{{ item.file }}" regexp="^set mouse" line="set mouse=" owner="{{ item.owner }}" group="{{ item.group }}" mode="0600" create=yes
+  with_items:
+    - { file: "/root/.vimrc", owner: root, group: root}
+    - { file: "/home/{{ localuser }}/.vimrc", owner: "{{ localuser }}", group: "{{ localuser }}"}
 - name: activate cronie
   service: name=cronie state=started enabled=yes
