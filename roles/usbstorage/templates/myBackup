@@ -35,7 +35,7 @@ do
   echo -e "Backup mbr $disk"
 done
 
-listLuks="$(sblk -l -o NAME,FSTYPE,TYPE | grep -P "crypto_LUKS\s+" | sed -e 's/^\([^ ]*\)\(.*lvm\)$/mapper\/\1/' | awk '{print "/dev/"$1}') "
+listLuks="$(lsblk -l -o NAME,FSTYPE,TYPE | grep -P "crypto_LUKS\s+" | sed -e 's/^\([^ ]*\)\(.*lvm\)$/mapper\/\1/' | awk '{print "/dev/"$1}') "
 for disk in $listLuks
 do
   cryptsetup luksHeaderBackup $disk --header-backup-file $bckDir/disk/$(basename $disk).$dateBackup.luks.img
