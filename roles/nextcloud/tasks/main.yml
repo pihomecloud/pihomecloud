@@ -112,7 +112,7 @@
   register: restrictHomecloudHttpHttp
   changed_when: restrictHomecloudHttpHttp.stdout
 - name: allow write of config by nextcloud
-  file: path=/usr/share/webapps/nextcloud/config owner=http group=http mode=750
+  file: path=/etc/webapps/nextcloud/config owner=http group=http mode=750
 - name: create database for homecloud
   mysql_db: name={{ homecloudDataBase }} state=present login_user=root login_password={{ mysqlPassword }}
 - name: create homecloud mysql user with password
@@ -161,7 +161,7 @@
   with_items: "{{ homecloudApps }}"
   when: "homecloudAppList['disabled'][item] is defined and 'master' in group_names"
 - name: get Background Jobs property
-  command: grep cron "{{ homecloudDir }}/config/config.php"
+  command: grep cron "/etc/webapps/nextcloud/config/config.php"
   changed_when: false
   failed_when: check_background_jobs.stderr
   register: check_background_jobs
@@ -177,9 +177,9 @@
   lineinfile: dest=/etc/cron.d/nextcloud regexp="occ files:scan" line='0 5 * * 0 http php -d"open_basedir=" {{ homecloudDir }}/occ files:scan --all' create=yes
   when: "'master' in group_names"
 - name: test if slave have a backup of config
-  stat: path="/media/{{ cryptName }}/masterbackup/backup_last/sys/{{ homecloudDir }}/config/config.php"
+  stat: path="/media/{{ cryptName }}/masterbackup/backup_last/sys/etc/webapps/nextcloud/config/config.php"
   register: backupConfig
   when: "'slave' in group_names"
 - name: copy homecloud config on slave
-  copy: src="/media/{{ cryptName }}/masterbackup/backup_last/sys/{{ homecloudDir }}/config/config.php" dest="{{ homecloudDir }}/config/config.php" remote_src=yes
+  copy: src="/media/{{ cryptName }}/masterbackup/backup_last/sys/etc/webapps/nextcloud/config/config.php" dest="/etc/webapps/nextcloud/config/config.php" remote_src=yes
   when: "'slave' in group_names and backupConfig.stat.exists"

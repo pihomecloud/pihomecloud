@@ -7,7 +7,7 @@
     - include_vars: ../roles/nextcloud/defaults/main.yml
       when: nextcloudDefaultApps is not defined
     - name: move config to /etc
-      command: mv /usr/share/webapps/nextcloud/config /etc/webapps/
+      command: mv /usr/share/webapps/nextcloud/config /etc/webapps/nextcloud/
       ignore_errors: true
     - name: Install nextcloud apps
       pacmanneeded: name="nextcloud-app-{{item}}" state=present force=yes
