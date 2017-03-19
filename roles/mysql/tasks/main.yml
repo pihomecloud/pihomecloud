@@ -30,6 +30,7 @@
     - {name: skip_show_database, value: 1}
     - {name: skip-symbolic-links, value: 1}
     - {name: expire_logs_days, value: "{{ mysqlExpireLogsDays }}"}
+    - {name: bind-address, value: "0.0.0.0"}
   notify: restart mysqld
 - name: set server id
   lineinfile: dest=/etc/mysql/my.cnf regexp=^server-id value="server-id = {{ ansible_default_ipv4.address | regex_replace('\\.','') }}" owner=root group=root mode=0644
