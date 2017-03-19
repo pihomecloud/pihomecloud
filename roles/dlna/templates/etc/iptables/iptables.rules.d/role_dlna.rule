@@ -12,7 +12,7 @@
 -A OUTPUT -d {{ net }} -p udp -m udp --sport 1900 -j ACCEPT
 -A OUTPUT -d {{ net }} -p udp -m udp --sport 8200 -j ACCEPT
 -A OUTPUT -d {{ net }} -p tcp -m tcp --sport 49152 -j ACCEPT
--A OUTPUT -d {{ net }} -p tcp -m tcp --sport 49152 -j ACCEPT
+-A OUTPUT -d {{ net }} -p tcp -m tcp --dport 49152 -j ACCEPT
 {% endfor %}
 
 #IGMP discovery
