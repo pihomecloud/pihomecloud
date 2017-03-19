@@ -1,5 +1,5 @@
 #{{ ansible_managed }}
-check process "MySQL" matching "/usr/sbin/mysqld"
+check process "MySQL" matching "/usr/bin/mysqld"
   start program = "/usr/bin/systemctl start mysqld"
   stop program = "/usr/bin/systemctl stop mysqld"
   if failed
