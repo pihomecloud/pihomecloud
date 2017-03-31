@@ -80,9 +80,9 @@
 - name: activate ntp
   timedatectl: set_ntp=yes
 - name: set ntp servers in /etc/systemd/timesyncd.conf
-  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=NTP value="0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org"
+  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=NTP value="{{ ntpServers }}"
 - name: set ntp fallback servers in /etc/systemd/timesyncd.conf
-  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=FallbackNTP value="0.pool.ntp.org 1.pool.ntp.org 0.fr.pool.ntp.org"
+  ini_file: dest=/etc/systemd/timesyncd.conf section=Time option=FallbackNTP value="{{ ntpFallbackServers }}"
 - name: set locale to {{ locale }}
   locale_gen: name={{ locale }} state=present
   register: locale_gen
