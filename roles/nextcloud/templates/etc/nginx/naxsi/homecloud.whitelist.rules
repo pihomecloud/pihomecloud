@@ -143,3 +143,12 @@ BasicRule  wl:2 "mz:BODY|$URL_X:^/remote.php/webdav/";
 BasicRule  wl:11 "mz:BODY|$URL_X:^/remote.php/webdav/";
 BasicRule  wl:16 "mz:BODY|$URL_X:^/remote.php/webdav/";
 
+###########
+# CALDAV
+###########
+BasicRule wl:11 "mz:BODY|$URL_X:^/remote.php/dav/addressbooks/users/";
+
+###########
+# OCSMS
+###########
+BasicRule wl:2 "mz:BODY|$URL:/index.php/apps/ocsms/push";
