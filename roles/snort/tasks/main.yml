@@ -40,6 +40,8 @@
     - snort.rules
     - local.rules
   notify: restart snort
+- name: change timeout for update
+  lineinfile: dest=/usr/bin/pulledpork_update.sh regexp="/usr/bin/pulledpork.pl -P -c /etc/pulledpork/pulledpork.conf" line="( ulimit -t 600; /usr/bin/pulledpork.pl -P -c /etc/pulledpork/pulledpork.conf )"
 - name: configure pulledpork
   lineinfile: dest=/etc/pulledpork/pulledpork.conf regexp="{{ item.regexp }}" line="{{ item.line }}"
   with_items:
