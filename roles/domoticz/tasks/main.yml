@@ -7,7 +7,7 @@
   makepkg: name=openzwave-git state=latest pkgver_parse=1months force_https=yes
   notify: restart domoticz
 - name: install domoticz
-  makepkg: name=domoticz state=latest
+  makepkg: name=domoticz-latest state=latest
   notify: restart domoticz
 - name: verify if letsencrypt cert generated
   stat: path=/etc/letsencrypt/live/{{ domoticzUrl }}/fullchain.pem
