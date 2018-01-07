@@ -40,6 +40,7 @@ options:
             - Name of the package to install, upgrade, or remove.
         required: false
         default: null
+        aliases: [ 'pkg', 'package' ]
 
     state:
         description:
@@ -75,6 +76,7 @@ options:
         required: false
         default: no
         choices: ["yes", "no"]
+        aliases: [ 'update-cache' ]
 
     upgrade:
         description:
@@ -248,7 +250,7 @@ def install_packages(module, pacman_path, state, packages, package_files):
         rc, stdout, stderr = module.run_command(cmd, check_rc=False)
 
         if rc != 0:
-            module.fail_json(msg="failed to install %s running %s" % (package, cmd))
+            module.fail_json(msg="failed to install %s running %s" % (package, cmd), stderr=stderr, stdout=stdout)
 
         install_c += 1
 
@@ -275,6 +277,25 @@ def check_packages(module, pacman_path, packages, state):
             len(would_be_changed), state))
     else:
         module.exit_json(changed=False, msg="package(s) already %s" % state)
+
+
+def expand_package_groups(module, pacman_path, pkgs):
+    expanded = []
+
+    for pkg in pkgs:
+        cmd = "%s -Sgq %s" % (pacman_path, pkg)
+        rc, stdout, stderr = module.run_command(cmd, check_rc=False)
+
+        if rc == 0:
+            # A group was found matching the name, so expand it
+            for name in stdout.split('\n'):
+                name = name.strip()
+                if name:
+                    expanded.append(name)
+        else:
+            expanded.append(pkg)
+
+    return expanded
 
 
 def main():
@@ -315,7 +336,7 @@ def main():
         upgrade(module, pacman_path)
 
     if p['name']:
-        pkgs = p['name']
+        pkgs = expand_package_groups(module, pacman_path, p['name'])
 
         pkg_files = []
         for i, pkg in enumerate(pkgs):
