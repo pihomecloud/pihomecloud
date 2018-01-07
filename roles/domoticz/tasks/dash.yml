@@ -1,0 +1,5 @@
+- name: add dependencies for dash button
+  package: name="{{item}}" state=present
+  with_items:
+    - scapy
+    - tcpdump
