@@ -48,7 +48,7 @@
 - name: authorize http to access /dev/ttyAMA0
   user: name=http groups=tty append=yes
 - name: restrict domoticz to 127.0.0.1
-  lineinfile: dest=/usr/lib/systemd/system/domoticz.service owner=root group=root mode=0644 regexp="^ExecStart" line="ExecStart=/opt/domoticz/domoticz -www 8080 -daemon -wwwbind 127.0.0.1 -sslwww 0"
+  lineinfile: dest=/usr/lib/systemd/system/domoticz.service owner=root group=root mode=0644 regexp="^ExecStart" line="ExecStart=/opt/domoticz/domoticz -www 8080 -wwwbind 127.0.0.1 -sslwww 0"
   register: systemctlReload
   notify: restart domoticz
 - name: do systemctlreload
