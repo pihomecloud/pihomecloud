@@ -1,0 +1,35 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  - name: smbserver
+    image: base/archlinux
+    command: /usr/bin/init
+    capabilities:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  options:
+    vv: true
+  inventory:
+    group_vars:
+      all:
+        smbShares:
+          test_molecule:
+            directory: /root
+            force_user: root
+scenario:
+  name: default
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

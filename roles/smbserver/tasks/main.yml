@@ -1,0 +1,17 @@
+---
+# tasks file for smbserver
+- name: install samba
+  package: name=samba state=present
+- name: configure samba
+  template:
+    src: etc/samba/smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: 0500
+  notify: restart samba
+- name: start samba
+  service:
+    name: smbd
+    state: started
+    enabled: yes

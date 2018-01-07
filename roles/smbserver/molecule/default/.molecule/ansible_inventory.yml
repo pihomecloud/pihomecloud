@@ -1,0 +1,11 @@
+# Molecule managed
+
+---
+all:
+  hosts:
+    smbserver: &id001
+      ansible_connection: docker
+ungrouped:
+  hosts:
+    smbserver: *id001
+  vars: {}
