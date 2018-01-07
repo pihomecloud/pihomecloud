@@ -2,4 +2,3 @@
 # handlers file for mysql
 - name: restart mysqld
   service: name=mysqld state=restarted
-

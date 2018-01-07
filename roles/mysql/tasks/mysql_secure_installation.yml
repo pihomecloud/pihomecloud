@@ -1,3 +1,4 @@
+---
 - name: install mysql-python as dependency of mysql ansible module
   pacmanneeded: name=mysql-python state=present
 - name: verify and set mysql root password

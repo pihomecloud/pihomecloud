@@ -1,10 +1,19 @@
 ---
 # tasks file for mysql
+- name: create mysql group
+  group: name=mysql state=present
+- name: create mysql user
+  user:
+    name: mysql
+    shell: /bin/nologin
+    groups: mysql
+    comment: MariaDB
+    state: present
 - name: install mariadb
-  pacmanneeded:  name=mariadb state=latest
+  pacmanneeded: name=mariadb state=latest
   notify: restart mysqld
 - name: install python2-mysql as dependency of ansible
-  pacmanneeded:  name=mysql-python state=latest
+  pacmanneeded: name=mysql-python state=latest
 - name: mysql_install_db
   command: /usr/bin/mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql creates=/var/lib/mysql/mysql
 - name: prompt mysql Password
@@ -17,7 +26,7 @@
 - name: ensure mariadb is enabled
   service: name=mysqld enabled=yes state=started
   notify: restart nginx
-##MySQL Hardening
+## MySQL Hardening
 - name: secure parameters in mariadb
   ini_file: dest=/etc/mysql/my.cnf section=mysqld option={{ item.name }} value={{ item.value }} backup=yes owner=root group=root mode=0644
   with_items:
@@ -43,9 +52,9 @@
   ini_file: dest=/etc/mysql/my.cnf section=mysqld option=skip_networking value=1 owner=root group=root mode=0644
   when: "'slave' in group_names"
   notify: restart mysqld
-- include: mysql_secure_installation.yml
+- name: secure mysql
+  include_tasks: mysql_secure_installation.yml
 - name: setup mysql replication
-  include: mysql_replication.yml
+  include_tasks: mysql_replication.yml
 - name: copy iptables rules for {{ role_name }}
   template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
-
