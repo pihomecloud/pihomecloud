@@ -1,7 +1,7 @@
 ras*
 test*.yml
 hosts
-group_vars/all
+group_vars/
 *.swp
 *.retry
 *~
