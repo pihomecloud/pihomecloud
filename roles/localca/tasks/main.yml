@@ -8,10 +8,11 @@
     - crl
     - intermediate
     - newcerts
-- name: check if backup is aviable for slave
+- name: check if backup is avaible for slave
   command: find "/media/{{ cryptName }}/masterbackup/backup_last/sys/srv/ca/" -name ca.key -o -name intermediate.key
   failed_when: false
   changed_when: false
+  check_mode: no
   register: ca_backup
   when: "'slave' in group_names"
 - name: synchronize last backup on slave
