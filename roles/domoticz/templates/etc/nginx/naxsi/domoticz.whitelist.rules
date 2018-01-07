@@ -17,9 +17,16 @@ BasicRule wl:0 "mz:$BODY_VAR:httpurl|$URL:/storesettings.webem";
 BasicRule wl:0 "mz:$BODY_VAR:httppostcontenttype|$URL:/storesettings.webem";
 BasicRule wl:2 "mz:BODY|$URL:/storesettings.webem";
 
-#url : /json.htm update sensor
+#url : /json.htm
+BasicRule wl:0 "mz:$ARGS_VAR:order|$URL:/json.htm";
 BasicRule wl:0 "mz:$ARGS_VAR:valuelist|$URL:/json.htm";
 
 #url event_create.webem update and save events
 BasicRule wl:0 "mz:$BODY_VAR:xml|$URL:/event_create.webem";
 BasicRule wl:0 "mz:$BODY_VAR:logicarray|$URL:/event_create.webem";
+
+#Sensor creation
+BasicRule wl:1008 "mz:$ARGS_VAR:sensoroptions|$URL:/json.htm";
+
+#dashticz
+BasicRule wl:1013 "mz:$ARGS_VAR:v";
