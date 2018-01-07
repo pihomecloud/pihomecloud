@@ -1,0 +1,11 @@
+# Molecule managed
+
+---
+all:
+  hosts:
+    raspberry: &id001
+      ansible_connection: docker
+ungrouped:
+  hosts:
+    raspberry: *id001
+  vars: {}

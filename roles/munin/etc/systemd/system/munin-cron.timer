@@ -1,0 +1,8 @@
+[Unit]
+Description=Survey monitored computers every five minutes
+
+[Timer]
+OnCalendar=*-*-* *:00/5:00
+
+[Install]
+WantedBy=multi-user.target

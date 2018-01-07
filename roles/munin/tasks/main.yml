@@ -1,0 +1,50 @@
+---
+# tasks file for munin
+- name: add munin
+  pacman: name="{{item}}" state=latest
+  with_items:
+     - munin
+     - munin-node
+- name: add web dir
+  file: dest=/srv/http owner=root group=root mode=0755 state=directory
+- name: add web dir
+  file: dest=/srv/http/munin owner=munin group=http mode=0750 state=directory
+- name: parmametrage munin
+  lineinfile: dest=/etc/munin/munin.conf regexp="#*htmldir" line="htmldir /srv/http/munin"
+- name: add monin config
+  file: src="/usr/lib/munin/plugins/{{item.src}}" dest="/etc/munin/plugins/{{item.dest}}" state=link
+  with_items:
+    - {src: 'bonding_err_', dest: 'bonding_err_bond0'}
+    - {src: 'cpu'         , dest: 'cpu'}
+    - {src: 'cpuspeed'    , dest: 'cpuspeed'}
+    - {src: 'df'          , dest: 'df'}
+    - {src: 'df_inode'    , dest: 'df_inode'}
+    - {src: 'diskstats'   , dest: 'diskstats'}
+    - {src: 'entropy'     , dest: 'entropy'}
+    - {src: 'forks'       , dest: 'forks'}
+    - {src: 'fw_packets'  , dest: 'fw_packets'}
+    - {src: 'if_'         , dest: 'if_bond0'}
+    - {src: 'if_'         , dest: 'if_eth0'}
+    - {src: 'if_'         , dest: 'if_wlan0'}
+    - {src: 'if_err_'     , dest: 'if_err_bond0'}
+    - {src: 'if_err_'     , dest: 'if_err_eth0'}
+    - {src: 'if_err_'     , dest: 'if_err_wlan0'}
+    - {src: 'interrupts'  , dest: 'interrupts'}
+    - {src: 'irqstats'    , dest: 'irqstats'}
+    - {src: 'load'        , dest: 'load'}
+    - {src: 'memory'      , dest: 'memory'}
+    - {src: 'munin_stats' , dest: 'munin_stats'}
+    - {src: 'netstat'     , dest: 'netstat'}
+    - {src: 'nfs4_client' , dest: 'nfs4_client'}
+    - {src: 'nfs_client'  , dest: 'nfs_client'}
+    - {src: 'open_files'  , dest: 'open_files'}
+    - {src: 'open_inodes' , dest: 'open_inodes'}
+    - {src: 'proc_pri'    , dest: 'proc_pri'}
+    - {src: 'processes'   , dest: 'processes'}
+    - {src: 'swap'        , dest: 'swap'}
+    - {src: 'threads'     , dest: 'threads'}
+    - {src: 'uptime'      , dest: 'uptime'}
+    - {src: 'users'       , dest: 'users'}
+    - {src: 'vmstat'      , dest: 'vmstat'}
+- name: enable and start munin node
+  service: name=munin-node state=started enabled=yes
