@@ -6,3 +6,5 @@ group_vars/all
 *.retry
 *~
 credentials/
+venv/
+venv2/
