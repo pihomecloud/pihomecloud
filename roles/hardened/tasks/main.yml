@@ -55,7 +55,10 @@
     - /etc/at.allow
     - /etc/ssh/sshd_config
 - name: remove localhost ipv6 entry
-  lineinfile: dest=/etc/hosts regexp='::1' line='#::1		localhost.localdomain	localhost'
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '::1'
+    line: '#::1		localhost.localdomain	localhost'
 - name: Locking out user IDs after n unsuccessful consecutive login attempts mitigates brute force password attacks against your systems
   lineinfile: dest={{ item }} regexp="pam_tally" line="auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900"
   with_items:
