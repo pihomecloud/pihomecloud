@@ -28,7 +28,7 @@
     - {name: nginx-matchall, failregex: '^<HOST>', ignoreregex: ''}
     - {name: nginx-naxsi, failregex: 'NAXSI_FMT: ip=<HOST>&server', ignoreregex: ''}
     - {name: nginx-sslerror, failregex: '^<HOST> \- \S+ \[\] \".*\" 400 \d+ .+$', ignoreregex: ''}
-    - {name: homecloud, failregex: "{\"reqId\":\".*\",\"remoteAddr\":\"<HOST>\",\"app\":\"core\",\"message\":\"Login failed: \'.*", ignoreregex: ''}
+    - {name: homecloud, failregex: '{"reqId":".*","remoteAddr":"<HOST>","app":"core","message":"Login failed: .*', ignoreregex: ''}
     - {name: snort, failregex: "\\[Priority: \\d+\\] {\\S+} <HOST>:\\d+ -> [\\w\\-.^_]*\\w:\\d+$", ignoreregex: '', datepattern: '%%m/%%d-%%H:%%M:%%S'}
   notify: restart fail2ban
 - name: create default jails
