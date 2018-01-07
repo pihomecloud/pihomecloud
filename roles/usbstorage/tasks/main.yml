@@ -60,7 +60,7 @@
 - name: create /media/{{ cryptName }}-unencrypted
   file: path=/media/{{ cryptName }}-unencrypted state=directory owner=root group=root mode=0755
 - name: add lvunencrypted to fstab and mount it
-  mount: src="/dev/mapper/vg{{ cryptName }}-lvunencrypted" name="/media/{{ cryptName }}-unencrypted" fstype=ext4 state=mounted opts=noatime,nodiratime
+  mount: src="/dev/mapper/vg{{ cryptName }}-lvunencrypted" name="/media/{{ cryptName }}-unencrypted" fstype=ext4 state=mounted opts=noatime,nodiratime,nofail
 - name: create /media/{{ cryptName }}
   file: path=/media/{{ cryptName }} state=directory owner=root group=root mode=0755
 - name: mount btrfs volume {{ cryptName }} and add it to fstab

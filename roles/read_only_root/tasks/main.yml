@@ -1,13 +1,18 @@
 ---
 # tasks file for read_only_root
 - name: create lv for item on external storage
-  lvol: vg="vg{{ cryptName }}" lv=lv{{ item.name }} size={{ item.size }}
+  lvol:
+    vg: "vg{{ cryptName }}"
+    lv: "lv{{ item.name }}"
+    size: "{{ item.size }}"
   with_items: "{{ rwDirectories }}"
 - name: format lvitem
-  filesystem: dev="/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}" fstype=ext4
+  filesystem:
+    dev: "/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}"
+    fstype: ext4
   with_items: "{{ rwDirectories }}"
 - name: add item to fstab
-  mount: src="/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}" name="{{ item.path }}/" fstype=ext4 state=present opts=noatime,nodiratime,nodev,nosuid
+  mount: src="/dev/mapper/vg{{ cryptName }}-lv{{ item.name }}" name="{{ item.path }}/" fstype=ext4 state=present opts=noatime,nodiratime,nodev,nosuid,nofail
   with_items: "{{ rwDirectories }}"
   register: fstab
 - name: gathering old stats
