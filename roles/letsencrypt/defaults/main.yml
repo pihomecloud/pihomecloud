@@ -6,3 +6,4 @@ myDomain: "example.org"
 letsEncryptEmail: "admin@{{ myDomain }}"
 letsEncryptRsaKeySize: 2048
 letsEncryptPreferedChallenges: "http"
+renewBefore: 58

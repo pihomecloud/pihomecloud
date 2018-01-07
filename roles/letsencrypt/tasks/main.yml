@@ -5,7 +5,7 @@
 - name: install certbot package
   pacmanneeded: name=certbot state=present
 - name: copy iptables rules associated with this role
-  include: iptables.yml
+  include_tasks: iptables.yml
 - name: "generate certificate"
   command: /usr/bin/certbot certonly --standalone -d "{{ item }}" --rsa-key-size "{{ letsEncryptRsaKeySize }}" --preferred-challenges "{{ letsEncryptPreferedChallenges }}" --email "{{ letsEncryptEmail }}" --agree-tos -n
   args:
@@ -17,6 +17,9 @@
   when: "'slave' in group_names"
 - name: create challenge directory
   file: dest=/srv/letsencrypt state=directory mode=750
+- name: configure certificate expiration
+  lineinfile: dest="/etc/letsencrypt/renewal/{{ item }}.conf" regexp="renew_before_expiry" line="renew_before_expiry = {{renewBefore}} days"
+  with_items: "{{ letsencryptVirtualhosts|unique }}"
 - name: Install renewal cron
   cron: name="LetsEncrypt Renewal" special_time=monthly job="/usr/bin/certbot renew --preferred-challenges "{{ letsEncryptPreferedChallenges }}" ; systemctl reload nginx" state="{{ cronState }}"
   when: "'master' in group_names"
