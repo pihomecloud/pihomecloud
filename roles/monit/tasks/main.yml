@@ -3,7 +3,7 @@
 - name: update facts
   setup:
 - name: install monit
-  pacman: name=monit state=latest
+  pacman: name=monit state=present
 - name: monitoring deps
   pacman: name={{ item }} state=present
   with_items:
@@ -12,7 +12,7 @@
     - perl-dbi
     - perl-dbd-mysql
 - name: install perl-date-parse with makepkg
-  makepkg: name=perl-date-parse state=latest
+  makepkg: name=perl-date-parse state=present
 - name: actualyse inventory
   setup:
 - name: configure monit base file
@@ -99,7 +99,7 @@
   when: not monitLetsEncryptCert.stat.exists and monitLocalcaCert.stat.exists
   notify: reload nginx
 - name: create self dummy signed cert because i don't have letsencrypt or localca, it's a shame
-  shell: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{ monitUrl }}.key -out /etc/nginx/ssl/{{ monitUrl }}.crt -batch -subj '/CN={{ monitUrl }}/O=Acme/C=US' creates=/etc/nginx/ssl/{{ monitUrl }}.crt
+  command: openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout /etc/nginx/ssl/{{ monitUrl }}.key -out /etc/nginx/ssl/{{ monitUrl }}.crt -batch -subj '/CN={{ monitUrl }}/O=Acme/C=US' creates=/etc/nginx/ssl/{{ monitUrl }}.crt
   when: not monitLetsEncryptCert.stat.exists and not monitLocalcaCert.stat.exists
 - name: set certificate and key of monit to a non sense cert
   file: src={{ item.src }} dest=/etc/nginx/ssl/{{ item.dest }} state=link force=yes
