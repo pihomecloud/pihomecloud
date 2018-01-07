@@ -112,7 +112,7 @@ PrintMotd no # pam does that
 #PrintLastLog yes
 #TCPKeepAlive yes
 #UseLogin no
-UsePrivilegeSeparation sandbox		# Default for new installations.
+#UsePrivilegeSeparation sandbox		# Default for new installations. Deprecated !
 PermitUserEnvironment no
 #Compression delayed
 ClientAliveInterval 300
