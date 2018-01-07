@@ -67,7 +67,7 @@
   mysql_user21:
     user: "{{ monitMySQLUser }}"
     password: "{{ monitMySQLPass }}"
-    priv: "*.*:USAGE"
+    priv: "*.*:REPLICATION CLIENT"
     host: "localhost"
     login_user: root
     login_password: "{{ mysqlPassword }}"

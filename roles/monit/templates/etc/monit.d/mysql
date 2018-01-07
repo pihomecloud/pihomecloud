@@ -14,3 +14,11 @@ check process "MySQL" matching "/usr/bin/mysqld"
   then restart
   if does not exist for 10 cycles then alert
   if does not exist for 10 cycles then restart
+
+{% if 'slave' in group_names %}
+check program "Slave_IO_thread" with path "/srv/monitoring/plugins/check_mysql_health  --mode slave-io-running --user {{ monitMySQLUser }} --password {{ monitMySQLPass }}"
+  if status != 0 for 10 cycles then alert
+
+check program "Slave_SQL_thread" with path "/srv/monitoring/plugins/check_mysql_health  --mode slave-sql-running --user {{ monitMySQLUser }} --password {{ monitMySQLPass }}"
+  if status != 0 for 10 cycles then alert
+{% endif %}
