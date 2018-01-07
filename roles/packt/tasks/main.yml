@@ -8,7 +8,7 @@
     - "{{ pactRootDir }}/ebooks/"
     - "{{ packtDir }}"
 - name: install pack files
-  template: src=srv/packt/{{ item }} dest=/srv/packt/ owner=root group=root mode=700
+  template: src=srv/packt/{{ item }} dest=/srv/packt/ owner=root group=root mode=0755
   with_items:
     - packt.cfg
     - packt.sh

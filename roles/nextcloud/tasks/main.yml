@@ -149,20 +149,22 @@
   command: php -d"open_basedir={{ homecloud_open_basedir }}" occ app:list --output=json  chdir={{ homecloudDir }}
   register: homecloudAppListResult
   changed_when: false
+  check_mode: no
   become: yes
   become_user: http
   when: "'master' in group_names"
-- set_fact: homecloudAppList="{{ homecloudAppListResult.stdout | from_json }}"
+- set_fact: homecloudAppList="{{ homecloudAppListResult.stdout|default('') | from_json }}"
   when: "'master' in group_names"
 - name: enable apps
   command: php -d"open_basedir={{ homecloud_open_basedir }}" occ app:enable {{ item }}  chdir={{ homecloudDir }}
   become: yes
   become_user: http
   with_items: "{{ homecloudApps }}"
-  when: "homecloudAppList['disabled'][item] is defined and 'master' in group_names"
+  when: "((homecloudAppList|default([]))['disabled']|default([]))[item] is defined and 'master' in group_names"
 - name: get Background Jobs property
   command: grep cron "/etc/webapps/nextcloud/config/config.php"
   changed_when: false
+  check_mode: no
   failed_when: check_background_jobs.stderr
   register: check_background_jobs
 - name: Defining Background Jobs to cron

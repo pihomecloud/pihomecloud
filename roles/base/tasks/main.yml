@@ -178,7 +178,7 @@
   service: name=wpa_supplicant@{{ wlan_interface }} enabled=yes
   when: "'ARMv7 Processor rev 4 (v7l)' in ansible_processor"
 - name: copy iptables rules associated with this role
-  include: iptables.yml
+  include_tasks: iptables.yml
 - name: rootfs optimization
   mount: name="/" src="/dev/mmcblk0p2" fstype="ext4" opts="defaults,noatime,nodiratime" dump=0 passno=0 state=mounted
 - name: additional mounts

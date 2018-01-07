@@ -5,11 +5,13 @@
 - name: gather list of disks
   shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e ^NAME -e "disk *usb"
   changed_when: false
+  check_mode: no
   register: diskList
 - name: gather list of disks devices
   shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "disk *usb" | awk '{print "/dev/"$1}'
   changed_when: false
   register: diskDeviceList
+  check_mode: no
 - name: verify if we have at least one valid disk
   fail: msg="No valid disk found"
   when: diskDeviceList.stdout_lines | length == 0
@@ -36,15 +38,17 @@
 - name: gather list of luks volumes on the choosen usb disk
   shell: lsblk -l -o NAME,FSTYPE,TYPE,TRAN,VENDOR,SIZE | grep -e "crypto_LUKS" | awk '{print $1}' | grep "^vg{{ cryptName }}-lvcrypted$"
   changed_when: false
+  check_mode: no
   failed_when: luksDevice.stderr
   register: luksDevice
 - name: initialize cryptSetup disk if needed
   shell: echo "{{ cryptPass }}" |/usr/bin/cryptsetup --verbose --batch-mode luksFormat "/dev/mapper/vg{{ cryptName }}-lvcrypted"
-  when: luksDevice.stdout_lines | length == 0
+  when: luksDevice.stdout_lines|default(["/dev/mapper/vg"+cryptName+"-lvcrypted"]) | length == 0
 - name: verify if usbstorageDisk is opened
   shell: dmsetup ls --target crypt | grep "^{{ cryptName }}\s"
   register: luksOpennedDevice
   changed_when: false
+  check_mode: no
   failed_when: luksOpennedDevice.stderr
 - name: open luks usb volume if needed
   shell: echo "{{ cryptPass }}" | cryptsetup luksOpen "/dev/mapper/vg{{ cryptName }}-lvcrypted" {{ cryptName }}
@@ -64,6 +68,7 @@
 - name: scan btrfs subvolumes under /media/{{ cryptName }}/{{ cryptName }}-top-lvl
   shell: btrfs subvolume list "/media/{{ cryptName }}/{{ cryptName }}-top-lvl/" | sed -e 's/.* path //' | grep -v -e "^{{ snapDir }}"
   changed_when: false
+  check_mode: no
   failed_when: btrfsVolumeList.stderr
   register: btrfsVolumeList
 - name: create btrfs subvolumes under /media/{{ cryptName }}/{{ cryptName }}-top-lvl
@@ -164,6 +169,7 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['slave']|default([]) }}"
   changed_when: false
+  check_mode: no
   register: backup_keys
   when: "'master' in group_names and 'ansible_distribution' in hostvars[item]"
 - name: append slave backup public key to master
@@ -174,6 +180,7 @@
   command: "ssh-keyscan -T 10 {{ item }}"
   with_items: "{{ groups['master'] }}"
   changed_when: false
+  check_mode: no
   register: master_backup_keys
   when: "'slave' in group_names  and 'ansible_distribution' in hostvars[item]"
 - name: append master keys to slave's backup known_host
@@ -221,4 +228,4 @@
   service: name=minidlna state=restarted
   when: minidlna.stat.exists and (mount|changed)
 - name: my hook for mounting via an external web interface
-  include: mount_hook.yml
+  include_tasks: mount_hook.yml

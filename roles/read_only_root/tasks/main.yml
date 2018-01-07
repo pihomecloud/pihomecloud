@@ -18,7 +18,7 @@
   file: dest="/mnt/{{ item.stat.path }}/" state=directory owner="{{ item.stat.pw_name }}" group="{{ item.stat.gr_name }}" mode="{{ item.stat.mode }}"
   with_items: "{{ oldStat.results }}"
 - name: unmounting /mnt/item
-  shell: umount /mnt "/mnt/{{ item.path }}"
+  command: umount /mnt "/mnt/{{ item.path }}"
   failed_when: false
   changed_when: "'umount: /mnt:' not in umount.stderr and 'umount: /mnt/{{ item.path }}:' not in umount.stderr"
   register: umount
@@ -32,7 +32,9 @@
     - "{{ rwDirectories }}"
   check_mode: no
 - name: lvitem to /mnt if needed
-  shell: mount "/dev/mapper/vg{{ cryptName }}-lv{{ item.item.name }}" "/mnt/{{ item.item.path }}"
+  mount:
+    path: "/mnt/{{ item.item.path }}"
+    src: "/dev/mapper/vg{{ cryptName }}-lv{{ item.item.name }}"
   when: "'stdout' in item and item.stdout == ''"
   with_items: "{{ isMounted.results }}"
 - name: list services on /item/
@@ -48,13 +50,18 @@
   register: monit
 - name: stoping monit
   service: name=monit state=stopped
-  when: "monit.stat.exists and services|changed"
+  when: "monit.stat.exists and services| changed"
 - name: stoping services on /item
   service: name="{{ item }}" state=stopped
   with_items: "{{ services.results|map(attribute='stdout_lines')|list }}"
   register: restartUnits
 - name: copy old /item to /mnt
-  shell: "rsync -avu {{ item.item.path }}/ /mnt/{{ item.item.path }}"
+  synchronize:
+    rsync_opts:
+      - "-u"
+    src: "{{ item.item.path }}/"
+    dest: "/mnt/{{ item.item.path }}"
+  delegate_to: "{{inventory_hostname}}"
   when: "'stdout' in item and (item.stdout == '')"
   with_items: "{{ isMounted.results }}"
   register: copy
@@ -67,7 +74,7 @@
   with_items: "{{ oldStat.results }}"
 - name: rebooting
   shell: sleep 2 ; reboot &
-  when: "restartUnits|changed or copy|changed or fstab|changed"
+  when: "restartUnits| changed or copy| changed or fstab| changed"
   async: 2
   poll: 0
   ignore_errors: true
@@ -75,5 +82,5 @@
 - name: Waiting for reboot...
   local_action: wait_for host=localhost port=22 delay=300 timeout=600 state=started
   become: no
-  when: "restartUnits|changed or copy|changed or fstab|changed"
+  when: "restartUnits| changed or copy| changed or fstab| changed"
 
