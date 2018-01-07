@@ -3,3 +3,5 @@
 mediaDirs:
   - { type: 'PVA', directory: '/media' }
 max_user_watches: 100000
+trustedNetworks:
+  - "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"

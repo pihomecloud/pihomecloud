@@ -16,12 +16,13 @@
     mode: 0644
   register: sysctl
 - name: apply sysctl if needed
-  command: sysctl --system
-  when: sysctl | changed
+  command: /usr/bin/sysctl --system
+  when: sysctl | changed and ansible_virtualization_type != 'docker'
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{ role_name }}
   template: src=etc/iptables/iptables.rules.d/role_{{ role_name }}.rule dest=/etc/iptables/iptables.rules.d/ owner=root group=root mode=0700
 - name: enable and start minidlna
   service: name=minidlna state=started enabled=yes
-
+- name: add cron job in case of empty db
+  cron: name="restart minidlna" weekday=0 hour=4 minute=12 job='[ "0$(/usr/bin/curl -sS localhost:8200 | /bin/sed -e \'s:.*Video files</td><td>::\' -e \'s/<.*//\' | grep '^[0-9]*$')" -le 10 ]  && /usr/bin/systemctl restart minidlna'
