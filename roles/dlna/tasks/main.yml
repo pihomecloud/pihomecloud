@@ -25,4 +25,4 @@
 - name: enable and start minidlna
   service: name=minidlna state=started enabled=yes
 - name: add cron job in case of empty db
-  cron: name="restart minidlna" weekday=0 hour=4 minute=12 job='[ "0$(/usr/bin/curl -sS localhost:8200 | /bin/sed -e \'s:.*Video files</td><td>::\' -e \'s/<.*//\' | grep '^[0-9]*$')" -le 10 ]  && /usr/bin/systemctl restart minidlna'
+  cron: name="restart minidlna" minute=0 job='[ "0$(/usr/bin/curl -sS localhost:8200 | /bin/sed -e \'s:.*Video files</td><td>::\' -e \'s/<.*//\' | grep '^[0-9]*$')" -le 10 ]  && /usr/bin/systemctl restart minidlna'

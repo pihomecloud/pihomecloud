@@ -52,7 +52,8 @@ mysqldump -u$mysqlUser -p$mysqlPwd --opt --all-databases | gzip -9 > $bckDir/mys
 [ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Backup MySQL"
 [ "$((du -ks $bckDir/mysql/mysqldump.$dateBackup.sql.gz 2> /dev/null || echo 0) | awk '{ print $1}')" -ge 128 ]  && echo -e "[OK] \c" || echo -e "[KO] \c"
-echo -e "Verification sauvegarde MySQL"
+sync
+echo -e "Verification sauvegarde MySQL $bckDir/mysql/mysqldump.$dateBackup.sql.gz"
 gzip -t $bckDir/mysql/mysqldump.$dateBackup.sql.gz && echo -e "[OK] \c" || echo -e "[KO] \c"
 echo -e "Validite sauvegarde MySQL"
 zgrep 'CREATE DATABASE /\*!32312 IF NOT EXISTS\*/ `mysql`' $bckDir/mysql/mysqldump.$dateBackup.sql.gz | head -1 && echo -e "[OK] \c" || echo -e "[KO] \c"

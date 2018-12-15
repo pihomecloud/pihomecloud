@@ -2,5 +2,5 @@
 # handlers file for smbserver
 - name: restart samba
   service:
-    name: smbd
+    name: smb
     state: restarted

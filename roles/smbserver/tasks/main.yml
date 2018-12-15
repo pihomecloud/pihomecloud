@@ -10,8 +10,15 @@
     group: root
     mode: 0500
   notify: restart samba
+- name: add log dir
+  file:
+    path: /var/log/samba
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
 - name: start samba
   service:
-    name: smbd
+    name: smb
     state: started
     enabled: yes

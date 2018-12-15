@@ -85,7 +85,14 @@
     - { name: mail_smtpmode, value: "'sendmail'" }
     - { name: check_for_working_htaccess, value: "true" }
     - { name: 'memcache.local', value: "'\\\\OC\\\\Memcache\\\\APCu'" }
-    - { name: 'trusted_domains', value: "array ( 0 => '{{ homecloudUrl }}',)" }
+- name: configure homecloud
+  lineinfile:
+     dest: "{{ homecloudDir }}/config/config.php"
+     regexp: "{{ item.name }}"
+     line: "{{ item.name }}"
+     insertafter: "{{item.after}}"
+  with_items:
+    - { name: "  'trusted_domains' =>", after: 'memcache.local'}
 #data is checked by stat because it can be a link to another directory (beware of open_basedir...)
 - name: check if data exists
   stat: path="{{ homecloudDir }}/data"

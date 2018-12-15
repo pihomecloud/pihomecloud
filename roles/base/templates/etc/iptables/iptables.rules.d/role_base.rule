@@ -28,3 +28,6 @@
 -A OUTPUT -p tcp -m tcp --dport 445 -j ACCEPT
   {%- endif %}
 {% endfor %}
+
+#DROP NETBIOS
+-A INPUT -p tcp -m tcp --dport 139

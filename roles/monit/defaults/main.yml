@@ -33,3 +33,4 @@ otherServers: "{{ groups['all'] }}"
 letsencryptVirtualhosts: []
 listVhosts: "{{ letsencryptVirtualhosts|unique }}"
 checkHttpsOptions: {}
+staticMunin: no

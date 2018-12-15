@@ -16,7 +16,7 @@
     - php-fpm
     - php-intl
     - php-apcu
-    - php-mcrypt
+    - php-gd
 - name: install nginx-naxsi from https://github.com/pihomecloud/archlinux-nginx-naxsi
   makepkg: name=nginx-naxsi state=latest git_source="https://github.com/pihomecloud/archlinux-nginx-naxsi"
 - name: create /etc/nginx/conf.d
@@ -50,16 +50,38 @@
     - {name: upload_max_filesize, value: "1G"}
   notify: restart php-fpm
 - name: activate php extensions
-  lineinfile: dest=/etc/php/php.ini regexp="extension={{ item }}" line="extension={{ item }}"
+  lineinfile:
+    dest: /etc/php/php.ini
+    regexp: "extension={{ item }}"
+    line: "extension={{ item }}"
   with_items:
-    - bz2.so
-    - gd.so
-    - gettext.so
-    - iconv.so
-    - intl.so
-    - mcrypt.so
-    - pdo_mysql.so
-    - xmlrpc.so
+    - bz2
+    - gd
+    - gettext
+    - iconv
+    - intl
+    - pdo_mysql
+    - xmlrpc
+  notify: restart php-fpm
+- name: activate php zend_extensions
+  lineinfile:
+    dest: /etc/php/php.ini
+    regexp: "zend_extension={{ item }}"
+    line: "zend_extension={{ item }}"
+  with_items:
+    - opcache
+  notify: restart php-fpm
+- name: set opcache options
+  ini_file: dest=/etc/php/php.ini section=opcache option={{ item.name }} value={{ item.value }} backup=yes owner=root group=root mode=0644
+  with_items:
+    - {name: opcache.enable, value: "1"}
+    - {name: opcache.enable_cli, value: "1"}
+    - {name: opcache.memory_consumption, value: "128"}
+    - {name: opcache.interned_strings_buffer, value: "8"}
+    - {name: opcache.max_accelerated_files, value: "10000"}
+    - {name: opcache.revalidate_freq, value: "1"}
+    - {name: opcache.save_comments, value: "1"}
+  notify: restart php-fpm
 - name: set php-fpm www options
   ini_file: dest=/etc/php/php-fpm.d/www.conf section="{{ item.section }}" option="{{ item.option }}" value="{{ item.value }}" backup=yes owner=root group=root mode=0644
   with_items:

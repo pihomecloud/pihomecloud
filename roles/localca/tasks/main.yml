@@ -95,18 +95,24 @@
 - name: permissions on /srv/ca/intermediate/private/{{ item }}.key
   file: state=file path=/srv/ca/intermediate/private/{{ item }}.key owner=root group=root mode=0400
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: remove dummy password in /srv/ca/intermediate/private/{{ item }}.key
   shell: openssl rsa -passin pass:temp -in /srv/ca/intermediate/private/{{ item }}.key -out /srv/ca/intermediate/private/{{ item }}.key.nopass creates=/srv/ca/intermediate/private/{{ item }}.key.nopass
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: permissions on /srv/ca/intermediate/private/{{ item }}.key.nopass
   file: state=file path=/srv/ca/intermediate/private/{{ item }}.key.nopass owner=root group=root mode=0400
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: generate {{ item }} request  /srv/ca/intermediate/csr/{{ item }}.csr
   shell: openssl req -config /srv/ca/intermediate/openssl.cnf -new -sha256 -key /srv/ca/intermediate/private/{{ item }}.key.nopass -out /srv/ca/intermediate/csr/{{ item }}.csr -batch -subj '/C={{ country }}/ST={{ state }}/O={{ organisation }}/CN={{ item }}' creates=/srv/ca/intermediate/csr/{{ item }}.csr
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: generate {{ item }} cert /srv/ca/intermediate/certs/{{ item }}.cert.pem
   shell: openssl ca -config /srv/ca/intermediate/openssl.cnf -extensions server_cert -days 3650 -notext -md sha256 -in /srv/ca/intermediate/csr/{{ item }}.csr -out /srv/ca/intermediate/certs/{{ item }}.cert.pem -passin pass:{{ caIntermediatePass }} -batch creates=/srv/ca/intermediate/certs/{{ item }}.cert.pem
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: permissions on /srv/ca/intermediate/certs/{{ item }}.cert.pem
   file: state=file path=/srv/ca/intermediate/certs/{{ item }}.cert.pem owner=root group=root mode=0444
   with_items: "{{ sslHosts }}"
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -8,6 +8,7 @@ BasicRule  wl:11 "mz:BODY|$URL_X:^/remote.php/.*ics$";
 #uri : /index.php/apps/updater/admin/setChannel/stable
 #uri : /index.php/apps/updater/admin/setChannel/production
 BasicRule  wl:16 "mz:$URL:/index.php/heartbeat|BODY";
+BasicRule  wl:16 "mz:$URL:/index.php/contactsmenu/contacts|BODY";
 BasicRule  wl:16 "mz:$URL_X:^/index.php/apps/updater/admin/setChannel/[A-z]+|BODY";
 
 #Rule (1000) sql keywords

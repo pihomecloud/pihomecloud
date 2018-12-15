@@ -27,7 +27,7 @@
     - {name: nginx-forbiden, failregex: "^<HOST> \\- \\S+ \\[\\] \\\".*\\\" 403 \\d+ .+$", ignoreregex: ''}
     - {name: nginx-matchall, failregex: '^<HOST>', ignoreregex: ''}
     - {name: nginx-naxsi, failregex: 'NAXSI_FMT: ip=<HOST>&server', ignoreregex: ''}
-    - {name: nginx-sslerror, failregex: '^<HOST> \- \S+ \[\] \".*\" 400 \d+ .+$', ignoreregex: ''}
+    - {name: nginx-sslerror, failregex: '^<HOST> \- \- \[\] \".*\" 400 \d+ .+$', ignoreregex: ''}
     - {name: homecloud, failregex: '{"reqId":".*","remoteAddr":"<HOST>","app":"core","message":"Login failed: .*', ignoreregex: ''}
     - {name: snort, failregex: "\\[Priority: \\d+\\] {\\S+} <HOST>:\\d+ -> [\\w\\-.^_]*\\w:\\d+$", ignoreregex: '', datepattern: '%%m/%%d-%%H:%%M:%%S'}
   notify: restart fail2ban
@@ -41,7 +41,6 @@
     - {name: homecloud, logpath: "{{ homecloudLogDir }}/homecloud.log", findtime: "{{ fail2banFindTime }}", bantime: "{{ fail2banBanTime }}", port: 443}
     - {name: homecloud-bf, filter: 'homecloud', logpath: "{{ homecloudLogDir }}/homecloud.log", findtime: "{{ fail2banFindTime }}", bantime: "{{ fail2banBanTime }}", port: 443}
     - {name: sshd, findtime: "{{ fail2banFindTime }}", backend: systemd, bantime: "{{ fail2banBanTime }}", port: 22}
-    - {name: sshd-ddos, findtime: "{{ fail2banFindTime }}", backend: systemd, bantime: "{{ fail2banBanTime }}", port: 22}
     - {name: snort, filter: 'snort', logpath: "/var/log/snort/alert", findtime: "{{ fail2banFindTime }}", bantime: "{{ fail2banBanTime }}", port: 443}
   notify: restart fail2ban
 - name: test if /var/log/nginx/default.access.log exists
