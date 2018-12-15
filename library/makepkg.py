@@ -148,7 +148,7 @@ def prepare_build_dir(module, pkg_name, sudo_user):
     directory = os.path.join(build_dir, pkg_name)
     if not os.path.exists(directory):
         try:
-            os.mkdir(directory, 0755)
+            os.mkdir(directory, 0o755)
         except OSError:
             module.fail_json(msg="failed to create build directory %s" % (directory))
 
@@ -185,7 +185,7 @@ def prepare_git_dir(module, build_dir, pkg):
       if os.path.exists(build_dir):
         try:
             shutil.rmtree(build_dir)
-        except Exception, err:
+        except (Exception, err):
             module.fail_json(msg="failed to remove temporary build directory %s: %s" % (build_dir, str(err)))
         build_dir = prepare_build_dir(module, pkg, sudo_user)
 
@@ -285,7 +285,7 @@ def get_build_current_version(module, pkg, pkg_file):
     if os.path.exists(build_dir):
       try:
           shutil.rmtree(build_dir)
-      except Exception, err:
+      except (Exception, err):
           module.fail_json(msg="failed to remove temporary build directory %s: %s" % (build_dir, str(err)))
   
     return str(current_version)
@@ -302,7 +302,7 @@ def prepare_aur_dir(module, build_dir, pkg):
     f = open(pkg_file_dest, 'wb')
     try:
         shutil.copyfileobj(rsp, f)
-    except Exception, err:
+    except (Exception, err):
         os.remove(pkg_file_dest)
         module.fail_json(msg="failed to create package archive file: %s" % str(err))
     f.close()
@@ -337,7 +337,7 @@ def make_package(module, pkg, pkg_file_src):
         # copy file to build directory
         try:
             shutil.copy2(pkg_file_src, build_dir)
-        except Exception, err:
+        except (Exception, err):
             module.fail_json(msg="failed to copy package %s to build directory %s: %s" % (pkg_file_src, build_dir, str(err)))
         extract_pkg(module, pkg, pkg_file_dest, build_dir)
     elif git_source:
@@ -377,13 +377,13 @@ def make_package(module, pkg, pkg_file_src):
     # don't care about preserving permissions.
     try:
         shutil.copy(os.path.join(build_dir, found_file), PACKAGE_CACHE)
-    except Exception, err:
+    except (Exception, err):
         module.fail_json("Failed to copy package %s to cache %s: %s" % (found_file, PACKAGE_CACHE, str(err)))
 
     # Don't leave build files lying around
     try:
         shutil.rmtree(build_dir)
-    except Exception, err:
+    except (Exception, err):
         module.fail_json(msg="failed to remove temporary build directory %s: %s" % (build_dir, str(err)))
 
     return os.path.join(PACKAGE_CACHE,found_file)
