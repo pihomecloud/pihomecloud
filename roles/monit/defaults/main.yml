@@ -7,6 +7,7 @@ additionalMounts: []
 btrfsSubVolumes:
   - { name: 'data', mount: 'data'}
   - { name: 'backup', mount: 'backup'}
+  - { name: 'masterbackup', mount: 'masterbackup'}
 btrfsSubVolumesAdditionnals: []
 monitCheckMounts: []
 snapDir: snapshots

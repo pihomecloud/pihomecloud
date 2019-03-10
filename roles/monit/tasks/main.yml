@@ -11,8 +11,7 @@
     - bc
     - perl-dbi
     - perl-dbd-mysql
-- name: install perl-date-parse with makepkg
-  makepkg: name=perl-date-parse state=present
+    - perl-timedate
 - name: actualyse inventory
   setup:
 - name: configure monit base file

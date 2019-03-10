@@ -27,7 +27,7 @@ my $exitMessage = "";
 my $messageSeparator = ",\n";
 my $errorOnly;
 my $host="whois.gandi.net";
-my $regexp="Registrar Registration Expiration Date";
+my $regexp="(Registrar Registration Expiration|Registry Expiry) Date";
 
 
 sub usage {

@@ -1,6 +1,6 @@
 #{{ ansible_managed }}
 {% for mount in ansible_mounts | sort(attribute='mount') %}
-{% if mount not in btrfsSubVolumes| map('regex_replace', '^(.*)$', '/media/'+cryptName+'/\\1' ) | list and mount not in btrfsSubVolumesAdditionnals | map('regex_replace', '^(.*)$', '/media/'+cryptName+'/\\1' ) | list%}
+{% if mount.mount not in btrfsSubVolumes|map(attribute='mount')| map('regex_replace', '^(.*)$', '/media/'+cryptName+'/\\1' ) | list and mount.mount not in btrfsSubVolumesAdditionnals |map(attribute='mount')| map('regex_replace', '^(.*)$', '/media/'+cryptName+'/\\1' ) | list%}
 check filesystem "FS_{{ mount.mount }}" with path "{{ mount.device | regex_replace('\\\\040',' ') }}"
   if space usage > 80% for 5 times within 15 cycles then alert
   if inode usage > 90% then alert
