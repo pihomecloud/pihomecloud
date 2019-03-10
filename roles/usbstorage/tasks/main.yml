@@ -162,7 +162,7 @@
   register: iptables
 - name: restart iptables
   service: name=iptables state=restarted
-  when: iptables|changed
+  when: iptables is changed
 #Key exchange is mandatory for rsync ssh
 - name: gather slave backup public key
   command: cat /home/backup/.ssh/id_rsa.pub
@@ -226,6 +226,6 @@
   register: minidlna
 - name: restart minidlna when mount changed
   service: name=minidlna state=restarted
-  when: minidlna.stat.exists and (mount|changed)
+  when: minidlna.stat.exists and (mount is changed)
 - name: my hook for mounting via an external web interface
   include_tasks: mount_hook.yml

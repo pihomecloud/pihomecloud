@@ -29,14 +29,14 @@
 - name: copy dump from master to slave with scp on localhost
   command: scp -3 "{{ localuser }}@{{ mysqlMasterName }}":"{{ mysqlSlaveDumpPath }}" "{{ localuser }}@{{ ansible_hostname }}":"{{ mysqlSlaveDumpPath }}"
   become: false
-  when: mysqlDump| changed
+  when: mysqlDump is changed
   delegate_to: localhost
 - name: stop slave
   mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=stopslave
-  when: mysqlDump| changed
+  when: mysqlDump is changed
 - name: reset slave all
   mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=resetslaveall
-  when: mysqlDump| changed
+  when: mysqlDump is changed
 - name: setup replication
   mysql_replication:
     login_user: root
@@ -45,18 +45,18 @@
     master_host: "{{ mysqlMasterIp }}"
     master_user: "repl_{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_user chars=ascii_letters,digits') }}"
     master_password: "{{ lookup('password', 'credentials/common/' + role_name + '/mysql_repl_pass chars=ascii_letters,digits') }}"
-  when: mysqlDump| changed
+  when: mysqlDump is changed
 - name: import dump on slave
   shell: mysql -uroot -p"{{ mysqlPassword }}" < "{{ mysqlSlaveDumpPath }}"
   no_log: true
-  when: mysqlDump| changed
+  when: mysqlDump is changed
 - name: start slave
   mysql_replication: login_user=root login_password="{{ mysqlPassword }}" mode=startslave
   when: "'slave' in group_names"
 - name: delete dump on master
   file: path="{{ mysqlSlaveDumpPath }}" state=absent
   delegate_to: "{{ mysqlMasterName }}"
-  when: mysqlDump| changed
+  when: mysqlDump is changed
 - name: delete dump on slave
   file: path="{{ mysqlSlaveDumpPath }}" state=absent
-  when: mysqlDump| changed
+  when: mysqlDump is changed

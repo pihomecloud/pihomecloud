@@ -9,7 +9,7 @@
   register: systemctlReload
 - name: reload systemctl
   command: systemctl daemon-reload
-  when: systemctlReload | changed
+  when: systemctlReload is changed
 - name: create snort group
   group: name=snort state=present
 - name: create snort user
@@ -95,7 +95,7 @@
   notify: restart snort
 - name: run pulledpork when /etc/snort/rules/snort.rules does not exists, snort configuration updated or pulledpork conf changed
   command: /usr/bin/pulledpork.pl -c /etc/pulledpork/pulledpork.conf -l -P
-  when: (not snortRules.stat.exists) or (snortConfiguration|changed) or (pulledpork|changed) or (disablesid|changed) or (dropsid|changed)
+  when: (not snortRules.stat.exists) or (snortConfiguration is changed) or (pulledpork is changed) or (disablesid is changed) or (dropsid is changed)
   notify: restart snort
 #If Here the command 'su - snort -s /bin/bash -c "snort -T -c /etc/snort/snort.conf -i bond0"' is not OK, we have a problem
 - name: create snort systemctl dependency
@@ -105,7 +105,7 @@
   register: systemctlReload
 - name: reload systemctl
   command: systemctl daemon-reload
-  when: systemctlReload | changed
+  when: systemctlReload is changed
 - service: name=snort@bond0 state=started enabled=yes
 - name: logrotate for snort
   template: src=etc/logrotate/snort dest=/etc/logrotate.d/snort owner=root group=root mode=0644

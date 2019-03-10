@@ -55,7 +55,7 @@
   register: monit
 - name: stoping monit
   service: name=monit state=stopped
-  when: "monit.stat.exists and services| changed"
+  when: "monit.stat.exists and services is changed"
 - name: stoping services on /item
   service: name="{{ item }}" state=stopped
   with_items: "{{ services.results|map(attribute='stdout_lines')|list }}"
@@ -79,7 +79,7 @@
   with_items: "{{ oldStat.results }}"
 - name: rebooting
   shell: sleep 2 ; reboot &
-  when: "restartUnits| changed or copy| changed or fstab| changed"
+  when: "restartUnits is changed or copy is changed or fstab is changed"
   async: 2
   poll: 0
   ignore_errors: true
@@ -87,5 +87,5 @@
 - name: Waiting for reboot...
   local_action: wait_for host=localhost port=22 delay=300 timeout=600 state=started
   become: no
-  when: "restartUnits| changed or copy| changed or fstab| changed"
+  when: "restartUnits is changed or copy is changed or fstab is changed"
 

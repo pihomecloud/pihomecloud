@@ -11,6 +11,6 @@
   register: iptables
 - name: restart iptables
   service: name=iptables state=restarted
-  when: iptables|changed
+  when: iptables is changed
 - name: enable iptables
   service: name=iptables state=started enabled=yes

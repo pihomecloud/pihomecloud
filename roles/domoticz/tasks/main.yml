@@ -53,7 +53,7 @@
   notify: restart domoticz
 - name: do systemctlreload
   command: systemctl daemon-reload
-  when: systemctlReload|changed
+  when: systemctlReload is changed
 - name: verifiy if console is enabled on serial port
   command: grep AMA0 /boot/cmdline.txt
   failed_when: "consoleAMA0.stderr"
@@ -70,7 +70,7 @@
   service: name=serial-getty@ttyAMA0 state=stopped enabled=no
 - name: reboot PI
   shell: sleep 2 ; reboot &
-  when: "rebootPI|changed or rebootPI2|changed"
+  when: "rebootPI is changed or rebootPI2 is changed"
   async: 2
   poll: 0
   ignore_errors: true
@@ -78,7 +78,7 @@
 - name: Waiting for reboot...
   local_action: wait_for host=localhost port=22 delay=300 timeout=600 state=started
   become: no
-  when: rebootOccured | changed
+  when: rebootOccured is changed
 - name: domoticz and dash button
   include_tasks: dash.yml
 - name: enable domoticz

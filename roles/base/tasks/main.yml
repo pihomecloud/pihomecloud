@@ -105,7 +105,7 @@
   register: locale_gen
 - name: update current locale to {{ locale }}
   command: localectl set-locale LANG={{ locale }}
-  when: locale_gen|changed
+  when: locale_gen is changed
 - name: configure systat to collect all possibleactivities
   lineinfile: dest=/etc/conf.d/sysstat regexp="^SADC_OPTIONS" line="SADC_OPTIONS=\" -S XALL\""
   notify: restart sysstat
@@ -124,7 +124,7 @@
   register: refreshbase
 - name: update pacman Database
   pacmanneeded: update_cache=yes
-  when: refreshbase|changed
+  when: refreshbase is changed
 - name: make package-query
   makepkg: name=package-query state=latest
 - name: "install yaourt"
@@ -169,7 +169,7 @@
   register: systemctlReload
 - name: do systemctlreload
   command: systemctl daemon-reload
-  when: systemctlReload|changed
+  when: systemctlReload is changed
 #- name: enable wpa_supplicant
 #  service: name=wpa_supplicant-wext@{{ wlan_interface }} enabled=yes
 #Raspberry PI 3 has embeded wifi and normal driver works fine

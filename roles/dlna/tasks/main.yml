@@ -17,7 +17,7 @@
   register: sysctl
 - name: apply sysctl if needed
   command: /usr/bin/sysctl --system
-  when: sysctl | changed and ansible_virtualization_type != 'docker'
+  when: sysctl is changed and ansible_virtualization_type != 'docker'
 - name: create directory /etc/iptables/iptables.rules.d/
   file: path=/etc/iptables/iptables.rules.d/ state=directory owner=root group=root mode=0700 recurse=yes
 - name: copy iptables rules for {{ role_name }}

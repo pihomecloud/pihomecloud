@@ -11,7 +11,7 @@
   register: systemctlReload
 - name: reload systemctl
   command: systemctl daemon-reload
-  when: systemctlReload | changed
+  when: systemctlReload is changed
 - name: set journal to journalctl
   lineinfile: dest=/etc/fail2ban/fail2ban.conf regexp="^logtarget" line="logtarget = SYSLOG"
   notify: restart fail2ban
