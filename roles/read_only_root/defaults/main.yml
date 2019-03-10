@@ -3,5 +3,5 @@
 cryptName: usbstorageDisk
 rwDirectories:
   - {name: var, size: 10G, path: /var}
-  - {name: opt, size: 1G, path: /opt}
+  - {name: opt, size: 4G, path: /opt}
   - {name: srv, size: 1G, path: /srv}

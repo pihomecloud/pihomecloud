@@ -19,7 +19,7 @@ def test_samba_configure(host):
 
 
 def test_samba_demmarre(host):
-    s = host.service('smbd')
+    s = host.service('smb')
     assert s.is_running
     assert s.is_enabled
 

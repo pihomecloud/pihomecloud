@@ -49,9 +49,9 @@ echo -e "Backup LVM"
 
 #Mysql
 mysqldump -u$mysqlUser -p$mysqlPwd --opt --all-databases | gzip -9 > $bckDir/mysql/mysqldump.$dateBackup.sql.gz
-[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] \c"
+[ $? -eq 0 ] && echo -e "[OK] \c" || echo -e "[KO] gzip verify \c"
 echo -e "Backup MySQL"
-[ "$((du -ks $bckDir/mysql/mysqldump.$dateBackup.sql.gz 2> /dev/null || echo 0) | awk '{ print $1}')" -ge 128 ]  && echo -e "[OK] \c" || echo -e "[KO] \c"
+[ "$((du -ks $bckDir/mysql/mysqldump.$dateBackup.sql.gz 2> /dev/null || echo 0) | awk '{ print $1}')" -ge 128 ]  && echo -e "[OK] \c" || echo -e "[KO] backup size strange \c"
 sync
 echo -e "Verification sauvegarde MySQL $bckDir/mysql/mysqldump.$dateBackup.sql.gz"
 gzip -t $bckDir/mysql/mysqldump.$dateBackup.sql.gz && echo -e "[OK] \c" || echo -e "[KO] \c"
