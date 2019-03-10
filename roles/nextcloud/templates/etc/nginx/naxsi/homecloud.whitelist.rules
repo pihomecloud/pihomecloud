@@ -1,4 +1,9 @@
 #{{ ansible_managed }}
+
+#Rule (2) request too big, stored on disk and not parsed
+#uri : /remote.php/dav/uploads/.*
+BasicRule  wl:2 "mz:BODY|$URL_X:^/remote.php/dav/uploads/jean/";
+
 #Rule (11) unknown content-type
 #uri : /remote.php/caldav/calendars/*/personnel/4064df3b-8794-4a7e-a3f1-744c9c315532.ics
 BasicRule  wl:11 "mz:BODY|$URL_X:^/remote.php/.*ics$";
@@ -18,6 +23,7 @@ BasicRule  wl:16 "mz:$URL_X:^/index.php/apps/updater/admin/setChannel/[A-z]+|BOD
 #uri : /core/css/multiselect.css
 #uri : /core/img/actions/delete.svg
 #find  apps/ -type f | grep -P 'select|union|update|delete|insert|table|from|ascii|hex|unhex|drop' | sed -e 's/^/BasicRule  wl:1000 "mz:$URL:\//' -e 's/$/|URL";/';
+BasicRule  wl:1000 "mz:$URL_X:/core/ajax/.*/update\.php$|$ARGS_VAR:requesttoken";
 BasicRule  wl:1000 "mz:$URL_X:/core/ajax/.*/update\.php$|URL";
 BasicRule  wl:1000 "mz:$URL_X:/core/ajax/.*/delete\.php$|URL";
 BasicRule  wl:1000 "mz:$URL_X:/apps/[^/]*/ajax/.*/update\.php$|URL";
